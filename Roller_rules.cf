@@ -1,0 +1,77 @@
+-- Rules for the 'Roller' parser
+-- Written in Labelled BNF grammar
+-- mrZalli
+
+ExpCmd.		Cmd ::= Exp;
+StmtCmd.	Cmd ::= Stmt;
+
+comment "#"
+comment "#-" "-#";
+
+-- Expressions
+
+coercions Exp 3;
+
+EAdd. 	Exp1 	::= Exp1 "+" Exp2;
+ESub. 	Exp1 	::= Exp1 "-" Exp2;
+EMul. 	Exp2 	::= Exp2 "*" Exp3;
+EDiv. 	Exp2 	::= Exp2 "/" Exp3;
+EInt. 	Exp3 	::= Integer;
+
+ERange.	Exp3	::= Val ".." Val;
+ERStep.	Exp3	::= Val "," Val ".." Val;
+EVec.	Exp3	::= "{" [VecMem] "}";
+
+-- -- Dice expressions
+
+EDice.	Exp3	::= ExpD;
+
+E1d6.	ExpD	::= "d";
+E1dN.	ExpD	::= "d" Exp3;
+ENd6.	ExpD	::= Exp3 "d";
+ENdN.	ExpD	::= Exp3 "d" Exp3;
+
+-- -- Vector captures (?)
+
+coercions Pred 2;
+
+PredAnd.	Pred1	::= Pred1 "&" Pred2;
+PredOr.		Pred1	::= Pred1 "|" Pred2;
+PredXOr.	Pred1	::= Pred1 "^" Pred2;
+PredEQ.		Pred2	::= "=" Val;
+PredNEQ.	Pred2	::= "!=" Val;
+PredGT.		Pred2	::= "<" Val;
+PredLT.		Pred2	::= ">" Val;
+
+EFilt.	ExpP	::= Exp "[" Pred "]"; -- Predicate expression, filters the vector
+
+
+
+-- -- Symbol-table stuff
+
+EVar.	Exp3	::= VarIdent;
+ECall.	Exp3	::= FunIdent "(" [Exp] ")";
+
+
+-- Statements
+
+SVarAs.	Stmt	::= VarIdent "=" Exp;
+SFDef.	Stmt	::= FunIdent "(" [VarIdent] ")" "=" Exp;
+
+-- Misc
+
+-- An integer value. Constant during the expression they are used in
+IntVal.	Val		::= Int;
+IntNVal.Val		::= "-" Int;
+VarVal.	Val		::= VarIdent;
+
+-- Any value accepted to the set
+ValVM.	VecMem	::= Val;
+StrVM.	VecMem	::= String;
+
+separator VarIdent ",";
+separator Exp ",";
+separator VecMem ",";
+
+token VarIdent	(letter | '_')+;
+token FunIdent	(letter | '_')+;
