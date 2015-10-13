@@ -5,7 +5,7 @@
 ExpCmd.		Cmd ::= Exp;
 StmtCmd.	Cmd ::= Stmt;
 
-comment "#"
+comment "#";
 comment "#-" "-#";
 
 -- Expressions
@@ -18,9 +18,10 @@ EMul. 	Exp2 	::= Exp2 "*" Exp3;
 EDiv. 	Exp2 	::= Exp2 "/" Exp3;
 EInt. 	Exp3 	::= Integer;
 
-ERange.	Exp3	::= Val ".." Val;
-ERStep.	Exp3	::= Val "," Val ".." Val;
+ERange.	Exp3	::= "{" Val ".." Val "}";
+ERStep.	Exp3	::= "{" Val "," Val ".." Val "}";
 EVec.	Exp3	::= "{" [VecMem] "}";
+
 
 -- -- Dice expressions
 
@@ -31,10 +32,22 @@ E1dN.	ExpD	::= "d" Exp3;
 ENd6.	ExpD	::= Exp3 "d";
 ENdN.	ExpD	::= Exp3 "d" Exp3;
 
--- -- Vector captures (?)
+
+-- -- Keyword functions
+
+EKeyW.		Exp		::= ExpKW: -- (could this be Exp0?)
+
+EKCount.	ExpKW	::= "Count" Exp;
+EKSum.		ExpKW	::= "Sum" Exp; -- redundant?
+EKRepeat.	ExpKW	::= "Repeat" Integer Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
+EKMean.		ExpKW	::= "Mean" Exp; -- Returns a fraction
+
+
+-- -- List operations
 
 coercions Pred 2;
 
+PredBranch.	Pred1	::= Pred1 "," Pred2;
 PredAnd.	Pred1	::= Pred1 "&" Pred2;
 PredOr.		Pred1	::= Pred1 "|" Pred2;
 PredXOr.	Pred1	::= Pred1 "^" Pred2;
@@ -42,36 +55,57 @@ PredEQ.		Pred2	::= "=" Val;
 PredNEQ.	Pred2	::= "!=" Val;
 PredGT.		Pred2	::= "<" Val;
 PredLT.		Pred2	::= ">" Val;
+PredGTEq.	Pred2	::= "<=" Val;
+PredLTEq.	Pred2	::= ">=" Val;
 
-EFilt.	ExpP	::= Exp "[" Pred "]"; -- Predicate expression, filters the vector
+EListOp.	Exp3	::= ExpLOp;
 
+ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression filters the vector
+ELSum.	ExpLOp	::= Exp "[" "+" "]";
 
+-- Peforms accumulation/folding operation.
+-- The first parameter is the accumulator and the other parameters are the next values of the list.
+-- Also maps if there is only one parameter
+ELAcc.	ExpLOp	::= Exp "[" FunIdent "]";
 
--- -- Symbol-table stuff
-
-EVar.	Exp3	::= VarIdent;
-ECall.	Exp3	::= FunIdent "(" [Exp] ")";
+-- add $a $b = $a + $b
+-- 1d6[add]		is equivalent to 1d6[+]
+-- 2d6[add 4]	is equivalent to 2d6 + 4 * 2
+-- foo $1 $2 $3 = $1 + $2 - $3
+-- {2, 3, 1, 5}[foo] -> 2 + 3 - 1 + 5
 
 
 -- Statements
 
 SVarAs.	Stmt	::= VarIdent "=" Exp;
-SFDef.	Stmt	::= FunIdent "(" [VarIdent] ")" "=" Exp;
+SFDef.	Stmt	::= FunIdent [ParamIdent] "=" Exp;
+
+
+-- -- Symbol-table stuff
+
+EVar.	Exp3	::= VarIdent;
+ECall.	Exp3	::= FunIdent [Exp];
+
 
 -- Misc
 
 -- An integer value. Constant during the expression they are used in
-IntVal.	Val		::= Int;
-IntNVal.Val		::= "-" Int;
-VarVal.	Val		::= VarIdent;
+IntVal.		Val		::= Int;
+IntNegVal.	Val		::= "-" Int;
+VarVal.		Val		::= VarIdent;
 
 -- Any value accepted to the set
-ValVM.	VecMem	::= Val;
-StrVM.	VecMem	::= String;
+ValLM.	ListMem	::= Val;
+StrLM.	ListMem	::= String;
 
-separator VarIdent ",";
-separator Exp ",";
-separator VecMem ",";
+separator ParamIdent "";
+separator Exp "";
+separator ListMem "";
 
-token VarIdent	(letter | '_')+;
-token FunIdent	(letter | '_')+;
+-- Optional commas
+-- EmptyList.	ListMem ::= ",";
+-- _.			ListMem ::= ListMem ",";
+
+token VarIdent		(letter | '_')+;
+token ParamIdent	"$" (digit | letter | '_')+
+token FunIdent		(letter | '_')+;
