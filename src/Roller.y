@@ -518,11 +518,11 @@ Exp3 : _SYMB_0 Exp _SYMB_1 {  $$ = $2; YY_RESULT_Exp_= $$; }
   | _INTEGER_ {  $$ = new EInt($1); YY_RESULT_Exp_= $$; }
   | _SYMB_6 Val _SYMB_7 Val _SYMB_8 {  $$ = new ERange($2, $4); YY_RESULT_Exp_= $$; }
   | _SYMB_6 Val _SYMB_9 Val _SYMB_7 Val _SYMB_8 {  $$ = new ERStep($2, $4, $6); YY_RESULT_Exp_= $$; }
-  | _SYMB_6 ListListMem _SYMB_8 {  $$ = new EList($2); YY_RESULT_Exp_= $$; }
+  | _SYMB_6 ListListMem _SYMB_8 {  std::reverse($2->begin(),$2->end()) ;$$ = new EList($2); YY_RESULT_Exp_= $$; }
   | ExpD {  $$ = new EDice($1); YY_RESULT_Exp_= $$; }
   | ExpLOp {  $$ = new EListOp($1); YY_RESULT_Exp_= $$; }
   | _SYMB_26 {  $$ = new EVar($1); YY_RESULT_Exp_= $$; }
-  | _SYMB_28 _SYMB_0 ListExp _SYMB_1 {  $$ = new ECall($1, $3); YY_RESULT_Exp_= $$; }
+  | _SYMB_28 _SYMB_0 ListExp _SYMB_1 {  std::reverse($3->begin(),$3->end()) ;$$ = new ECall($1, $3); YY_RESULT_Exp_= $$; }
 ;
 ExpD : _SYMB_25 {  $$ = new E1d6(); YY_RESULT_ExpD_= $$; } 
   | _SYMB_25 Exp3 {  $$ = new E1dN($2); YY_RESULT_ExpD_= $$; }
@@ -565,12 +565,15 @@ ListMem : Val {  $$ = new ValLM($1); YY_RESULT_ListMem_= $$; }
   | _STRING_ {  $$ = new StrLM($1); YY_RESULT_ListMem_= $$; }
 ;
 ListParamIdent : /* empty */ {  $$ = new ListParamIdent(); YY_RESULT_ListParamIdent_= $$; } 
-  | _SYMB_27 ListParamIdent {  $2->push_back($1) ; $$ = $2 ; YY_RESULT_ListParamIdent_= $$; }
+  | _SYMB_27 {  $$ = new ListParamIdent() ; $$->push_back($1); YY_RESULT_ListParamIdent_= $$; }
+  | _SYMB_27 _SYMB_9 ListParamIdent {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListParamIdent_= $$; }
 ;
 ListExp : /* empty */ {  $$ = new ListExp(); YY_RESULT_ListExp_= $$; } 
-  | ListExp Exp {  $1->push_back($2) ; $$ = $1 ; YY_RESULT_ListExp_= $$; }
+  | Exp {  $$ = new ListExp() ; $$->push_back($1); YY_RESULT_ListExp_= $$; }
+  | Exp _SYMB_9 ListExp {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListExp_= $$; }
 ;
 ListListMem : /* empty */ {  $$ = new ListListMem(); YY_RESULT_ListListMem_= $$; } 
-  | ListListMem ListMem {  $1->push_back($2) ; $$ = $1 ; YY_RESULT_ListListMem_= $$; }
+  | ListMem {  $$ = new ListListMem() ; $$->push_back($1); YY_RESULT_ListListMem_= $$; }
+  | ListMem _SYMB_9 ListListMem {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListListMem_= $$; }
 ;
 

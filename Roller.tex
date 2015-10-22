@@ -165,17 +165,20 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{ListParamIdent}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{ParamIdent}} {\nonterminal{ListParamIdent}}  \\
+ & {\delimit}  &{\nonterminal{ParamIdent}}  \\
+ & {\delimit}  &{\nonterminal{ParamIdent}} {\terminal{,}} {\nonterminal{ListParamIdent}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
 {\nonterminal{ListExp}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Exp}} {\nonterminal{ListExp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{,}} {\nonterminal{ListExp}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
 {\nonterminal{ListListMem}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{ListMem}} {\nonterminal{ListListMem}}  \\
+ & {\delimit}  &{\nonterminal{ListMem}}  \\
+ & {\delimit}  &{\nonterminal{ListMem}} {\terminal{,}} {\nonterminal{ListListMem}}  \\
 \end{tabular}\\
 
 

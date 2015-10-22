@@ -715,21 +715,21 @@ void PrintAbsyn::visitListParamIdent(ListParamIdent *listparamident)
   for (ListParamIdent::const_iterator i = listparamident->begin() ; i != listparamident->end() ; ++i)
   {
     visitParamIdent(*i) ;
-    render("");
+    if (i != listparamident->end() - 1) render(',');
   }
 }void PrintAbsyn::visitListExp(ListExp *listexp)
 {
   for (ListExp::const_iterator i = listexp->begin() ; i != listexp->end() ; ++i)
   {
     (*i)->accept(this);
-    render("");
+    if (i != listexp->end() - 1) render(',');
   }
 }void PrintAbsyn::visitListListMem(ListListMem *listlistmem)
 {
   for (ListListMem::const_iterator i = listlistmem->begin() ; i != listlistmem->end() ; ++i)
   {
     (*i)->accept(this);
-    render("");
+    if (i != listlistmem->end() - 1) render(',');
   }
 }void PrintAbsyn::visitInteger(Integer i)
 {

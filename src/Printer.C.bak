@@ -311,7 +311,9 @@ void PrintAbsyn::visitECall(ECall *p)
   if (oldi > 3) render(_L_PAREN);
 
   visitIdent(p->funident_);
+  render('(');
   if(p->listexp_) {_i_ = 0; p->listexp_->accept(this);}
+  render(')');
 
   if (oldi > 3) render(_R_PAREN);
 
@@ -632,7 +634,9 @@ void PrintAbsyn::visitSFDef(SFDef *p)
   if (oldi > 0) render(_L_PAREN);
 
   visitIdent(p->funident_);
+  render('(');
   if(p->listparamident_) {_i_ = 0; p->listparamident_->accept(this);}
+  render(')');
   render('=');
   _i_ = 0; p->exp_->accept(this);
 
@@ -711,14 +715,14 @@ void PrintAbsyn::visitListParamIdent(ListParamIdent *listparamident)
   for (ListParamIdent::const_iterator i = listparamident->begin() ; i != listparamident->end() ; ++i)
   {
     visitParamIdent(*i) ;
-    render("");
+    if (i != listparamident->end() - 1) render(',');
   }
 }void PrintAbsyn::visitListExp(ListExp *listexp)
 {
   for (ListExp::const_iterator i = listexp->begin() ; i != listexp->end() ; ++i)
   {
     (*i)->accept(this);
-    render("");
+    if (i != listexp->end() - 1) render(',');
   }
 }void PrintAbsyn::visitListListMem(ListListMem *listlistmem)
 {
@@ -950,6 +954,7 @@ void ShowAbsyn::visitECall(ECall *p)
   bufAppend('[');
   if (p->listexp_)  p->listexp_->accept(this);
   bufAppend(']');
+  bufAppend(' ');
   bufAppend(')');
 }
 void ShowAbsyn::visitExpD(ExpD *p) {} //abstract class

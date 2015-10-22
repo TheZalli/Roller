@@ -39,7 +39,7 @@ EKeyW.		Exp		::= ExpKW; -- (could this be Exp0?)
 
 EKCount.	ExpKW	::= "Count" Exp; -- Gives the length of the list. Gives 1 for integers
 EKSum.		ExpKW	::= "Sum" Exp; -- redundant?
-EKRepeat.	ExpKW	::= "Repeat" Integer Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
+EKRepeat.	ExpKW	::= "Repeat" Exp Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
 EKMean.		ExpKW	::= "Mean" Exp; -- Returns a real
 
 
@@ -69,10 +69,10 @@ ELSum.	ExpLOp	::= Exp "[" "+" "]";
 ELAcc.	ExpLOp	::= Exp "[" FunIdent "]";
 
 {-
-add $a $b = $a + $b
+add a b = a + b
 1d6[add]	is equivalent to 1d6[+]
 2d6[add 4]	is equivalent to 2d6 + 4 * 2
-foo $1 $2 $3 = $1 + $2 - $3
+foo(a, b, c) = a + b - c
 {2, 3, 1, 5}[foo] -> 2 + 3 - 1 + 5
 -}
 
@@ -99,9 +99,9 @@ VarVal.		Val		::= VarIdent;
 ValLM.	ListMem	::= Val;
 StrLM.	ListMem	::= String;
 
-separator ParamIdent "";
-separator Exp "";
-separator ListMem "";
+separator ParamIdent ",";
+separator Exp ",";
+separator ListMem ",";
 
 -- Optional commas
 -- EmptyList.	ListMem ::= ",";
