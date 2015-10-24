@@ -63,10 +63,10 @@ EListOp.	Exp3	::= ExpLOp;
 ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression filters the vector
 ELSum.	ExpLOp	::= Exp "[" "+" "]";
 
--- Peforms accumulation/folding operation.
+-- Performs accumulation/folding operation.
 -- The first parameter is the accumulator and the other parameters are the next values of the list.
 -- Also maps if there is only one parameter
-ELAcc.	ExpLOp	::= Exp "[" FunIdent "]";
+ELAcc.	ExpLOp	::= Exp "[" VarIdent "]";
 
 {-
 add a b = a + b
@@ -76,16 +76,17 @@ foo(a, b, c) = a + b - c
 {2, 3, 1, 5}[foo] -> 2 + 3 - 1 + 5
 -}
 
+
+-- Symbol-table stuff
+
+EVar.	Exp3	::= VarIdent;
+ECall.	Exp3	::= VarIdent "(" [Exp] ")";
+
+
 -- Statements
 
 SVarAs.	Stmt	::= VarIdent "=" Exp;
-SFDef.	Stmt	::= FunIdent "(" [ParamIdent] ")" "=" Exp;
-
-
--- -- Symbol-table stuff
-
-EVar.	Exp3	::= VarIdent;
-ECall.	Exp3	::= FunIdent "(" [Exp] ")";
+SFDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
 
 
 -- Misc
@@ -99,7 +100,6 @@ VarVal.		Val		::= VarIdent;
 ValLM.	ListMem	::= Val;
 StrLM.	ListMem	::= String;
 
-separator ParamIdent ",";
 separator Exp ",";
 separator ListMem ",";
 
@@ -108,5 +108,3 @@ separator ListMem ",";
 -- _.			ListMem ::= ListMem ",";
 
 token VarIdent		(letter | '_')+;
-token ParamIdent	(letter | '_')+;
-token FunIdent		(letter | '_')+;

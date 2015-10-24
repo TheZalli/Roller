@@ -32,3 +32,8 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+
+# other
+
+*.bak
+#.exe #I'm still keeping this in case I want to demonstrate/test this in an windows environment I don't have relevant tools in

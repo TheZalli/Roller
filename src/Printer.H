@@ -81,7 +81,6 @@ void render(char *s);
   void visitListMem(ListMem *p); /* abstract class */
   void visitValLM(ValLM *p);
   void visitStrLM(StrLM *p);
-  void visitListParamIdent(ListParamIdent *p);
   void visitListExp(ListExp *p);
   void visitListListMem(ListListMem *p);
 
@@ -91,8 +90,6 @@ void render(char *s);
   void visitString(String s);
   void visitIdent(String s);
   void visitVarIdent(String s);
-  void visitParamIdent(String s);
-  void visitFunIdent(String s);
  protected:
   void inline bufAppend(const char *s)
   {
@@ -215,7 +212,6 @@ class ShowAbsyn : public Visitor
   void visitListMem(ListMem *p); /* abstract class */
   void visitValLM(ValLM *p);
   void visitStrLM(StrLM *p);
-  void visitListParamIdent(ListParamIdent *p);
   void visitListExp(ListExp *p);
   void visitListListMem(ListListMem *p);
 
@@ -225,8 +221,6 @@ class ShowAbsyn : public Visitor
   void visitString(String s);
   void visitIdent(String s);
   void visitVarIdent(String s);
-  void visitParamIdent(String s);
-  void visitFunIdent(String s);
  protected:
   void inline bufAppend(const char *s)
   {

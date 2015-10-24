@@ -14,7 +14,6 @@ class ExpLOp;
 class Stmt;
 class Val;
 class ListMem;
-class ListParamIdent;
 class ListExp;
 class ListListMem;
 
@@ -33,7 +32,6 @@ typedef union
   Stmt* stmt_;
   Val* val_;
   ListMem* listmem_;
-  ListParamIdent* listparamident_;
   ListExp* listexp_;
   ListListMem* listlistmem_;
 } YYSTYPE;
@@ -56,8 +54,6 @@ Val* pVal(FILE *inp);
 Val* pVal(const char *str);
 ListMem* pListMem(FILE *inp);
 ListMem* pListMem(const char *str);
-ListParamIdent* pListParamIdent(FILE *inp);
-ListParamIdent* pListParamIdent(const char *str);
 ListExp* pListExp(FILE *inp);
 ListExp* pListExp(const char *str);
 ListListMem* pListListMem(FILE *inp);
@@ -93,10 +89,8 @@ ListListMem* pListListMem(const char *str);
 #define _SYMB_24 283
 #define _SYMB_25 284
 #define _SYMB_26 285
-#define _SYMB_27 286
-#define _SYMB_28 287
-#define _STRING_ 288
-#define _INTEGER_ 289
+#define _STRING_ 286
+#define _INTEGER_ 287
 
 extern YYSTYPE yylval;
 

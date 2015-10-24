@@ -60,8 +60,6 @@ IDENT [a-zA-Z0-9'_]
 <COMMENT>[\n] ++yy_mylinenumber;
 
 <YYINITIAL>({LETTER}|\_)+     	 yylval.string_ = strdup(yytext); return _SYMB_26;
-<YYINITIAL>({LETTER}|\_)+     	 yylval.string_ = strdup(yytext); return _SYMB_27;
-<YYINITIAL>({LETTER}|\_)+     	 yylval.string_ = strdup(yytext); return _SYMB_28;
 <YYINITIAL>"\""      	 BEGIN STRING;
 <STRING>\\      	 BEGIN ESCAPED;
 <STRING>\"      	 yylval.string_ = strdup(YY_PARSED_STRING); YY_BUFFER_RESET(); BEGIN YYINITIAL; return _STRING_;

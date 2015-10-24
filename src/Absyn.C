@@ -648,16 +648,16 @@ EVar *EVar::clone() const
 
 
 /********************   ECall    ********************/
-ECall::ECall(FunIdent p1, ListExp *p2)
+ECall::ECall(VarIdent p1, ListExp *p2)
 {
-  funident_ = p1;
+  varident_ = p1;
   listexp_ = p2;
 
 }
 
 ECall::ECall(const ECall & other)
 {
-  funident_ = other.funident_;
+  varident_ = other.varident_;
   listexp_ = other.listexp_->clone();
 
 }
@@ -671,7 +671,7 @@ ECall &ECall::operator=(const ECall & other)
 
 void ECall::swap(ECall & other)
 {
-  std::swap(funident_, other.funident_);
+  std::swap(varident_, other.varident_);
   std::swap(listexp_, other.listexp_);
 
 }
@@ -959,17 +959,17 @@ EKSum *EKSum::clone() const
 
 
 /********************   EKRepeat    ********************/
-EKRepeat::EKRepeat(Integer p1, Exp *p2)
+EKRepeat::EKRepeat(Exp *p1, Exp *p2)
 {
-  integer_ = p1;
-  exp_ = p2;
+  exp_1 = p1;
+  exp_2 = p2;
 
 }
 
 EKRepeat::EKRepeat(const EKRepeat & other)
 {
-  integer_ = other.integer_;
-  exp_ = other.exp_->clone();
+  exp_1 = other.exp_1->clone();
+  exp_2 = other.exp_2->clone();
 
 }
 
@@ -982,14 +982,15 @@ EKRepeat &EKRepeat::operator=(const EKRepeat & other)
 
 void EKRepeat::swap(EKRepeat & other)
 {
-  std::swap(integer_, other.integer_);
-  std::swap(exp_, other.exp_);
+  std::swap(exp_1, other.exp_1);
+  std::swap(exp_2, other.exp_2);
 
 }
 
 EKRepeat::~EKRepeat()
 {
-  delete(exp_);
+  delete(exp_1);
+  delete(exp_2);
 
 }
 
@@ -1598,17 +1599,17 @@ ELSum *ELSum::clone() const
 
 
 /********************   ELAcc    ********************/
-ELAcc::ELAcc(Exp *p1, FunIdent p2)
+ELAcc::ELAcc(Exp *p1, VarIdent p2)
 {
   exp_ = p1;
-  funident_ = p2;
+  varident_ = p2;
 
 }
 
 ELAcc::ELAcc(const ELAcc & other)
 {
   exp_ = other.exp_->clone();
-  funident_ = other.funident_;
+  varident_ = other.varident_;
 
 }
 
@@ -1622,7 +1623,7 @@ ELAcc &ELAcc::operator=(const ELAcc & other)
 void ELAcc::swap(ELAcc & other)
 {
   std::swap(exp_, other.exp_);
-  std::swap(funident_, other.funident_);
+  std::swap(varident_, other.varident_);
 
 }
 
@@ -1692,18 +1693,18 @@ SVarAs *SVarAs::clone() const
 
 
 /********************   SFDef    ********************/
-SFDef::SFDef(FunIdent p1, ListParamIdent *p2, Exp *p3)
+SFDef::SFDef(VarIdent p1, ListExp *p2, Exp *p3)
 {
-  funident_ = p1;
-  listparamident_ = p2;
+  varident_ = p1;
+  listexp_ = p2;
   exp_ = p3;
 
 }
 
 SFDef::SFDef(const SFDef & other)
 {
-  funident_ = other.funident_;
-  listparamident_ = other.listparamident_->clone();
+  varident_ = other.varident_;
+  listexp_ = other.listexp_->clone();
   exp_ = other.exp_->clone();
 
 }
@@ -1717,15 +1718,15 @@ SFDef &SFDef::operator=(const SFDef & other)
 
 void SFDef::swap(SFDef & other)
 {
-  std::swap(funident_, other.funident_);
-  std::swap(listparamident_, other.listparamident_);
+  std::swap(varident_, other.varident_);
+  std::swap(listexp_, other.listexp_);
   std::swap(exp_, other.exp_);
 
 }
 
 SFDef::~SFDef()
 {
-  delete(listparamident_);
+  delete(listexp_);
   delete(exp_);
 
 }
@@ -1957,20 +1958,6 @@ StrLM *StrLM::clone() const
 }
 
 
-
-
-/********************   ListParamIdent    ********************/
-
-void ListParamIdent::accept(Visitor *v)
-{
-  v->visitListParamIdent(this);
-}
-
-
-ListParamIdent *ListParamIdent::clone() const
-{
-  return new ListParamIdent(*this);
-}
 
 
 /********************   ListExp    ********************/

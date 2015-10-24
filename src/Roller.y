@@ -323,39 +323,6 @@ ListMem* pListMem(const char *str)
   }
 }
 
-static ListParamIdent* YY_RESULT_ListParamIdent_ = 0;
-ListParamIdent* pListParamIdent(FILE *inp)
-{
-  yy_mylinenumber = 1;
-  initialize_lexer(inp);
-  if (yyparse())
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ListParamIdent_;
-  }
-}
-ListParamIdent* pListParamIdent(const char *str)
-{
-  YY_BUFFER_STATE buf;
-  int result;
-  yy_mylinenumber = 1;
-  initialize_lexer(0);
-  buf = yy_scan_string(str);
-  result = yyparse();
-  yy_delete_buffer(buf);
-  if (result)
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ListParamIdent_;
-  }
-}
-
 static ListExp* YY_RESULT_ListExp_ = 0;
 ListExp* pListExp(FILE *inp)
 {
@@ -441,7 +408,6 @@ ListListMem* pListListMem(const char *str)
   Stmt* stmt_;
   Val* val_;
   ListMem* listmem_;
-  ListParamIdent* listparamident_;
   ListExp* listexp_;
   ListListMem* listlistmem_;
 }
@@ -474,8 +440,6 @@ ListListMem* pListListMem(const char *str)
 %token _SYMB_24    //   Sum
 %token _SYMB_25    //   d
 %token<string_> _SYMB_26    //   VarIdent
-%token<string_> _SYMB_27    //   ParamIdent
-%token<string_> _SYMB_28    //   FunIdent
 
 %type <cmd_> Cmd
 %type <exp_> Exp
@@ -491,7 +455,6 @@ ListListMem* pListListMem(const char *str)
 %type <stmt_> Stmt
 %type <val_> Val
 %type <listmem_> ListMem
-%type <listparamident_> ListParamIdent
 %type <listexp_> ListExp
 %type <listlistmem_> ListListMem
 
@@ -522,7 +485,7 @@ Exp3 : _SYMB_0 Exp _SYMB_1 {  $$ = $2; YY_RESULT_Exp_= $$; }
   | ExpD {  $$ = new EDice($1); YY_RESULT_Exp_= $$; }
   | ExpLOp {  $$ = new EListOp($1); YY_RESULT_Exp_= $$; }
   | _SYMB_26 {  $$ = new EVar($1); YY_RESULT_Exp_= $$; }
-  | _SYMB_28 _SYMB_0 ListExp _SYMB_1 {  std::reverse($3->begin(),$3->end()) ;$$ = new ECall($1, $3); YY_RESULT_Exp_= $$; }
+  | _SYMB_26 _SYMB_0 ListExp _SYMB_1 {  std::reverse($3->begin(),$3->end()) ;$$ = new ECall($1, $3); YY_RESULT_Exp_= $$; }
 ;
 ExpD : _SYMB_25 {  $$ = new E1d6(); YY_RESULT_ExpD_= $$; } 
   | _SYMB_25 Exp3 {  $$ = new E1dN($2); YY_RESULT_ExpD_= $$; }
@@ -531,7 +494,7 @@ ExpD : _SYMB_25 {  $$ = new E1d6(); YY_RESULT_ExpD_= $$; }
 ;
 ExpKW : _SYMB_21 Exp {  $$ = new EKCount($2); YY_RESULT_ExpKW_= $$; } 
   | _SYMB_24 Exp {  $$ = new EKSum($2); YY_RESULT_ExpKW_= $$; }
-  | _SYMB_23 _INTEGER_ Exp {  $$ = new EKRepeat($2, $3); YY_RESULT_ExpKW_= $$; }
+  | _SYMB_23 Exp Exp {  $$ = new EKRepeat($2, $3); YY_RESULT_ExpKW_= $$; }
   | _SYMB_22 Exp {  $$ = new EKMean($2); YY_RESULT_ExpKW_= $$; }
 ;
 Pred : Pred1 {  $$ = $1; YY_RESULT_Pred_= $$; } 
@@ -552,10 +515,10 @@ Pred2 : _SYMB_0 Pred _SYMB_1 {  $$ = $2; YY_RESULT_Pred_= $$; }
 ;
 ExpLOp : Exp _SYMB_19 Pred _SYMB_20 {  $$ = new ELFilt($1, $3); YY_RESULT_ExpLOp_= $$; } 
   | Exp _SYMB_19 _SYMB_2 _SYMB_20 {  $$ = new ELSum($1); YY_RESULT_ExpLOp_= $$; }
-  | Exp _SYMB_19 _SYMB_28 _SYMB_20 {  $$ = new ELAcc($1, $3); YY_RESULT_ExpLOp_= $$; }
+  | Exp _SYMB_19 _SYMB_26 _SYMB_20 {  $$ = new ELAcc($1, $3); YY_RESULT_ExpLOp_= $$; }
 ;
 Stmt : _SYMB_26 _SYMB_13 Exp {  $$ = new SVarAs($1, $3); YY_RESULT_Stmt_= $$; } 
-  | _SYMB_28 _SYMB_0 ListParamIdent _SYMB_1 _SYMB_13 Exp {  std::reverse($3->begin(),$3->end()) ;$$ = new SFDef($1, $3, $6); YY_RESULT_Stmt_= $$; }
+  | _SYMB_26 _SYMB_0 ListExp _SYMB_1 _SYMB_13 Exp {  std::reverse($3->begin(),$3->end()) ;$$ = new SFDef($1, $3, $6); YY_RESULT_Stmt_= $$; }
 ;
 Val : _INTEGER_ {  $$ = new IntVal($1); YY_RESULT_Val_= $$; } 
   | _SYMB_3 _INTEGER_ {  $$ = new IntNegVal($2); YY_RESULT_Val_= $$; }
@@ -563,10 +526,6 @@ Val : _INTEGER_ {  $$ = new IntVal($1); YY_RESULT_Val_= $$; }
 ;
 ListMem : Val {  $$ = new ValLM($1); YY_RESULT_ListMem_= $$; } 
   | _STRING_ {  $$ = new StrLM($1); YY_RESULT_ListMem_= $$; }
-;
-ListParamIdent : /* empty */ {  $$ = new ListParamIdent(); YY_RESULT_ListParamIdent_= $$; } 
-  | _SYMB_27 {  $$ = new ListParamIdent() ; $$->push_back($1); YY_RESULT_ListParamIdent_= $$; }
-  | _SYMB_27 _SYMB_9 ListParamIdent {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListParamIdent_= $$; }
 ;
 ListExp : /* empty */ {  $$ = new ListExp(); YY_RESULT_ListExp_= $$; } 
   | Exp {  $$ = new ListExp() ; $$->push_back($1); YY_RESULT_ListExp_= $$; }

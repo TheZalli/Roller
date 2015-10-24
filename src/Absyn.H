@@ -16,8 +16,6 @@ typedef std::string Ident;
 
 
 typedef std::string VarIdent;
-typedef std::string ParamIdent;
-typedef std::string FunIdent;
 
 
 /********************   Forward Declarations    ********************/
@@ -65,16 +63,15 @@ class EListOp;
 class ELFilt;
 class ELSum;
 class ELAcc;
-class SVarAs;
-class SFDef;
 class EVar;
 class ECall;
+class SVarAs;
+class SFDef;
 class IntVal;
 class IntNegVal;
 class VarVal;
 class ValLM;
 class StrLM;
-class ListParamIdent;
 class ListExp;
 class ListListMem;
 
@@ -127,16 +124,15 @@ public:
   virtual void visitELFilt(ELFilt *p) = 0;
   virtual void visitELSum(ELSum *p) = 0;
   virtual void visitELAcc(ELAcc *p) = 0;
-  virtual void visitSVarAs(SVarAs *p) = 0;
-  virtual void visitSFDef(SFDef *p) = 0;
   virtual void visitEVar(EVar *p) = 0;
   virtual void visitECall(ECall *p) = 0;
+  virtual void visitSVarAs(SVarAs *p) = 0;
+  virtual void visitSFDef(SFDef *p) = 0;
   virtual void visitIntVal(IntVal *p) = 0;
   virtual void visitIntNegVal(IntNegVal *p) = 0;
   virtual void visitVarVal(VarVal *p) = 0;
   virtual void visitValLM(ValLM *p) = 0;
   virtual void visitStrLM(StrLM *p) = 0;
-  virtual void visitListParamIdent(ListParamIdent *p) = 0;
   virtual void visitListExp(ListExp *p) = 0;
   virtual void visitListListMem(ListListMem *p) = 0;
 
@@ -147,8 +143,6 @@ public:
   virtual void visitString(String x) = 0;
   virtual void visitIdent(Ident x) = 0;
   virtual void visitVarIdent(VarIdent x) = 0;
-  virtual void visitParamIdent(ParamIdent x) = 0;
-  virtual void visitFunIdent(FunIdent x) = 0;
 
 };
 
@@ -434,12 +428,12 @@ public:
 class ECall : public Exp
 {
 public:
-  FunIdent funident_;
+  VarIdent varident_;
   ListExp *listexp_;
 
   ECall(const ECall &);
   ECall &operator=(const ECall &);
-  ECall(FunIdent p1, ListExp *p2);
+  ECall(VarIdent p1, ListExp *p2);
   ~ECall();
   virtual void accept(Visitor *v);
   virtual ECall *clone() const;
@@ -533,12 +527,12 @@ public:
 class EKRepeat : public ExpKW
 {
 public:
-  Integer integer_;
-  Exp *exp_;
+  Exp *exp_1;
+  Exp *exp_2;
 
   EKRepeat(const EKRepeat &);
   EKRepeat &operator=(const EKRepeat &);
-  EKRepeat(Integer p1, Exp *p2);
+  EKRepeat(Exp *p1, Exp *p2);
   ~EKRepeat();
   virtual void accept(Visitor *v);
   virtual EKRepeat *clone() const;
@@ -736,11 +730,11 @@ class ELAcc : public ExpLOp
 {
 public:
   Exp *exp_;
-  FunIdent funident_;
+  VarIdent varident_;
 
   ELAcc(const ELAcc &);
   ELAcc &operator=(const ELAcc &);
-  ELAcc(Exp *p1, FunIdent p2);
+  ELAcc(Exp *p1, VarIdent p2);
   ~ELAcc();
   virtual void accept(Visitor *v);
   virtual ELAcc *clone() const;
@@ -765,13 +759,13 @@ public:
 class SFDef : public Stmt
 {
 public:
-  FunIdent funident_;
-  ListParamIdent *listparamident_;
+  VarIdent varident_;
+  ListExp *listexp_;
   Exp *exp_;
 
   SFDef(const SFDef &);
   SFDef &operator=(const SFDef &);
-  SFDef(FunIdent p1, ListParamIdent *p2, Exp *p3);
+  SFDef(VarIdent p1, ListExp *p2, Exp *p3);
   ~SFDef();
   virtual void accept(Visitor *v);
   virtual SFDef *clone() const;
@@ -849,13 +843,6 @@ public:
 };
 
 
-
-class ListParamIdent : public Visitable, public std::vector<ParamIdent>
-{
-public:
-  virtual void accept(Visitor *v);
-  virtual ListParamIdent *clone() const;
-};
 
 class ListExp : public Visitable, public std::vector<Exp*>
 {

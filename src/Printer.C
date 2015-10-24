@@ -310,7 +310,7 @@ void PrintAbsyn::visitECall(ECall *p)
   int oldi = _i_;
   if (oldi > 3) render(_L_PAREN);
 
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   render('(');
   if(p->listexp_) {_i_ = 0; p->listexp_->accept(this);}
   render(')');
@@ -408,8 +408,8 @@ void PrintAbsyn::visitEKRepeat(EKRepeat *p)
   if (oldi > 0) render(_L_PAREN);
 
   render("Repeat");
-  visitInteger(p->integer_);
-  _i_ = 0; p->exp_->accept(this);
+  _i_ = 0; p->exp_1->accept(this);
+  _i_ = 0; p->exp_2->accept(this);
 
   if (oldi > 0) render(_R_PAREN);
 
@@ -604,7 +604,7 @@ void PrintAbsyn::visitELAcc(ELAcc *p)
 
   _i_ = 0; p->exp_->accept(this);
   render('[');
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   render(']');
 
   if (oldi > 0) render(_R_PAREN);
@@ -633,9 +633,9 @@ void PrintAbsyn::visitSFDef(SFDef *p)
   int oldi = _i_;
   if (oldi > 0) render(_L_PAREN);
 
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   render('(');
-  if(p->listparamident_) {_i_ = 0; p->listparamident_->accept(this);}
+  if(p->listexp_) {_i_ = 0; p->listexp_->accept(this);}
   render(')');
   render('=');
   _i_ = 0; p->exp_->accept(this);
@@ -710,14 +710,7 @@ void PrintAbsyn::visitStrLM(StrLM *p)
   _i_ = oldi;
 }
 
-void PrintAbsyn::visitListParamIdent(ListParamIdent *listparamident)
-{
-  for (ListParamIdent::const_iterator i = listparamident->begin() ; i != listparamident->end() ; ++i)
-  {
-    visitParamIdent(*i) ;
-    if (i != listparamident->end() - 1) render(',');
-  }
-}void PrintAbsyn::visitListExp(ListExp *listexp)
+void PrintAbsyn::visitListExp(ListExp *listexp)
 {
   for (ListExp::const_iterator i = listexp->begin() ; i != listexp->end() ; ++i)
   {
@@ -765,18 +758,6 @@ void PrintAbsyn::visitIdent(String s)
 }
 
 void PrintAbsyn::visitVarIdent(String s)
-{
-  render(s);
-}
-
-
-void PrintAbsyn::visitParamIdent(String s)
-{
-  render(s);
-}
-
-
-void PrintAbsyn::visitFunIdent(String s)
 {
   render(s);
 }
@@ -949,7 +930,7 @@ void ShowAbsyn::visitECall(ECall *p)
   bufAppend('(');
   bufAppend("ECall");
   bufAppend(' ');
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   bufAppend(' ');
   bufAppend('[');
   if (p->listexp_)  p->listexp_->accept(this);
@@ -1021,11 +1002,9 @@ void ShowAbsyn::visitEKRepeat(EKRepeat *p)
   bufAppend('(');
   bufAppend("EKRepeat");
   bufAppend(' ');
-  visitInteger(p->integer_);
+  p->exp_1->accept(this);
   bufAppend(' ');
-  bufAppend('[');
-  if (p->exp_)  p->exp_->accept(this);
-  bufAppend(']');
+  p->exp_2->accept(this);
   bufAppend(')');
 }
 void ShowAbsyn::visitEKMean(EKMean *p)
@@ -1177,7 +1156,7 @@ void ShowAbsyn::visitELAcc(ELAcc *p)
   if (p->exp_)  p->exp_->accept(this);
   bufAppend(']');
   bufAppend(' ');
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   bufAppend(' ');
   bufAppend(')');
 }
@@ -1200,10 +1179,10 @@ void ShowAbsyn::visitSFDef(SFDef *p)
   bufAppend('(');
   bufAppend("SFDef");
   bufAppend(' ');
-  visitIdent(p->funident_);
+  visitIdent(p->varident_);
   bufAppend(' ');
   bufAppend('[');
-  if (p->listparamident_)  p->listparamident_->accept(this);
+  if (p->listexp_)  p->listexp_->accept(this);
   bufAppend(']');
   bufAppend(' ');
   bufAppend('[');
@@ -1257,15 +1236,6 @@ void ShowAbsyn::visitStrLM(StrLM *p)
   visitString(p->string_);
   bufAppend(')');
 }
-void ShowAbsyn::visitListParamIdent(ListParamIdent *listparamident)
-{
-  for (ListParamIdent::const_iterator i = listparamident->begin() ; i != listparamident->end() ; ++i)
-  {
-    visitParamIdent(*i) ;
-    if (i != listparamident->end() - 1) bufAppend(", ");
-  }
-}
-
 void ShowAbsyn::visitListExp(ListExp *listexp)
 {
   for (ListExp::const_iterator i = listexp->begin() ; i != listexp->end() ; ++i)
@@ -1316,22 +1286,6 @@ void ShowAbsyn::visitIdent(String s)
 }
 
 void ShowAbsyn::visitVarIdent(String s)
-{
-  bufAppend('\"');
-  bufAppend(s);
-  bufAppend('\"');
-}
-
-
-void ShowAbsyn::visitParamIdent(String s)
-{
-  bufAppend('\"');
-  bufAppend(s);
-  bufAppend('\"');
-}
-
-
-void ShowAbsyn::visitFunIdent(String s)
 {
   bufAppend('\"');
   bufAppend(s);

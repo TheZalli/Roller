@@ -51,22 +51,19 @@ public:
   void visitELFilt(ELFilt *p);
   void visitELSum(ELSum *p);
   void visitELAcc(ELAcc *p);
-  void visitSVarAs(SVarAs *p);
-  void visitSFDef(SFDef *p);
   void visitEVar(EVar *p);
   void visitECall(ECall *p);
+  void visitSVarAs(SVarAs *p);
+  void visitSFDef(SFDef *p);
   void visitIntVal(IntVal *p);
   void visitIntNegVal(IntNegVal *p);
   void visitVarVal(VarVal *p);
   void visitValLM(ValLM *p);
   void visitStrLM(StrLM *p);
-  void visitListParamIdent(ListParamIdent *p);
   void visitListExp(ListExp *p);
   void visitListListMem(ListListMem *p);
 
   void visit"VarIdent"("VarIdent" x);
-  void visit"ParamIdent"("ParamIdent" x);
-  void visit"FunIdent"("FunIdent" x);
   void visit"Integer"("Integer" x);
   void visit"Char"("Char" x);
   void visit"Double"("Double" x);

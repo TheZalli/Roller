@@ -362,8 +362,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 48
-#define YY_END_OF_BUFFER 49
+#define YY_NUM_RULES 46
+#define YY_END_OF_BUFFER 47
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -374,12 +374,12 @@ struct yy_trans_info
 static yyconst flex_int16_t yy_accept[87] =
     {   0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,    0,    0,    0,   49,   48,   45,   47,
-       46,   45,   47,   35,   47,   11,    1,    2,    5,    3,
-       10,    4,   47,    6,   44,   16,   14,   17,   32,   32,
+        0,    0,    0,    0,    0,    0,   47,   46,   43,   45,
+       44,   43,   45,   33,   45,   11,    1,    2,    5,    3,
+       10,    4,   45,    6,   42,   16,   14,   17,   32,   32,
        32,   32,   32,   20,   21,   13,   26,    7,   12,    9,
-       30,   31,   30,   38,   37,   36,   43,   40,   41,   39,
-       42,   15,    0,   27,   28,    8,   44,   18,   19,   32,
+       30,   31,   30,   36,   35,   34,   41,   38,   39,   37,
+       40,   15,    0,   27,   28,    8,   42,   18,   19,   32,
        32,   32,   32,   32,   29,   32,   32,   32,   25,   32,
        23,   32,   22,   32,   24,    0
     } ;
@@ -969,86 +969,76 @@ yylval.string_ = strdup(yytext); return _SYMB_26;
 case 33:
 YY_RULE_SETUP
 #line 63 "Roller.l"
-yylval.string_ = strdup(yytext); return _SYMB_27;
+BEGIN STRING;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 64 "Roller.l"
-yylval.string_ = strdup(yytext); return _SYMB_28;
+BEGIN ESCAPED;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 65 "Roller.l"
-BEGIN STRING;
+yylval.string_ = strdup(YY_PARSED_STRING); YY_BUFFER_RESET(); BEGIN YYINITIAL; return _STRING_;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
 #line 66 "Roller.l"
-BEGIN ESCAPED;
+YY_BUFFER_APPEND(yytext);
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 67 "Roller.l"
-yylval.string_ = strdup(YY_PARSED_STRING); YY_BUFFER_RESET(); BEGIN YYINITIAL; return _STRING_;
+YY_BUFFER_APPEND("\n"); BEGIN STRING;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 68 "Roller.l"
-YY_BUFFER_APPEND(yytext);
+YY_BUFFER_APPEND("\""); BEGIN STRING ;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
 #line 69 "Roller.l"
-YY_BUFFER_APPEND("\n"); BEGIN STRING;
+YY_BUFFER_APPEND("\\"); BEGIN STRING;
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 70 "Roller.l"
-YY_BUFFER_APPEND("\""); BEGIN STRING ;
+YY_BUFFER_APPEND("\t"); BEGIN STRING;
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
 #line 71 "Roller.l"
-YY_BUFFER_APPEND("\\"); BEGIN STRING;
+YY_BUFFER_APPEND(yytext); BEGIN STRING;
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
 #line 72 "Roller.l"
-YY_BUFFER_APPEND("\t"); BEGIN STRING;
-	YY_BREAK
-case 43:
-YY_RULE_SETUP
-#line 73 "Roller.l"
-YY_BUFFER_APPEND(yytext); BEGIN STRING;
-	YY_BREAK
-case 44:
-YY_RULE_SETUP
-#line 74 "Roller.l"
 yylval.int_ = atoi(yytext); return _INTEGER_;
 	YY_BREAK
-case 45:
-/* rule 45 can match eol */
+case 43:
+/* rule 43 can match eol */
 YY_RULE_SETUP
-#line 75 "Roller.l"
+#line 73 "Roller.l"
 ++yy_mylinenumber ;
 	YY_BREAK
-case 46:
-/* rule 46 can match eol */
+case 44:
+/* rule 44 can match eol */
 YY_RULE_SETUP
-#line 76 "Roller.l"
+#line 74 "Roller.l"
 /* ignore white space. */;
 	YY_BREAK
-case 47:
+case 45:
 YY_RULE_SETUP
-#line 77 "Roller.l"
+#line 75 "Roller.l"
 return _ERROR_;
 	YY_BREAK
-case 48:
+case 46:
 YY_RULE_SETUP
-#line 78 "Roller.l"
+#line 76 "Roller.l"
 ECHO;
 	YY_BREAK
-#line 1052 "Lexer.C"
+#line 1042 "Lexer.C"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(YYINITIAL):
 case YY_STATE_EOF(COMMENT):
@@ -2050,7 +2040,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 78 "Roller.l"
+#line 76 "Roller.l"
 
 
 int initialize_lexer(FILE *inp) { yyrestart(inp); BEGIN YYINITIAL; }

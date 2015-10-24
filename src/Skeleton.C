@@ -141,7 +141,7 @@ void Skeleton::visitECall(ECall *ecall)
 {
   /* Code For ECall Goes Here */
 
-  visitFunIdent(ecall->funident_);
+  visitVarIdent(ecall->varident_);
   ecall->listexp_->accept(this);
 
 }
@@ -198,8 +198,8 @@ void Skeleton::visitEKRepeat(EKRepeat *ekrepeat)
 {
   /* Code For EKRepeat Goes Here */
 
-  visitInteger(ekrepeat->integer_);
-  ekrepeat->exp_->accept(this);
+  ekrepeat->exp_1->accept(this);
+  ekrepeat->exp_2->accept(this);
 
 }
 
@@ -317,7 +317,7 @@ void Skeleton::visitELAcc(ELAcc *elacc)
   /* Code For ELAcc Goes Here */
 
   elacc->exp_->accept(this);
-  visitFunIdent(elacc->funident_);
+  visitVarIdent(elacc->varident_);
 
 }
 
@@ -334,8 +334,8 @@ void Skeleton::visitSFDef(SFDef *sfdef)
 {
   /* Code For SFDef Goes Here */
 
-  visitFunIdent(sfdef->funident_);
-  sfdef->listparamident_->accept(this);
+  visitVarIdent(sfdef->varident_);
+  sfdef->listexp_->accept(this);
   sfdef->exp_->accept(this);
 
 }
@@ -381,14 +381,6 @@ void Skeleton::visitStrLM(StrLM *strlm)
 }
 
 
-void Skeleton::visitListParamIdent(ListParamIdent *listparamident)
-{
-  for (ListParamIdent::iterator i = listparamident->begin() ; i != listparamident->end() ; ++i)
-  {
-    visitParamIdent(*i) ;
-  }
-}
-
 void Skeleton::visitListExp(ListExp *listexp)
 {
   for (ListExp::iterator i = listexp->begin() ; i != listexp->end() ; ++i)
@@ -409,16 +401,6 @@ void Skeleton::visitListListMem(ListListMem *listlistmem)
 void Skeleton::visitVarIdent(VarIdent x)
 {
   /* Code for VarIdent Goes Here */
-}
-
-void Skeleton::visitParamIdent(ParamIdent x)
-{
-  /* Code for ParamIdent Goes Here */
-}
-
-void Skeleton::visitFunIdent(FunIdent x)
-{
-  /* Code for FunIdent Goes Here */
 }
 
 void Skeleton::visitInteger(Integer x)
