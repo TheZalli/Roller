@@ -5,6 +5,8 @@
 ExpCmd.		Cmd ::= Exp;
 StmtCmd.	Cmd ::= Stmt;
 
+token VarIdent		(letter | '_')+;
+
 comment "#";
 comment "#-" "-#";
 
@@ -16,11 +18,36 @@ EAdd. 	Exp1 	::= Exp1 "+" Exp2;
 ESub. 	Exp1 	::= Exp1 "-" Exp2;
 EMul. 	Exp2 	::= Exp2 "*" Exp3;
 EDiv. 	Exp2 	::= Exp2 "/" Exp3;
-EInt. 	Exp3 	::= Integer;
 
-ERange.	Exp3	::= "{" Val ".." Val "}";
-ERStep.	Exp3	::= "{" Val "," Val ".." Val "}";
-EList.	Exp3	::= "{" [ListMem] "}";
+separator Exp ",";
+
+-- -- Values
+
+
+-- An integer numeral value. Constant during the expression they are used in
+IntNum.		Num		::= Integer;
+IntNegNum.	Num		::= "-" Integer;
+
+-- An integer literal, string or variable value
+
+ENum. 	Exp3 	::= Val;
+
+ENum.	Val	::= Num;
+EVar.	Val	::= VarIdent;
+EStr.	Val	::= String;
+
+separator Val ",";
+
+
+-- -- Sequences
+
+ESeq.	Exp3	::= ExpSeq;
+
+EDiceSeq.	EspSeq	::= ExpD;
+
+ERange.	ExpSeq	::= "{" Val ".." Val "}"; -- Uses numeral values
+ERStep.	ExpSeq	::= "{" Val "," Val ".." Val "}"; -- Assumes linear sequence
+EVect.	ExpSeq	::= "{" [Val] "}";
 
 
 -- -- Dice expressions
@@ -37,20 +64,24 @@ ENdN.	ExpD	::= Exp3 "d" Exp3;
 
 EKeyW.		Exp		::= ExpKW; -- (could this be Exp0?)
 
-EKCount.	ExpKW	::= "Count" Exp; -- Gives the length of the list. Gives 1 for integers
-EKSum.		ExpKW	::= "Sum" Exp; -- redundant?
+EKCount.	ExpKW	::= "Count" Exp; -- Gives the length of the sequence. Gives 1 for scalars
+EKSum.		ExpKW	::= "Sum" Exp; -- Gives the sum of the vector
 EKRepeat.	ExpKW	::= "Repeat" Exp Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
 EKMean.		ExpKW	::= "Mean" Exp; -- Returns a real
 
+-- Performs accumulation/folding operation.
+-- Also maps if there is only one parameter for the function
+EKAcc.		ExpKW	::= "Acc" Exp VarIdent;
 
 -- -- List operations
 
-coercions Pred 2;
+coercions Pred 3;
 
 PredBranch.	Pred1	::= Pred1 "," Pred2;
 PredAnd.	Pred1	::= Pred1 "&" Pred2;
 PredOr.		Pred1	::= Pred1 "|" Pred2;
 PredXOr.	Pred1	::= Pred1 "^" Pred2;
+
 PredEQ.		Pred2	::= "=" Val;
 PredNEQ.	Pred2	::= "!=" Val;
 PredGT.		Pred2	::= "<" Val;
@@ -58,28 +89,16 @@ PredLT.		Pred2	::= ">" Val;
 PredGTEq.	Pred2	::= "<=" Val;
 PredLTEq.	Pred2	::= ">=" Val;
 
+PredIsStr.	Pred3	::= "$" Val;
+
 EListOp.	Exp3	::= ExpLOp;
 
-ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression filters the vector
-ELSum.	ExpLOp	::= Exp "[" "+" "]";
-
--- Performs accumulation/folding operation.
--- The first parameter is the accumulator and the other parameters are the next values of the list.
--- Also maps if there is only one parameter
-ELAcc.	ExpLOp	::= Exp "[" VarIdent "]";
-
-{-
-add a b = a + b
-1d6[add]	is equivalent to 1d6[+]
-2d6[add 4]	is equivalent to 2d6 + 4 * 2
-foo(a, b, c) = a + b - c
-{2, 3, 1, 5}[foo] -> 2 + 3 - 1 + 5
--}
+ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression, filters the vector
+ELInd.	ExpLOp	::= Exp "[" Value "]"; -- Indexes
 
 
--- Symbol-table stuff
+-- Function call
 
-EVar.	Exp3	::= VarIdent;
 ECall.	Exp3	::= VarIdent "(" [Exp] ")";
 
 
@@ -87,24 +106,3 @@ ECall.	Exp3	::= VarIdent "(" [Exp] ")";
 
 SVarAs.	Stmt	::= VarIdent "=" Exp;
 SFDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
-
-
--- Misc
-
--- An integer value. Constant during the expression they are used in
-IntVal.		Val		::= Integer;
-IntNegVal.	Val		::= "-" Integer;
-VarVal.		Val		::= VarIdent;
-
--- Any value accepted to the set
-ValLM.	ListMem	::= Val;
-StrLM.	ListMem	::= String;
-
-separator Exp ",";
-separator ListMem ",";
-
--- Optional commas
--- EmptyList.	ListMem ::= ",";
--- _.			ListMem ::= ListMem ",";
-
-token VarIdent		(letter | '_')+;
