@@ -32,10 +32,10 @@ IDENT [a-zA-Z0-9'_]
 <YYINITIAL>"-"      	 return _SYMB_3;
 <YYINITIAL>"*"      	 return _SYMB_4;
 <YYINITIAL>"/"      	 return _SYMB_5;
-<YYINITIAL>"{"      	 return _SYMB_6;
-<YYINITIAL>".."      	 return _SYMB_7;
-<YYINITIAL>"}"      	 return _SYMB_8;
-<YYINITIAL>","      	 return _SYMB_9;
+<YYINITIAL>","      	 return _SYMB_6;
+<YYINITIAL>"{"      	 return _SYMB_7;
+<YYINITIAL>".."      	 return _SYMB_8;
+<YYINITIAL>"}"      	 return _SYMB_9;
 <YYINITIAL>"&"      	 return _SYMB_10;
 <YYINITIAL>"|"      	 return _SYMB_11;
 <YYINITIAL>"^"      	 return _SYMB_12;
@@ -45,13 +45,15 @@ IDENT [a-zA-Z0-9'_]
 <YYINITIAL>">"      	 return _SYMB_16;
 <YYINITIAL>"<="      	 return _SYMB_17;
 <YYINITIAL>">="      	 return _SYMB_18;
-<YYINITIAL>"["      	 return _SYMB_19;
-<YYINITIAL>"]"      	 return _SYMB_20;
-<YYINITIAL>"Count"      	 return _SYMB_21;
-<YYINITIAL>"Mean"      	 return _SYMB_22;
-<YYINITIAL>"Repeat"      	 return _SYMB_23;
-<YYINITIAL>"Sum"      	 return _SYMB_24;
-<YYINITIAL>"d"      	 return _SYMB_25;
+<YYINITIAL>"$"      	 return _SYMB_19;
+<YYINITIAL>"["      	 return _SYMB_20;
+<YYINITIAL>"]"      	 return _SYMB_21;
+<YYINITIAL>"Acc"      	 return _SYMB_22;
+<YYINITIAL>"Count"      	 return _SYMB_23;
+<YYINITIAL>"Mean"      	 return _SYMB_24;
+<YYINITIAL>"Repeat"      	 return _SYMB_25;
+<YYINITIAL>"Sum"      	 return _SYMB_26;
+<YYINITIAL>"d"      	 return _SYMB_27;
 
 <YYINITIAL>"#"[^\n]*\n ++yy_mylinenumber; // BNFC: comment "#";
 <YYINITIAL>"#-" BEGIN COMMENT; // BNFC: comment "#-" "-#";
@@ -59,7 +61,7 @@ IDENT [a-zA-Z0-9'_]
 <COMMENT>. /* skip */;
 <COMMENT>[\n] ++yy_mylinenumber;
 
-<YYINITIAL>({LETTER}|\_)+     	 yylval.string_ = strdup(yytext); return _SYMB_26;
+<YYINITIAL>({LETTER}|\_)+     	 yylval.string_ = strdup(yytext); return _SYMB_28;
 <YYINITIAL>"\""      	 BEGIN STRING;
 <STRING>\\      	 BEGIN ESCAPED;
 <STRING>\"      	 yylval.string_ = strdup(YY_PARSED_STRING); YY_BUFFER_RESET(); BEGIN YYINITIAL; return _STRING_;

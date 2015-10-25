@@ -22,24 +22,31 @@ typedef std::string VarIdent;
 
 class Cmd;
 class Exp;
+class Numer;
+class Val;
+class ExpSeq;
 class ExpD;
 class ExpKW;
 class Pred;
 class ExpLOp;
 class Stmt;
-class Val;
-class ListMem;
 class ExpCmd;
 class StmtCmd;
 class EAdd;
 class ESub;
 class EMul;
 class EDiv;
-class EInt;
+class IntNum;
+class IntNegNum;
+class EVal;
+class ValNum;
+class ValVar;
+class ValStr;
+class ESeq;
+class EDiceSeq;
 class ERange;
 class ERStep;
-class EList;
-class EDice;
+class EVect;
 class E1d6;
 class E1dN;
 class ENd6;
@@ -49,6 +56,7 @@ class EKCount;
 class EKSum;
 class EKRepeat;
 class EKMean;
+class EKAcc;
 class PredBranch;
 class PredAnd;
 class PredOr;
@@ -59,21 +67,17 @@ class PredGT;
 class PredLT;
 class PredGTEq;
 class PredLTEq;
+class PredIsStr;
+class PredInd;
+class PredRange;
+class PredRStep;
 class EListOp;
 class ELFilt;
-class ELSum;
-class ELAcc;
-class EVar;
 class ECall;
 class SVarAs;
 class SFDef;
-class IntVal;
-class IntNegVal;
-class VarVal;
-class ValLM;
-class StrLM;
 class ListExp;
-class ListListMem;
+class ListVal;
 
 
 /********************   Visitor Interfaces    ********************/
@@ -83,24 +87,31 @@ public:
   virtual ~Visitor() {}
   virtual void visitCmd(Cmd *p) = 0;
   virtual void visitExp(Exp *p) = 0;
+  virtual void visitNumer(Numer *p) = 0;
+  virtual void visitVal(Val *p) = 0;
+  virtual void visitExpSeq(ExpSeq *p) = 0;
   virtual void visitExpD(ExpD *p) = 0;
   virtual void visitExpKW(ExpKW *p) = 0;
   virtual void visitPred(Pred *p) = 0;
   virtual void visitExpLOp(ExpLOp *p) = 0;
   virtual void visitStmt(Stmt *p) = 0;
-  virtual void visitVal(Val *p) = 0;
-  virtual void visitListMem(ListMem *p) = 0;
   virtual void visitExpCmd(ExpCmd *p) = 0;
   virtual void visitStmtCmd(StmtCmd *p) = 0;
   virtual void visitEAdd(EAdd *p) = 0;
   virtual void visitESub(ESub *p) = 0;
   virtual void visitEMul(EMul *p) = 0;
   virtual void visitEDiv(EDiv *p) = 0;
-  virtual void visitEInt(EInt *p) = 0;
+  virtual void visitIntNum(IntNum *p) = 0;
+  virtual void visitIntNegNum(IntNegNum *p) = 0;
+  virtual void visitEVal(EVal *p) = 0;
+  virtual void visitValNum(ValNum *p) = 0;
+  virtual void visitValVar(ValVar *p) = 0;
+  virtual void visitValStr(ValStr *p) = 0;
+  virtual void visitESeq(ESeq *p) = 0;
+  virtual void visitEDiceSeq(EDiceSeq *p) = 0;
   virtual void visitERange(ERange *p) = 0;
   virtual void visitERStep(ERStep *p) = 0;
-  virtual void visitEList(EList *p) = 0;
-  virtual void visitEDice(EDice *p) = 0;
+  virtual void visitEVect(EVect *p) = 0;
   virtual void visitE1d6(E1d6 *p) = 0;
   virtual void visitE1dN(E1dN *p) = 0;
   virtual void visitENd6(ENd6 *p) = 0;
@@ -110,6 +121,7 @@ public:
   virtual void visitEKSum(EKSum *p) = 0;
   virtual void visitEKRepeat(EKRepeat *p) = 0;
   virtual void visitEKMean(EKMean *p) = 0;
+  virtual void visitEKAcc(EKAcc *p) = 0;
   virtual void visitPredBranch(PredBranch *p) = 0;
   virtual void visitPredAnd(PredAnd *p) = 0;
   virtual void visitPredOr(PredOr *p) = 0;
@@ -120,21 +132,17 @@ public:
   virtual void visitPredLT(PredLT *p) = 0;
   virtual void visitPredGTEq(PredGTEq *p) = 0;
   virtual void visitPredLTEq(PredLTEq *p) = 0;
+  virtual void visitPredIsStr(PredIsStr *p) = 0;
+  virtual void visitPredInd(PredInd *p) = 0;
+  virtual void visitPredRange(PredRange *p) = 0;
+  virtual void visitPredRStep(PredRStep *p) = 0;
   virtual void visitEListOp(EListOp *p) = 0;
   virtual void visitELFilt(ELFilt *p) = 0;
-  virtual void visitELSum(ELSum *p) = 0;
-  virtual void visitELAcc(ELAcc *p) = 0;
-  virtual void visitEVar(EVar *p) = 0;
   virtual void visitECall(ECall *p) = 0;
   virtual void visitSVarAs(SVarAs *p) = 0;
   virtual void visitSFDef(SFDef *p) = 0;
-  virtual void visitIntVal(IntVal *p) = 0;
-  virtual void visitIntNegVal(IntNegVal *p) = 0;
-  virtual void visitVarVal(VarVal *p) = 0;
-  virtual void visitValLM(ValLM *p) = 0;
-  virtual void visitStrLM(StrLM *p) = 0;
   virtual void visitListExp(ListExp *p) = 0;
-  virtual void visitListListMem(ListListMem *p) = 0;
+  virtual void visitListVal(ListVal *p) = 0;
 
 
   virtual void visitInteger(Integer x) = 0;
@@ -171,6 +179,27 @@ public:
 
 };
 
+class Numer : public Visitable
+{
+public:
+  virtual Numer *clone() const = 0;
+
+};
+
+class Val : public Visitable
+{
+public:
+  virtual Val *clone() const = 0;
+
+};
+
+class ExpSeq : public Visitable
+{
+public:
+  virtual ExpSeq *clone() const = 0;
+
+};
+
 class ExpD : public Visitable
 {
 public:
@@ -203,20 +232,6 @@ class Stmt : public Visitable
 {
 public:
   virtual Stmt *clone() const = 0;
-
-};
-
-class Val : public Visitable
-{
-public:
-  virtual Val *clone() const = 0;
-
-};
-
-class ListMem : public Visitable
-{
-public:
-  virtual ListMem *clone() const = 0;
 
 };
 
@@ -310,77 +325,32 @@ public:
   void swap(EDiv &);
 };
 
-class EInt : public Exp
+class EVal : public Exp
 {
 public:
-  Integer integer_;
+  Val *val_;
 
-  EInt(const EInt &);
-  EInt &operator=(const EInt &);
-  EInt(Integer p1);
-  ~EInt();
+  EVal(const EVal &);
+  EVal &operator=(const EVal &);
+  EVal(Val *p1);
+  ~EVal();
   virtual void accept(Visitor *v);
-  virtual EInt *clone() const;
-  void swap(EInt &);
+  virtual EVal *clone() const;
+  void swap(EVal &);
 };
 
-class ERange : public Exp
+class ESeq : public Exp
 {
 public:
-  Val *val_1;
-  Val *val_2;
+  ExpSeq *expseq_;
 
-  ERange(const ERange &);
-  ERange &operator=(const ERange &);
-  ERange(Val *p1, Val *p2);
-  ~ERange();
+  ESeq(const ESeq &);
+  ESeq &operator=(const ESeq &);
+  ESeq(ExpSeq *p1);
+  ~ESeq();
   virtual void accept(Visitor *v);
-  virtual ERange *clone() const;
-  void swap(ERange &);
-};
-
-class ERStep : public Exp
-{
-public:
-  Val *val_1;
-  Val *val_2;
-  Val *val_3;
-
-  ERStep(const ERStep &);
-  ERStep &operator=(const ERStep &);
-  ERStep(Val *p1, Val *p2, Val *p3);
-  ~ERStep();
-  virtual void accept(Visitor *v);
-  virtual ERStep *clone() const;
-  void swap(ERStep &);
-};
-
-class EList : public Exp
-{
-public:
-  ListListMem *listlistmem_;
-
-  EList(const EList &);
-  EList &operator=(const EList &);
-  EList(ListListMem *p1);
-  ~EList();
-  virtual void accept(Visitor *v);
-  virtual EList *clone() const;
-  void swap(EList &);
-};
-
-class EDice : public Exp
-{
-public:
-  ExpD *expd_;
-
-  EDice(const EDice &);
-  EDice &operator=(const EDice &);
-  EDice(ExpD *p1);
-  ~EDice();
-  virtual void accept(Visitor *v);
-  virtual EDice *clone() const;
-  void swap(EDice &);
+  virtual ESeq *clone() const;
+  void swap(ESeq &);
 };
 
 class EKeyW : public Exp
@@ -411,20 +381,6 @@ public:
   void swap(EListOp &);
 };
 
-class EVar : public Exp
-{
-public:
-  VarIdent varident_;
-
-  EVar(const EVar &);
-  EVar &operator=(const EVar &);
-  EVar(VarIdent p1);
-  ~EVar();
-  virtual void accept(Visitor *v);
-  virtual EVar *clone() const;
-  void swap(EVar &);
-};
-
 class ECall : public Exp
 {
 public:
@@ -438,6 +394,135 @@ public:
   virtual void accept(Visitor *v);
   virtual ECall *clone() const;
   void swap(ECall &);
+};
+
+class IntNum : public Numer
+{
+public:
+  Integer integer_;
+
+  IntNum(const IntNum &);
+  IntNum &operator=(const IntNum &);
+  IntNum(Integer p1);
+  ~IntNum();
+  virtual void accept(Visitor *v);
+  virtual IntNum *clone() const;
+  void swap(IntNum &);
+};
+
+class IntNegNum : public Numer
+{
+public:
+  Integer integer_;
+
+  IntNegNum(const IntNegNum &);
+  IntNegNum &operator=(const IntNegNum &);
+  IntNegNum(Integer p1);
+  ~IntNegNum();
+  virtual void accept(Visitor *v);
+  virtual IntNegNum *clone() const;
+  void swap(IntNegNum &);
+};
+
+class ValNum : public Val
+{
+public:
+  Numer *numer_;
+
+  ValNum(const ValNum &);
+  ValNum &operator=(const ValNum &);
+  ValNum(Numer *p1);
+  ~ValNum();
+  virtual void accept(Visitor *v);
+  virtual ValNum *clone() const;
+  void swap(ValNum &);
+};
+
+class ValVar : public Val
+{
+public:
+  VarIdent varident_;
+
+  ValVar(const ValVar &);
+  ValVar &operator=(const ValVar &);
+  ValVar(VarIdent p1);
+  ~ValVar();
+  virtual void accept(Visitor *v);
+  virtual ValVar *clone() const;
+  void swap(ValVar &);
+};
+
+class ValStr : public Val
+{
+public:
+  String string_;
+
+  ValStr(const ValStr &);
+  ValStr &operator=(const ValStr &);
+  ValStr(String p1);
+  ~ValStr();
+  virtual void accept(Visitor *v);
+  virtual ValStr *clone() const;
+  void swap(ValStr &);
+};
+
+class EDiceSeq : public ExpSeq
+{
+public:
+  ExpD *expd_;
+
+  EDiceSeq(const EDiceSeq &);
+  EDiceSeq &operator=(const EDiceSeq &);
+  EDiceSeq(ExpD *p1);
+  ~EDiceSeq();
+  virtual void accept(Visitor *v);
+  virtual EDiceSeq *clone() const;
+  void swap(EDiceSeq &);
+};
+
+class ERange : public ExpSeq
+{
+public:
+  Val *val_1;
+  Val *val_2;
+
+  ERange(const ERange &);
+  ERange &operator=(const ERange &);
+  ERange(Val *p1, Val *p2);
+  ~ERange();
+  virtual void accept(Visitor *v);
+  virtual ERange *clone() const;
+  void swap(ERange &);
+};
+
+class ERStep : public ExpSeq
+{
+public:
+  Val *val_1;
+  Val *val_2;
+  Val *val_3;
+
+  ERStep(const ERStep &);
+  ERStep &operator=(const ERStep &);
+  ERStep(Val *p1, Val *p2, Val *p3);
+  ~ERStep();
+  virtual void accept(Visitor *v);
+  virtual ERStep *clone() const;
+  void swap(ERStep &);
+};
+
+class EVect : public ExpSeq
+{
+public:
+  ListVal *listval_;
+
+  EVect(const EVect &);
+  EVect &operator=(const EVect &);
+  EVect(ListVal *p1);
+  ~EVect();
+  virtual void accept(Visitor *v);
+  virtual EVect *clone() const;
+  void swap(EVect &);
 };
 
 class E1d6 : public ExpD
@@ -551,6 +636,21 @@ public:
   virtual void accept(Visitor *v);
   virtual EKMean *clone() const;
   void swap(EKMean &);
+};
+
+class EKAcc : public ExpKW
+{
+public:
+  Exp *exp_;
+  VarIdent varident_;
+
+  EKAcc(const EKAcc &);
+  EKAcc &operator=(const EKAcc &);
+  EKAcc(Exp *p1, VarIdent p2);
+  ~EKAcc();
+  virtual void accept(Visitor *v);
+  virtual EKAcc *clone() const;
+  void swap(EKAcc &);
 };
 
 class PredBranch : public Pred
@@ -697,6 +797,65 @@ public:
   void swap(PredLTEq &);
 };
 
+class PredIsStr : public Pred
+{
+public:
+  Val *val_;
+
+  PredIsStr(const PredIsStr &);
+  PredIsStr &operator=(const PredIsStr &);
+  PredIsStr(Val *p1);
+  ~PredIsStr();
+  virtual void accept(Visitor *v);
+  virtual PredIsStr *clone() const;
+  void swap(PredIsStr &);
+};
+
+class PredInd : public Pred
+{
+public:
+  Val *val_;
+
+  PredInd(const PredInd &);
+  PredInd &operator=(const PredInd &);
+  PredInd(Val *p1);
+  ~PredInd();
+  virtual void accept(Visitor *v);
+  virtual PredInd *clone() const;
+  void swap(PredInd &);
+};
+
+class PredRange : public Pred
+{
+public:
+  Val *val_1;
+  Val *val_2;
+
+  PredRange(const PredRange &);
+  PredRange &operator=(const PredRange &);
+  PredRange(Val *p1, Val *p2);
+  ~PredRange();
+  virtual void accept(Visitor *v);
+  virtual PredRange *clone() const;
+  void swap(PredRange &);
+};
+
+class PredRStep : public Pred
+{
+public:
+  Val *val_1;
+  Val *val_2;
+  Val *val_3;
+
+  PredRStep(const PredRStep &);
+  PredRStep &operator=(const PredRStep &);
+  PredRStep(Val *p1, Val *p2, Val *p3);
+  ~PredRStep();
+  virtual void accept(Visitor *v);
+  virtual PredRStep *clone() const;
+  void swap(PredRStep &);
+};
+
 class ELFilt : public ExpLOp
 {
 public:
@@ -710,35 +869,6 @@ public:
   virtual void accept(Visitor *v);
   virtual ELFilt *clone() const;
   void swap(ELFilt &);
-};
-
-class ELSum : public ExpLOp
-{
-public:
-  Exp *exp_;
-
-  ELSum(const ELSum &);
-  ELSum &operator=(const ELSum &);
-  ELSum(Exp *p1);
-  ~ELSum();
-  virtual void accept(Visitor *v);
-  virtual ELSum *clone() const;
-  void swap(ELSum &);
-};
-
-class ELAcc : public ExpLOp
-{
-public:
-  Exp *exp_;
-  VarIdent varident_;
-
-  ELAcc(const ELAcc &);
-  ELAcc &operator=(const ELAcc &);
-  ELAcc(Exp *p1, VarIdent p2);
-  ~ELAcc();
-  virtual void accept(Visitor *v);
-  virtual ELAcc *clone() const;
-  void swap(ELAcc &);
 };
 
 class SVarAs : public Stmt
@@ -772,76 +902,6 @@ public:
   void swap(SFDef &);
 };
 
-class IntVal : public Val
-{
-public:
-  Integer integer_;
-
-  IntVal(const IntVal &);
-  IntVal &operator=(const IntVal &);
-  IntVal(Integer p1);
-  ~IntVal();
-  virtual void accept(Visitor *v);
-  virtual IntVal *clone() const;
-  void swap(IntVal &);
-};
-
-class IntNegVal : public Val
-{
-public:
-  Integer integer_;
-
-  IntNegVal(const IntNegVal &);
-  IntNegVal &operator=(const IntNegVal &);
-  IntNegVal(Integer p1);
-  ~IntNegVal();
-  virtual void accept(Visitor *v);
-  virtual IntNegVal *clone() const;
-  void swap(IntNegVal &);
-};
-
-class VarVal : public Val
-{
-public:
-  VarIdent varident_;
-
-  VarVal(const VarVal &);
-  VarVal &operator=(const VarVal &);
-  VarVal(VarIdent p1);
-  ~VarVal();
-  virtual void accept(Visitor *v);
-  virtual VarVal *clone() const;
-  void swap(VarVal &);
-};
-
-class ValLM : public ListMem
-{
-public:
-  Val *val_;
-
-  ValLM(const ValLM &);
-  ValLM &operator=(const ValLM &);
-  ValLM(Val *p1);
-  ~ValLM();
-  virtual void accept(Visitor *v);
-  virtual ValLM *clone() const;
-  void swap(ValLM &);
-};
-
-class StrLM : public ListMem
-{
-public:
-  String string_;
-
-  StrLM(const StrLM &);
-  StrLM &operator=(const StrLM &);
-  StrLM(String p1);
-  ~StrLM();
-  virtual void accept(Visitor *v);
-  virtual StrLM *clone() const;
-  void swap(StrLM &);
-};
-
 
 
 class ListExp : public Visitable, public std::vector<Exp*>
@@ -851,11 +911,11 @@ public:
   virtual ListExp *clone() const;
 };
 
-class ListListMem : public Visitable, public std::vector<ListMem*>
+class ListVal : public Visitable, public std::vector<Val*>
 {
 public:
   virtual void accept(Visitor *v);
-  virtual ListListMem *clone() const;
+  virtual ListVal *clone() const;
 };
 
 

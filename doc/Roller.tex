@@ -38,8 +38,8 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 The reserved words used in Roller are the following: \\
 
 \begin{tabular}{lll}
-{\reserved{Count}} &{\reserved{Mean}} &{\reserved{Repeat}} \\
-{\reserved{Sum}} &{\reserved{d}} & \\
+{\reserved{Acc}} &{\reserved{Count}} &{\reserved{Mean}} \\
+{\reserved{Repeat}} &{\reserved{Sum}} &{\reserved{d}} \\
 \end{tabular}\\
 
 The symbols used in Roller are the following: \\
@@ -47,11 +47,12 @@ The symbols used in Roller are the following: \\
 \begin{tabular}{lll}
 {\symb{(}} &{\symb{)}} &{\symb{{$+$}}} \\
 {\symb{{$-$}}} &{\symb{*}} &{\symb{/}} \\
-{\symb{\{}} &{\symb{..}} &{\symb{\}}} \\
-{\symb{,}} &{\symb{\&}} &{\symb{{$|$}}} \\
+{\symb{,}} &{\symb{\{}} &{\symb{..}} \\
+{\symb{\}}} &{\symb{\&}} &{\symb{{$|$}}} \\
 {\symb{{\textasciicircum}}} &{\symb{{$=$}}} &{\symb{!{$=$}}} \\
 {\symb{{$<$}}} &{\symb{{$>$}}} &{\symb{{$<$}{$=$}}} \\
-{\symb{{$>$}{$=$}}} &{\symb{[}} &{\symb{]}} \\
+{\symb{{$>$}{$=$}}} &{\symb{\$}} &{\symb{[}} \\
+{\symb{]}} & & \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -87,21 +88,47 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Exp3}} & {\arrow}  &{\terminal{(}} {\nonterminal{Exp}} {\terminal{)}}  \\
- & {\delimit}  &{\nonterminal{Integer}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{,}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{ListListMem}} {\terminal{\}}}  \\
- & {\delimit}  &{\nonterminal{ExpD}}  \\
+ & {\delimit}  &{\nonterminal{Val}}  \\
+ & {\delimit}  &{\nonterminal{ExpSeq}}  \\
  & {\delimit}  &{\nonterminal{ExpLOp}}  \\
- & {\delimit}  &{\nonterminal{VarIdent}}  \\
  & {\delimit}  &{\nonterminal{VarIdent}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
+{\nonterminal{ListExp}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{,}} {\nonterminal{ListExp}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Numer}} & {\arrow}  &{\nonterminal{Integer}}  \\
+ & {\delimit}  &{\terminal{{$-$}}} {\nonterminal{Integer}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Val}} & {\arrow}  &{\nonterminal{Numer}}  \\
+ & {\delimit}  &{\nonterminal{VarIdent}}  \\
+ & {\delimit}  &{\nonterminal{String}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListVal}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Val}}  \\
+ & {\delimit}  &{\nonterminal{Val}} {\terminal{,}} {\nonterminal{ListVal}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ExpSeq}} & {\arrow}  &{\nonterminal{ExpD}}  \\
+ & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
+ & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{,}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
+ & {\delimit}  &{\terminal{\{}} {\nonterminal{ListVal}} {\terminal{\}}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
 {\nonterminal{ExpD}} & {\arrow}  &{\terminal{d}}  \\
- & {\delimit}  &{\terminal{d}} {\nonterminal{Exp3}}  \\
- & {\delimit}  &{\nonterminal{Exp3}} {\terminal{d}}  \\
- & {\delimit}  &{\nonterminal{Exp3}} {\terminal{d}} {\nonterminal{Exp3}}  \\
+ & {\delimit}  &{\terminal{d}} {\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{d}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{d}} {\nonterminal{Exp}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -109,6 +136,7 @@ All other symbols are terminals.\\
  & {\delimit}  &{\terminal{Sum}} {\nonterminal{Exp}}  \\
  & {\delimit}  &{\terminal{Repeat}} {\nonterminal{Exp}} {\nonterminal{Exp}}  \\
  & {\delimit}  &{\terminal{Mean}} {\nonterminal{Exp}}  \\
+ & {\delimit}  &{\terminal{Acc}} {\nonterminal{Exp}} {\nonterminal{VarIdent}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -124,7 +152,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Pred2}} & {\arrow}  &{\terminal{(}} {\nonterminal{Pred}} {\terminal{)}}  \\
+{\nonterminal{Pred2}} & {\arrow}  &{\nonterminal{Pred3}}  \\
  & {\delimit}  &{\terminal{{$=$}}} {\nonterminal{Val}}  \\
  & {\delimit}  &{\terminal{!{$=$}}} {\nonterminal{Val}}  \\
  & {\delimit}  &{\terminal{{$<$}}} {\nonterminal{Val}}  \\
@@ -134,37 +162,20 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
+{\nonterminal{Pred3}} & {\arrow}  &{\terminal{(}} {\nonterminal{Pred}} {\terminal{)}}  \\
+ & {\delimit}  &{\terminal{\$}} {\nonterminal{Val}}  \\
+ & {\delimit}  &{\nonterminal{Val}}  \\
+ & {\delimit}  &{\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}}  \\
+ & {\delimit}  &{\nonterminal{Val}} {\terminal{,}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
 {\nonterminal{ExpLOp}} & {\arrow}  &{\nonterminal{Exp}} {\terminal{[}} {\nonterminal{Pred}} {\terminal{]}}  \\
- & {\delimit}  &{\nonterminal{Exp}} {\terminal{[}} {\terminal{{$+$}}} {\terminal{]}}  \\
- & {\delimit}  &{\nonterminal{Exp}} {\terminal{[}} {\nonterminal{VarIdent}} {\terminal{]}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
 {\nonterminal{Stmt}} & {\arrow}  &{\nonterminal{VarIdent}} {\terminal{{$=$}}} {\nonterminal{Exp}}  \\
  & {\delimit}  &{\nonterminal{VarIdent}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}} {\terminal{{$=$}}} {\nonterminal{Exp}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{Val}} & {\arrow}  &{\nonterminal{Integer}}  \\
- & {\delimit}  &{\terminal{{$-$}}} {\nonterminal{Integer}}  \\
- & {\delimit}  &{\nonterminal{VarIdent}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ListMem}} & {\arrow}  &{\nonterminal{Val}}  \\
- & {\delimit}  &{\nonterminal{String}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ListExp}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Exp}}  \\
- & {\delimit}  &{\nonterminal{Exp}} {\terminal{,}} {\nonterminal{ListExp}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ListListMem}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{ListMem}}  \\
- & {\delimit}  &{\nonterminal{ListMem}} {\terminal{,}} {\nonterminal{ListListMem}}  \\
 \end{tabular}\\
 
 

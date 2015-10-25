@@ -38,14 +38,24 @@ void render(char *s);
   void visitESub(ESub *p);
   void visitEMul(EMul *p);
   void visitEDiv(EDiv *p);
-  void visitEInt(EInt *p);
+  void visitEVal(EVal *p);
+  void visitESeq(ESeq *p);
+  void visitEListOp(EListOp *p);
+  void visitECall(ECall *p);
+  void visitListExp(ListExp *p);
+  void visitNumer(Numer *p); /* abstract class */
+  void visitIntNum(IntNum *p);
+  void visitIntNegNum(IntNegNum *p);
+  void visitVal(Val *p); /* abstract class */
+  void visitValNum(ValNum *p);
+  void visitValVar(ValVar *p);
+  void visitValStr(ValStr *p);
+  void visitListVal(ListVal *p);
+  void visitExpSeq(ExpSeq *p); /* abstract class */
+  void visitEDiceSeq(EDiceSeq *p);
   void visitERange(ERange *p);
   void visitERStep(ERStep *p);
-  void visitEList(EList *p);
-  void visitEDice(EDice *p);
-  void visitEListOp(EListOp *p);
-  void visitEVar(EVar *p);
-  void visitECall(ECall *p);
+  void visitEVect(EVect *p);
   void visitExpD(ExpD *p); /* abstract class */
   void visitE1d6(E1d6 *p);
   void visitE1dN(E1dN *p);
@@ -56,6 +66,7 @@ void render(char *s);
   void visitEKSum(EKSum *p);
   void visitEKRepeat(EKRepeat *p);
   void visitEKMean(EKMean *p);
+  void visitEKAcc(EKAcc *p);
   void visitPred(Pred *p); /* abstract class */
   void visitPredBranch(PredBranch *p);
   void visitPredAnd(PredAnd *p);
@@ -67,22 +78,15 @@ void render(char *s);
   void visitPredLT(PredLT *p);
   void visitPredGTEq(PredGTEq *p);
   void visitPredLTEq(PredLTEq *p);
+  void visitPredIsStr(PredIsStr *p);
+  void visitPredInd(PredInd *p);
+  void visitPredRange(PredRange *p);
+  void visitPredRStep(PredRStep *p);
   void visitExpLOp(ExpLOp *p); /* abstract class */
   void visitELFilt(ELFilt *p);
-  void visitELSum(ELSum *p);
-  void visitELAcc(ELAcc *p);
   void visitStmt(Stmt *p); /* abstract class */
   void visitSVarAs(SVarAs *p);
   void visitSFDef(SFDef *p);
-  void visitVal(Val *p); /* abstract class */
-  void visitIntVal(IntVal *p);
-  void visitIntNegVal(IntNegVal *p);
-  void visitVarVal(VarVal *p);
-  void visitListMem(ListMem *p); /* abstract class */
-  void visitValLM(ValLM *p);
-  void visitStrLM(StrLM *p);
-  void visitListExp(ListExp *p);
-  void visitListListMem(ListListMem *p);
 
   void visitInteger(Integer i);
   void visitDouble(Double d);
@@ -169,14 +173,24 @@ class ShowAbsyn : public Visitor
   void visitESub(ESub *p);
   void visitEMul(EMul *p);
   void visitEDiv(EDiv *p);
-  void visitEInt(EInt *p);
+  void visitEVal(EVal *p);
+  void visitESeq(ESeq *p);
+  void visitEListOp(EListOp *p);
+  void visitECall(ECall *p);
+  void visitListExp(ListExp *p);
+  void visitNumer(Numer *p); /* abstract class */
+  void visitIntNum(IntNum *p);
+  void visitIntNegNum(IntNegNum *p);
+  void visitVal(Val *p); /* abstract class */
+  void visitValNum(ValNum *p);
+  void visitValVar(ValVar *p);
+  void visitValStr(ValStr *p);
+  void visitListVal(ListVal *p);
+  void visitExpSeq(ExpSeq *p); /* abstract class */
+  void visitEDiceSeq(EDiceSeq *p);
   void visitERange(ERange *p);
   void visitERStep(ERStep *p);
-  void visitEList(EList *p);
-  void visitEDice(EDice *p);
-  void visitEListOp(EListOp *p);
-  void visitEVar(EVar *p);
-  void visitECall(ECall *p);
+  void visitEVect(EVect *p);
   void visitExpD(ExpD *p); /* abstract class */
   void visitE1d6(E1d6 *p);
   void visitE1dN(E1dN *p);
@@ -187,6 +201,7 @@ class ShowAbsyn : public Visitor
   void visitEKSum(EKSum *p);
   void visitEKRepeat(EKRepeat *p);
   void visitEKMean(EKMean *p);
+  void visitEKAcc(EKAcc *p);
   void visitPred(Pred *p); /* abstract class */
   void visitPredBranch(PredBranch *p);
   void visitPredAnd(PredAnd *p);
@@ -198,22 +213,15 @@ class ShowAbsyn : public Visitor
   void visitPredLT(PredLT *p);
   void visitPredGTEq(PredGTEq *p);
   void visitPredLTEq(PredLTEq *p);
+  void visitPredIsStr(PredIsStr *p);
+  void visitPredInd(PredInd *p);
+  void visitPredRange(PredRange *p);
+  void visitPredRStep(PredRStep *p);
   void visitExpLOp(ExpLOp *p); /* abstract class */
   void visitELFilt(ELFilt *p);
-  void visitELSum(ELSum *p);
-  void visitELAcc(ELAcc *p);
   void visitStmt(Stmt *p); /* abstract class */
   void visitSVarAs(SVarAs *p);
   void visitSFDef(SFDef *p);
-  void visitVal(Val *p); /* abstract class */
-  void visitIntVal(IntVal *p);
-  void visitIntNegVal(IntNegVal *p);
-  void visitVarVal(VarVal *p);
-  void visitListMem(ListMem *p); /* abstract class */
-  void visitValLM(ValLM *p);
-  void visitStrLM(StrLM *p);
-  void visitListExp(ListExp *p);
-  void visitListListMem(ListListMem *p);
 
   void visitInteger(Integer i);
   void visitDouble(Double d);

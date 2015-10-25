@@ -10,13 +10,14 @@
 
 void Skeleton::visitCmd(Cmd *t) {} //abstract class
 void Skeleton::visitExp(Exp *t) {} //abstract class
+void Skeleton::visitNumer(Numer *t) {} //abstract class
+void Skeleton::visitVal(Val *t) {} //abstract class
+void Skeleton::visitExpSeq(ExpSeq *t) {} //abstract class
 void Skeleton::visitExpD(ExpD *t) {} //abstract class
 void Skeleton::visitExpKW(ExpKW *t) {} //abstract class
 void Skeleton::visitPred(Pred *t) {} //abstract class
 void Skeleton::visitExpLOp(ExpLOp *t) {} //abstract class
 void Skeleton::visitStmt(Stmt *t) {} //abstract class
-void Skeleton::visitVal(Val *t) {} //abstract class
-void Skeleton::visitListMem(ListMem *t) {} //abstract class
 
 void Skeleton::visitExpCmd(ExpCmd *expcmd)
 {
@@ -70,11 +71,92 @@ void Skeleton::visitEDiv(EDiv *ediv)
 
 }
 
-void Skeleton::visitEInt(EInt *eint)
+void Skeleton::visitEVal(EVal *eval)
 {
-  /* Code For EInt Goes Here */
+  /* Code For EVal Goes Here */
 
-  visitInteger(eint->integer_);
+  eval->val_->accept(this);
+
+}
+
+void Skeleton::visitESeq(ESeq *eseq)
+{
+  /* Code For ESeq Goes Here */
+
+  eseq->expseq_->accept(this);
+
+}
+
+void Skeleton::visitEKeyW(EKeyW *ekeyw)
+{
+  /* Code For EKeyW Goes Here */
+
+  ekeyw->expkw_->accept(this);
+
+}
+
+void Skeleton::visitEListOp(EListOp *elistop)
+{
+  /* Code For EListOp Goes Here */
+
+  elistop->explop_->accept(this);
+
+}
+
+void Skeleton::visitECall(ECall *ecall)
+{
+  /* Code For ECall Goes Here */
+
+  visitVarIdent(ecall->varident_);
+  ecall->listexp_->accept(this);
+
+}
+
+void Skeleton::visitIntNum(IntNum *intnum)
+{
+  /* Code For IntNum Goes Here */
+
+  visitInteger(intnum->integer_);
+
+}
+
+void Skeleton::visitIntNegNum(IntNegNum *intnegnum)
+{
+  /* Code For IntNegNum Goes Here */
+
+  visitInteger(intnegnum->integer_);
+
+}
+
+void Skeleton::visitValNum(ValNum *valnum)
+{
+  /* Code For ValNum Goes Here */
+
+  valnum->numer_->accept(this);
+
+}
+
+void Skeleton::visitValVar(ValVar *valvar)
+{
+  /* Code For ValVar Goes Here */
+
+  visitVarIdent(valvar->varident_);
+
+}
+
+void Skeleton::visitValStr(ValStr *valstr)
+{
+  /* Code For ValStr Goes Here */
+
+  visitString(valstr->string_);
+
+}
+
+void Skeleton::visitEDiceSeq(EDiceSeq *ediceseq)
+{
+  /* Code For EDiceSeq Goes Here */
+
+  ediceseq->expd_->accept(this);
 
 }
 
@@ -97,52 +179,11 @@ void Skeleton::visitERStep(ERStep *erstep)
 
 }
 
-void Skeleton::visitEList(EList *elist)
+void Skeleton::visitEVect(EVect *evect)
 {
-  /* Code For EList Goes Here */
+  /* Code For EVect Goes Here */
 
-  elist->listlistmem_->accept(this);
-
-}
-
-void Skeleton::visitEDice(EDice *edice)
-{
-  /* Code For EDice Goes Here */
-
-  edice->expd_->accept(this);
-
-}
-
-void Skeleton::visitEKeyW(EKeyW *ekeyw)
-{
-  /* Code For EKeyW Goes Here */
-
-  ekeyw->expkw_->accept(this);
-
-}
-
-void Skeleton::visitEListOp(EListOp *elistop)
-{
-  /* Code For EListOp Goes Here */
-
-  elistop->explop_->accept(this);
-
-}
-
-void Skeleton::visitEVar(EVar *evar)
-{
-  /* Code For EVar Goes Here */
-
-  visitVarIdent(evar->varident_);
-
-}
-
-void Skeleton::visitECall(ECall *ecall)
-{
-  /* Code For ECall Goes Here */
-
-  visitVarIdent(ecall->varident_);
-  ecall->listexp_->accept(this);
+  evect->listval_->accept(this);
 
 }
 
@@ -208,6 +249,15 @@ void Skeleton::visitEKMean(EKMean *ekmean)
   /* Code For EKMean Goes Here */
 
   ekmean->exp_->accept(this);
+
+}
+
+void Skeleton::visitEKAcc(EKAcc *ekacc)
+{
+  /* Code For EKAcc Goes Here */
+
+  ekacc->exp_->accept(this);
+  visitVarIdent(ekacc->varident_);
 
 }
 
@@ -295,29 +345,47 @@ void Skeleton::visitPredLTEq(PredLTEq *predlteq)
 
 }
 
+void Skeleton::visitPredIsStr(PredIsStr *predisstr)
+{
+  /* Code For PredIsStr Goes Here */
+
+  predisstr->val_->accept(this);
+
+}
+
+void Skeleton::visitPredInd(PredInd *predind)
+{
+  /* Code For PredInd Goes Here */
+
+  predind->val_->accept(this);
+
+}
+
+void Skeleton::visitPredRange(PredRange *predrange)
+{
+  /* Code For PredRange Goes Here */
+
+  predrange->val_1->accept(this);
+  predrange->val_2->accept(this);
+
+}
+
+void Skeleton::visitPredRStep(PredRStep *predrstep)
+{
+  /* Code For PredRStep Goes Here */
+
+  predrstep->val_1->accept(this);
+  predrstep->val_2->accept(this);
+  predrstep->val_3->accept(this);
+
+}
+
 void Skeleton::visitELFilt(ELFilt *elfilt)
 {
   /* Code For ELFilt Goes Here */
 
   elfilt->exp_->accept(this);
   elfilt->pred_->accept(this);
-
-}
-
-void Skeleton::visitELSum(ELSum *elsum)
-{
-  /* Code For ELSum Goes Here */
-
-  elsum->exp_->accept(this);
-
-}
-
-void Skeleton::visitELAcc(ELAcc *elacc)
-{
-  /* Code For ELAcc Goes Here */
-
-  elacc->exp_->accept(this);
-  visitVarIdent(elacc->varident_);
 
 }
 
@@ -340,46 +408,6 @@ void Skeleton::visitSFDef(SFDef *sfdef)
 
 }
 
-void Skeleton::visitIntVal(IntVal *intval)
-{
-  /* Code For IntVal Goes Here */
-
-  visitInteger(intval->integer_);
-
-}
-
-void Skeleton::visitIntNegVal(IntNegVal *intnegval)
-{
-  /* Code For IntNegVal Goes Here */
-
-  visitInteger(intnegval->integer_);
-
-}
-
-void Skeleton::visitVarVal(VarVal *varval)
-{
-  /* Code For VarVal Goes Here */
-
-  visitVarIdent(varval->varident_);
-
-}
-
-void Skeleton::visitValLM(ValLM *vallm)
-{
-  /* Code For ValLM Goes Here */
-
-  vallm->val_->accept(this);
-
-}
-
-void Skeleton::visitStrLM(StrLM *strlm)
-{
-  /* Code For StrLM Goes Here */
-
-  visitString(strlm->string_);
-
-}
-
 
 void Skeleton::visitListExp(ListExp *listexp)
 {
@@ -389,9 +417,9 @@ void Skeleton::visitListExp(ListExp *listexp)
   }
 }
 
-void Skeleton::visitListListMem(ListListMem *listlistmem)
+void Skeleton::visitListVal(ListVal *listval)
 {
-  for (ListListMem::iterator i = listlistmem->begin() ; i != listlistmem->end() ; ++i)
+  for (ListVal::iterator i = listval->begin() ; i != listval->end() ; ++i)
   {
     (*i)->accept(this);
   }

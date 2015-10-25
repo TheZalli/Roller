@@ -5,7 +5,8 @@
 ExpCmd.		Cmd ::= Exp;
 StmtCmd.	Cmd ::= Stmt;
 
-token VarIdent		(letter | '_')+;
+token VarIdent	(letter | '_')+;
+--token VarIdent	( ('a'-'c') | ('e'-'z') | upper ) ( letter | '_' )*;
 
 comment "#";
 comment "#-" "-#";
@@ -25,16 +26,16 @@ separator Exp ",";
 
 
 -- An integer numeral value. Constant during the expression they are used in
-IntNum.		Num		::= Integer;
-IntNegNum.	Num		::= "-" Integer;
+IntNum.		Numer	::= Integer;
+IntNegNum.	Numer	::= "-" Integer;
 
 -- An integer literal, string or variable value
 
-ENum. 	Exp3 	::= Val;
+EVal. 	Exp3	::= Val;
 
-ENum.	Val	::= Num;
-EVar.	Val	::= VarIdent;
-EStr.	Val	::= String;
+ValNum.	Val	::= Numer;
+ValVar.	Val	::= VarIdent;
+ValStr.	Val	::= String;
 
 separator Val ",";
 
@@ -43,7 +44,7 @@ separator Val ",";
 
 ESeq.	Exp3	::= ExpSeq;
 
-EDiceSeq.	EspSeq	::= ExpD;
+EDiceSeq.	ExpSeq	::= ExpD;
 
 ERange.	ExpSeq	::= "{" Val ".." Val "}"; -- Uses numeral values
 ERStep.	ExpSeq	::= "{" Val "," Val ".." Val "}"; -- Assumes linear sequence
@@ -52,12 +53,12 @@ EVect.	ExpSeq	::= "{" [Val] "}";
 
 -- -- Dice expressions
 
-EDice.	Exp3	::= ExpD;
+--EDice.	Exp3	::= ExpD;
 
 E1d6.	ExpD	::= "d";
-E1dN.	ExpD	::= "d" Exp3;
-ENd6.	ExpD	::= Exp3 "d";
-ENdN.	ExpD	::= Exp3 "d" Exp3;
+E1dN.	ExpD	::= "d" Exp;
+ENd6.	ExpD	::= Exp "d";
+ENdN.	ExpD	::= Exp "d" Exp;
 
 
 -- -- Keyword functions
@@ -90,11 +91,13 @@ PredGTEq.	Pred2	::= "<=" Val;
 PredLTEq.	Pred2	::= ">=" Val;
 
 PredIsStr.	Pred3	::= "$" Val;
+PredInd.	Pred3	::= Val; -- Indexes
+PredRange.	Pred3	::= Val ".." Val; -- Takes a slice
+PredRStep.	Pred3	::= Val "," Val ".." Val; -- Ditto but with a step value
 
 EListOp.	Exp3	::= ExpLOp;
 
 ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression, filters the vector
-ELInd.	ExpLOp	::= Exp "[" Value "]"; -- Indexes
 
 
 -- Function call

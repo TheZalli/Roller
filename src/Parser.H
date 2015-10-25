@@ -7,15 +7,16 @@
 
 class Cmd;
 class Exp;
+class ListExp;
+class Numer;
+class Val;
+class ListVal;
+class ExpSeq;
 class ExpD;
 class ExpKW;
 class Pred;
 class ExpLOp;
 class Stmt;
-class Val;
-class ListMem;
-class ListExp;
-class ListListMem;
 
 typedef union
 {
@@ -25,21 +26,32 @@ typedef union
   char* string_;
   Cmd* cmd_;
   Exp* exp_;
+  ListExp* listexp_;
+  Numer* numer_;
+  Val* val_;
+  ListVal* listval_;
+  ExpSeq* expseq_;
   ExpD* expd_;
   ExpKW* expkw_;
   Pred* pred_;
   ExpLOp* explop_;
   Stmt* stmt_;
-  Val* val_;
-  ListMem* listmem_;
-  ListExp* listexp_;
-  ListListMem* listlistmem_;
 } YYSTYPE;
 
 Cmd* pCmd(FILE *inp);
 Cmd* pCmd(const char *str);
 Exp* pExp(FILE *inp);
 Exp* pExp(const char *str);
+ListExp* pListExp(FILE *inp);
+ListExp* pListExp(const char *str);
+Numer* pNumer(FILE *inp);
+Numer* pNumer(const char *str);
+Val* pVal(FILE *inp);
+Val* pVal(const char *str);
+ListVal* pListVal(FILE *inp);
+ListVal* pListVal(const char *str);
+ExpSeq* pExpSeq(FILE *inp);
+ExpSeq* pExpSeq(const char *str);
 ExpD* pExpD(FILE *inp);
 ExpD* pExpD(const char *str);
 ExpKW* pExpKW(FILE *inp);
@@ -50,14 +62,6 @@ ExpLOp* pExpLOp(FILE *inp);
 ExpLOp* pExpLOp(const char *str);
 Stmt* pStmt(FILE *inp);
 Stmt* pStmt(const char *str);
-Val* pVal(FILE *inp);
-Val* pVal(const char *str);
-ListMem* pListMem(FILE *inp);
-ListMem* pListMem(const char *str);
-ListExp* pListExp(FILE *inp);
-ListExp* pListExp(const char *str);
-ListListMem* pListListMem(FILE *inp);
-ListListMem* pListListMem(const char *str);
 
 
 
@@ -89,8 +93,10 @@ ListListMem* pListListMem(const char *str);
 #define _SYMB_24 283
 #define _SYMB_25 284
 #define _SYMB_26 285
-#define _STRING_ 286
-#define _INTEGER_ 287
+#define _SYMB_27 286
+#define _SYMB_28 287
+#define _STRING_ 288
+#define _INTEGER_ 289
 
 extern YYSTYPE yylval;
 
