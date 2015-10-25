@@ -10,13 +10,12 @@ class Skeleton : public Visitor
 public:
   void visitCmd(Cmd *p);
   void visitExp(Exp *p);
-  void visitNumer(Numer *p);
+  void visitNumeral(Numeral *p);
   void visitVal(Val *p);
   void visitExpSeq(ExpSeq *p);
   void visitExpD(ExpD *p);
   void visitExpKW(ExpKW *p);
   void visitPred(Pred *p);
-  void visitExpLOp(ExpLOp *p);
   void visitStmt(Stmt *p);
   void visitExpCmd(ExpCmd *p);
   void visitStmtCmd(StmtCmd *p);
@@ -31,10 +30,10 @@ public:
   void visitValVar(ValVar *p);
   void visitValStr(ValStr *p);
   void visitESeq(ESeq *p);
-  void visitEDiceSeq(EDiceSeq *p);
   void visitERange(ERange *p);
   void visitERStep(ERStep *p);
   void visitEVect(EVect *p);
+  void visitEDice(EDice *p);
   void visitE1d6(E1d6 *p);
   void visitE1dN(E1dN *p);
   void visitENd6(ENd6 *p);
@@ -59,13 +58,11 @@ public:
   void visitPredInd(PredInd *p);
   void visitPredRange(PredRange *p);
   void visitPredRStep(PredRStep *p);
-  void visitEListOp(EListOp *p);
-  void visitELFilt(ELFilt *p);
+  void visitESeqFilt(ESeqFilt *p);
   void visitECall(ECall *p);
   void visitSVarAs(SVarAs *p);
   void visitSFDef(SFDef *p);
   void visitListExp(ListExp *p);
-  void visitListVal(ListVal *p);
 
   void visit"VarIdent"("VarIdent" x);
   void visit"Integer"("Integer" x);

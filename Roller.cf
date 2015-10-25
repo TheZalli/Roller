@@ -1,5 +1,5 @@
 -- Rules for the 'Roller' parser
--- Written in Labelled BNF grammar
+-- Written in Labelled BNF grammar as used by bnfc
 -- mrZalli
 
 ExpCmd.		Cmd ::= Exp;
@@ -26,34 +26,31 @@ separator Exp ",";
 
 
 -- An integer numeral value. Constant during the expression they are used in
-IntNum.		Numer	::= Integer;
-IntNegNum.	Numer	::= "-" Integer;
+IntNum.		Numeral	::= Integer;
+IntNegNum.	Numeral	::= "-" Integer;
 
 -- An integer literal, string or variable value
 
 EVal. 	Exp3	::= Val;
 
-ValNum.	Val	::= Numer;
+ValNum.	Val	::= Numeral;
 ValVar.	Val	::= VarIdent;
 ValStr.	Val	::= String;
 
-separator Val ",";
+--separator Val ",";
 
 
 -- -- Sequences
 
-ESeq.	Exp3	::= ExpSeq;
+ESeq.		Exp3	::= ExpSeq;
 
-EDiceSeq.	ExpSeq	::= ExpD;
-
-ERange.	ExpSeq	::= "{" Val ".." Val "}"; -- Uses numeral values
-ERStep.	ExpSeq	::= "{" Val "," Val ".." Val "}"; -- Assumes linear sequence
-EVect.	ExpSeq	::= "{" [Val] "}";
-
+ERange.		ExpSeq	::= "{" Exp ".." Exp "}"; -- Uses numeral values
+ERStep.		ExpSeq	::= "{" Exp "," Exp ".." Exp "}"; -- Assumes linear sequence
+EVect.		ExpSeq	::= "{" [Exp] "}";
 
 -- -- Dice expressions
 
---EDice.	Exp3	::= ExpD;
+EDice.	Exp3	::= ExpD;
 
 E1d6.	ExpD	::= "d";
 E1dN.	ExpD	::= "d" Exp;
@@ -66,7 +63,7 @@ ENdN.	ExpD	::= Exp "d" Exp;
 EKeyW.		Exp		::= ExpKW; -- (could this be Exp0?)
 
 EKCount.	ExpKW	::= "Count" Exp; -- Gives the length of the sequence. Gives 1 for scalars
-EKSum.		ExpKW	::= "Sum" Exp; -- Gives the sum of the vector
+EKSum.		ExpKW	::= "Sum" Exp; -- Gives the sum of the sequence. default operation when converting from a sequence to a single value
 EKRepeat.	ExpKW	::= "Repeat" Exp Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
 EKMean.		ExpKW	::= "Mean" Exp; -- Returns a real
 
@@ -95,9 +92,7 @@ PredInd.	Pred3	::= Val; -- Indexes
 PredRange.	Pred3	::= Val ".." Val; -- Takes a slice
 PredRStep.	Pred3	::= Val "," Val ".." Val; -- Ditto but with a step value
 
-EListOp.	Exp3	::= ExpLOp;
-
-ELFilt.	ExpLOp	::= Exp "[" Pred "]"; -- Predicate expression, filters the vector
+ESeqFilt.	Exp3	::= Exp "[" Pred "]"; -- Predicate expression, filters or indexes the vector
 
 
 -- Function call

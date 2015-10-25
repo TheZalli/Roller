@@ -125,8 +125,8 @@ ListExp* pListExp(const char *str)
   }
 }
 
-static Numer* YY_RESULT_Numer_ = 0;
-Numer* pNumer(FILE *inp)
+static Numeral* YY_RESULT_Numeral_ = 0;
+Numeral* pNumeral(FILE *inp)
 {
   yy_mylinenumber = 1;
   initialize_lexer(inp);
@@ -136,10 +136,10 @@ Numer* pNumer(FILE *inp)
   }
   else
   { /* Success */
-    return YY_RESULT_Numer_;
+    return YY_RESULT_Numeral_;
   }
 }
-Numer* pNumer(const char *str)
+Numeral* pNumeral(const char *str)
 {
   YY_BUFFER_STATE buf;
   int result;
@@ -154,7 +154,7 @@ Numer* pNumer(const char *str)
   }
   else
   { /* Success */
-    return YY_RESULT_Numer_;
+    return YY_RESULT_Numeral_;
   }
 }
 
@@ -188,39 +188,6 @@ Val* pVal(const char *str)
   else
   { /* Success */
     return YY_RESULT_Val_;
-  }
-}
-
-static ListVal* YY_RESULT_ListVal_ = 0;
-ListVal* pListVal(FILE *inp)
-{
-  yy_mylinenumber = 1;
-  initialize_lexer(inp);
-  if (yyparse())
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ListVal_;
-  }
-}
-ListVal* pListVal(const char *str)
-{
-  YY_BUFFER_STATE buf;
-  int result;
-  yy_mylinenumber = 1;
-  initialize_lexer(0);
-  buf = yy_scan_string(str);
-  result = yyparse();
-  yy_delete_buffer(buf);
-  if (result)
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ListVal_;
   }
 }
 
@@ -356,39 +323,6 @@ Pred* pPred(const char *str)
   }
 }
 
-static ExpLOp* YY_RESULT_ExpLOp_ = 0;
-ExpLOp* pExpLOp(FILE *inp)
-{
-  yy_mylinenumber = 1;
-  initialize_lexer(inp);
-  if (yyparse())
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ExpLOp_;
-  }
-}
-ExpLOp* pExpLOp(const char *str)
-{
-  YY_BUFFER_STATE buf;
-  int result;
-  yy_mylinenumber = 1;
-  initialize_lexer(0);
-  buf = yy_scan_string(str);
-  result = yyparse();
-  yy_delete_buffer(buf);
-  if (result)
-  { /* Failure */
-    return 0;
-  }
-  else
-  { /* Success */
-    return YY_RESULT_ExpLOp_;
-  }
-}
-
 static Stmt* YY_RESULT_Stmt_ = 0;
 Stmt* pStmt(FILE *inp)
 {
@@ -435,14 +369,12 @@ Stmt* pStmt(const char *str)
   Cmd* cmd_;
   Exp* exp_;
   ListExp* listexp_;
-  Numer* numer_;
+  Numeral* numeral_;
   Val* val_;
-  ListVal* listval_;
   ExpSeq* expseq_;
   ExpD* expd_;
   ExpKW* expkw_;
   Pred* pred_;
-  ExpLOp* explop_;
   Stmt* stmt_;
 }
 
@@ -483,9 +415,8 @@ Stmt* pStmt(const char *str)
 %type <exp_> Exp2
 %type <exp_> Exp3
 %type <listexp_> ListExp
-%type <numer_> Numer
+%type <numeral_> Numeral
 %type <val_> Val
-%type <listval_> ListVal
 %type <expseq_> ExpSeq
 %type <expd_> ExpD
 %type <expkw_> ExpKW
@@ -493,7 +424,6 @@ Stmt* pStmt(const char *str)
 %type <pred_> Pred1
 %type <pred_> Pred2
 %type <pred_> Pred3
-%type <explop_> ExpLOp
 %type <stmt_> Stmt
 
 %start Cmd
@@ -518,28 +448,24 @@ Exp2 : Exp3 {  $$ = $1; YY_RESULT_Exp_= $$; }
 Exp3 : _SYMB_0 Exp _SYMB_1 {  $$ = $2; YY_RESULT_Exp_= $$; } 
   | Val {  $$ = new EVal($1); YY_RESULT_Exp_= $$; }
   | ExpSeq {  $$ = new ESeq($1); YY_RESULT_Exp_= $$; }
-  | ExpLOp {  $$ = new EListOp($1); YY_RESULT_Exp_= $$; }
+  | ExpD {  $$ = new EDice($1); YY_RESULT_Exp_= $$; }
+  | Exp _SYMB_20 Pred _SYMB_21 {  $$ = new ESeqFilt($1, $3); YY_RESULT_Exp_= $$; }
   | _SYMB_28 _SYMB_0 ListExp _SYMB_1 {  std::reverse($3->begin(),$3->end()) ;$$ = new ECall($1, $3); YY_RESULT_Exp_= $$; }
 ;
 ListExp : /* empty */ {  $$ = new ListExp(); YY_RESULT_ListExp_= $$; } 
   | Exp {  $$ = new ListExp() ; $$->push_back($1); YY_RESULT_ListExp_= $$; }
   | Exp _SYMB_6 ListExp {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListExp_= $$; }
 ;
-Numer : _INTEGER_ {  $$ = new IntNum($1); YY_RESULT_Numer_= $$; } 
-  | _SYMB_3 _INTEGER_ {  $$ = new IntNegNum($2); YY_RESULT_Numer_= $$; }
+Numeral : _INTEGER_ {  $$ = new IntNum($1); YY_RESULT_Numeral_= $$; } 
+  | _SYMB_3 _INTEGER_ {  $$ = new IntNegNum($2); YY_RESULT_Numeral_= $$; }
 ;
-Val : Numer {  $$ = new ValNum($1); YY_RESULT_Val_= $$; } 
+Val : Numeral {  $$ = new ValNum($1); YY_RESULT_Val_= $$; } 
   | _SYMB_28 {  $$ = new ValVar($1); YY_RESULT_Val_= $$; }
   | _STRING_ {  $$ = new ValStr($1); YY_RESULT_Val_= $$; }
 ;
-ListVal : /* empty */ {  $$ = new ListVal(); YY_RESULT_ListVal_= $$; } 
-  | Val {  $$ = new ListVal() ; $$->push_back($1); YY_RESULT_ListVal_= $$; }
-  | Val _SYMB_6 ListVal {  $3->push_back($1) ; $$ = $3 ; YY_RESULT_ListVal_= $$; }
-;
-ExpSeq : ExpD {  $$ = new EDiceSeq($1); YY_RESULT_ExpSeq_= $$; } 
-  | _SYMB_7 Val _SYMB_8 Val _SYMB_9 {  $$ = new ERange($2, $4); YY_RESULT_ExpSeq_= $$; }
-  | _SYMB_7 Val _SYMB_6 Val _SYMB_8 Val _SYMB_9 {  $$ = new ERStep($2, $4, $6); YY_RESULT_ExpSeq_= $$; }
-  | _SYMB_7 ListVal _SYMB_9 {  std::reverse($2->begin(),$2->end()) ;$$ = new EVect($2); YY_RESULT_ExpSeq_= $$; }
+ExpSeq : _SYMB_7 Exp _SYMB_8 Exp _SYMB_9 {  $$ = new ERange($2, $4); YY_RESULT_ExpSeq_= $$; } 
+  | _SYMB_7 Exp _SYMB_6 Exp _SYMB_8 Exp _SYMB_9 {  $$ = new ERStep($2, $4, $6); YY_RESULT_ExpSeq_= $$; }
+  | _SYMB_7 ListExp _SYMB_9 {  std::reverse($2->begin(),$2->end()) ;$$ = new EVect($2); YY_RESULT_ExpSeq_= $$; }
 ;
 ExpD : _SYMB_27 {  $$ = new E1d6(); YY_RESULT_ExpD_= $$; } 
   | _SYMB_27 Exp {  $$ = new E1dN($2); YY_RESULT_ExpD_= $$; }
@@ -573,8 +499,6 @@ Pred3 : _SYMB_0 Pred _SYMB_1 {  $$ = $2; YY_RESULT_Pred_= $$; }
   | Val {  $$ = new PredInd($1); YY_RESULT_Pred_= $$; }
   | Val _SYMB_8 Val {  $$ = new PredRange($1, $3); YY_RESULT_Pred_= $$; }
   | Val _SYMB_6 Val _SYMB_8 Val {  $$ = new PredRStep($1, $3, $5); YY_RESULT_Pred_= $$; }
-;
-ExpLOp : Exp _SYMB_20 Pred _SYMB_21 {  $$ = new ELFilt($1, $3); YY_RESULT_ExpLOp_= $$; } 
 ;
 Stmt : _SYMB_28 _SYMB_13 Exp {  $$ = new SVarAs($1, $3); YY_RESULT_Stmt_= $$; } 
   | _SYMB_28 _SYMB_0 ListExp _SYMB_1 _SYMB_13 Exp {  std::reverse($3->begin(),$3->end()) ;$$ = new SFDef($1, $3, $6); YY_RESULT_Stmt_= $$; }

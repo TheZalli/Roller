@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# you might need to change the EOL characters to Unix style
+
 set -e
 
 echo "--- Writing docs ---"

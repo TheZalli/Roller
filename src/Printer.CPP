@@ -233,12 +233,27 @@ void PrintAbsyn::visitESeq(ESeq *p)
   _i_ = oldi;
 }
 
-void PrintAbsyn::visitEListOp(EListOp *p)
+void PrintAbsyn::visitEDice(EDice *p)
 {
   int oldi = _i_;
   if (oldi > 3) render(_L_PAREN);
 
-  _i_ = 0; p->explop_->accept(this);
+  _i_ = 0; p->expd_->accept(this);
+
+  if (oldi > 3) render(_R_PAREN);
+
+  _i_ = oldi;
+}
+
+void PrintAbsyn::visitESeqFilt(ESeqFilt *p)
+{
+  int oldi = _i_;
+  if (oldi > 3) render(_L_PAREN);
+
+  _i_ = 0; p->exp_->accept(this);
+  render('[');
+  _i_ = 0; p->pred_->accept(this);
+  render(']');
 
   if (oldi > 3) render(_R_PAREN);
 
@@ -267,7 +282,7 @@ void PrintAbsyn::visitListExp(ListExp *listexp)
     (*i)->accept(this);
     if (i != listexp->end() - 1) render(',');
   }
-}void PrintAbsyn::visitNumer(Numer *p) {} //abstract class
+}void PrintAbsyn::visitNumeral(Numeral *p) {} //abstract class
 
 void PrintAbsyn::visitIntNum(IntNum *p)
 {
@@ -301,7 +316,7 @@ void PrintAbsyn::visitValNum(ValNum *p)
   int oldi = _i_;
   if (oldi > 0) render(_L_PAREN);
 
-  _i_ = 0; p->numer_->accept(this);
+  _i_ = 0; p->numeral_->accept(this);
 
   if (oldi > 0) render(_R_PAREN);
 
@@ -332,26 +347,7 @@ void PrintAbsyn::visitValStr(ValStr *p)
   _i_ = oldi;
 }
 
-void PrintAbsyn::visitListVal(ListVal *listval)
-{
-  for (ListVal::const_iterator i = listval->begin() ; i != listval->end() ; ++i)
-  {
-    (*i)->accept(this);
-    if (i != listval->end() - 1) render(',');
-  }
-}void PrintAbsyn::visitExpSeq(ExpSeq *p) {} //abstract class
-
-void PrintAbsyn::visitEDiceSeq(EDiceSeq *p)
-{
-  int oldi = _i_;
-  if (oldi > 0) render(_L_PAREN);
-
-  _i_ = 0; p->expd_->accept(this);
-
-  if (oldi > 0) render(_R_PAREN);
-
-  _i_ = oldi;
-}
+void PrintAbsyn::visitExpSeq(ExpSeq *p) {} //abstract class
 
 void PrintAbsyn::visitERange(ERange *p)
 {
@@ -359,9 +355,9 @@ void PrintAbsyn::visitERange(ERange *p)
   if (oldi > 0) render(_L_PAREN);
 
   render('{');
-  _i_ = 0; p->val_1->accept(this);
+  _i_ = 0; p->exp_1->accept(this);
   render("..");
-  _i_ = 0; p->val_2->accept(this);
+  _i_ = 0; p->exp_2->accept(this);
   render('}');
 
   if (oldi > 0) render(_R_PAREN);
@@ -375,11 +371,11 @@ void PrintAbsyn::visitERStep(ERStep *p)
   if (oldi > 0) render(_L_PAREN);
 
   render('{');
-  _i_ = 0; p->val_1->accept(this);
+  _i_ = 0; p->exp_1->accept(this);
   render(',');
-  _i_ = 0; p->val_2->accept(this);
+  _i_ = 0; p->exp_2->accept(this);
   render("..");
-  _i_ = 0; p->val_3->accept(this);
+  _i_ = 0; p->exp_3->accept(this);
   render('}');
 
   if (oldi > 0) render(_R_PAREN);
@@ -393,7 +389,7 @@ void PrintAbsyn::visitEVect(EVect *p)
   if (oldi > 0) render(_L_PAREN);
 
   render('{');
-  if(p->listval_) {_i_ = 0; p->listval_->accept(this);}
+  if(p->listexp_) {_i_ = 0; p->listexp_->accept(this);}
   render('}');
 
   if (oldi > 0) render(_R_PAREN);
@@ -715,23 +711,6 @@ void PrintAbsyn::visitPredRStep(PredRStep *p)
   _i_ = oldi;
 }
 
-void PrintAbsyn::visitExpLOp(ExpLOp *p) {} //abstract class
-
-void PrintAbsyn::visitELFilt(ELFilt *p)
-{
-  int oldi = _i_;
-  if (oldi > 0) render(_L_PAREN);
-
-  _i_ = 0; p->exp_->accept(this);
-  render('[');
-  _i_ = 0; p->pred_->accept(this);
-  render(']');
-
-  if (oldi > 0) render(_R_PAREN);
-
-  _i_ = oldi;
-}
-
 void PrintAbsyn::visitStmt(Stmt *p) {} //abstract class
 
 void PrintAbsyn::visitSVarAs(SVarAs *p)
@@ -915,14 +894,29 @@ void ShowAbsyn::visitESeq(ESeq *p)
   bufAppend(']');
   bufAppend(')');
 }
-void ShowAbsyn::visitEListOp(EListOp *p)
+void ShowAbsyn::visitEDice(EDice *p)
 {
   bufAppend('(');
-  bufAppend("EListOp");
+  bufAppend("EDice");
   bufAppend(' ');
   bufAppend('[');
-  if (p->explop_)  p->explop_->accept(this);
+  if (p->expd_)  p->expd_->accept(this);
   bufAppend(']');
+  bufAppend(')');
+}
+void ShowAbsyn::visitESeqFilt(ESeqFilt *p)
+{
+  bufAppend('(');
+  bufAppend("ESeqFilt");
+  bufAppend(' ');
+  bufAppend('[');
+  if (p->exp_)  p->exp_->accept(this);
+  bufAppend(']');
+  bufAppend(' ');
+  bufAppend('[');
+  if (p->pred_)  p->pred_->accept(this);
+  bufAppend(']');
+  bufAppend(' ');
   bufAppend(')');
 }
 void ShowAbsyn::visitECall(ECall *p)
@@ -947,7 +941,7 @@ void ShowAbsyn::visitListExp(ListExp *listexp)
   }
 }
 
-void ShowAbsyn::visitNumer(Numer *p) {} //abstract class
+void ShowAbsyn::visitNumeral(Numeral *p) {} //abstract class
 
 void ShowAbsyn::visitIntNum(IntNum *p)
 {
@@ -973,7 +967,7 @@ void ShowAbsyn::visitValNum(ValNum *p)
   bufAppend("ValNum");
   bufAppend(' ');
   bufAppend('[');
-  if (p->numer_)  p->numer_->accept(this);
+  if (p->numeral_)  p->numeral_->accept(this);
   bufAppend(']');
   bufAppend(')');
 }
@@ -993,35 +987,16 @@ void ShowAbsyn::visitValStr(ValStr *p)
   visitString(p->string_);
   bufAppend(')');
 }
-void ShowAbsyn::visitListVal(ListVal *listval)
-{
-  for (ListVal::const_iterator i = listval->begin() ; i != listval->end() ; ++i)
-  {
-    (*i)->accept(this);
-    if (i != listval->end() - 1) bufAppend(", ");
-  }
-}
-
 void ShowAbsyn::visitExpSeq(ExpSeq *p) {} //abstract class
 
-void ShowAbsyn::visitEDiceSeq(EDiceSeq *p)
-{
-  bufAppend('(');
-  bufAppend("EDiceSeq");
-  bufAppend(' ');
-  bufAppend('[');
-  if (p->expd_)  p->expd_->accept(this);
-  bufAppend(']');
-  bufAppend(')');
-}
 void ShowAbsyn::visitERange(ERange *p)
 {
   bufAppend('(');
   bufAppend("ERange");
   bufAppend(' ');
-  p->val_1->accept(this);
+  p->exp_1->accept(this);
   bufAppend(' ');
-  p->val_2->accept(this);
+  p->exp_2->accept(this);
   bufAppend(' ');
   bufAppend(')');
 }
@@ -1030,11 +1005,11 @@ void ShowAbsyn::visitERStep(ERStep *p)
   bufAppend('(');
   bufAppend("ERStep");
   bufAppend(' ');
-  p->val_1->accept(this);
+  p->exp_1->accept(this);
   bufAppend(' ');
-  p->val_2->accept(this);
+  p->exp_2->accept(this);
   bufAppend(' ');
-  p->val_3->accept(this);
+  p->exp_3->accept(this);
   bufAppend(' ');
   bufAppend(')');
 }
@@ -1044,7 +1019,7 @@ void ShowAbsyn::visitEVect(EVect *p)
   bufAppend("EVect");
   bufAppend(' ');
   bufAppend('[');
-  if (p->listval_)  p->listval_->accept(this);
+  if (p->listexp_)  p->listexp_->accept(this);
   bufAppend(']');
   bufAppend(' ');
   bufAppend(')');
@@ -1282,23 +1257,6 @@ void ShowAbsyn::visitPredRStep(PredRStep *p)
   p->val_2->accept(this);
   bufAppend(' ');
   p->val_3->accept(this);
-  bufAppend(')');
-}
-void ShowAbsyn::visitExpLOp(ExpLOp *p) {} //abstract class
-
-void ShowAbsyn::visitELFilt(ELFilt *p)
-{
-  bufAppend('(');
-  bufAppend("ELFilt");
-  bufAppend(' ');
-  bufAppend('[');
-  if (p->exp_)  p->exp_->accept(this);
-  bufAppend(']');
-  bufAppend(' ');
-  bufAppend('[');
-  if (p->pred_)  p->pred_->accept(this);
-  bufAppend(']');
-  bufAppend(' ');
   bufAppend(')');
 }
 void ShowAbsyn::visitStmt(Stmt *p) {} //abstract class

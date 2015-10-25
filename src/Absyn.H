@@ -22,13 +22,12 @@ typedef std::string VarIdent;
 
 class Cmd;
 class Exp;
-class Numer;
+class Numeral;
 class Val;
 class ExpSeq;
 class ExpD;
 class ExpKW;
 class Pred;
-class ExpLOp;
 class Stmt;
 class ExpCmd;
 class StmtCmd;
@@ -43,10 +42,10 @@ class ValNum;
 class ValVar;
 class ValStr;
 class ESeq;
-class EDiceSeq;
 class ERange;
 class ERStep;
 class EVect;
+class EDice;
 class E1d6;
 class E1dN;
 class ENd6;
@@ -71,13 +70,11 @@ class PredIsStr;
 class PredInd;
 class PredRange;
 class PredRStep;
-class EListOp;
-class ELFilt;
+class ESeqFilt;
 class ECall;
 class SVarAs;
 class SFDef;
 class ListExp;
-class ListVal;
 
 
 /********************   Visitor Interfaces    ********************/
@@ -87,13 +84,12 @@ public:
   virtual ~Visitor() {}
   virtual void visitCmd(Cmd *p) = 0;
   virtual void visitExp(Exp *p) = 0;
-  virtual void visitNumer(Numer *p) = 0;
+  virtual void visitNumeral(Numeral *p) = 0;
   virtual void visitVal(Val *p) = 0;
   virtual void visitExpSeq(ExpSeq *p) = 0;
   virtual void visitExpD(ExpD *p) = 0;
   virtual void visitExpKW(ExpKW *p) = 0;
   virtual void visitPred(Pred *p) = 0;
-  virtual void visitExpLOp(ExpLOp *p) = 0;
   virtual void visitStmt(Stmt *p) = 0;
   virtual void visitExpCmd(ExpCmd *p) = 0;
   virtual void visitStmtCmd(StmtCmd *p) = 0;
@@ -108,10 +104,10 @@ public:
   virtual void visitValVar(ValVar *p) = 0;
   virtual void visitValStr(ValStr *p) = 0;
   virtual void visitESeq(ESeq *p) = 0;
-  virtual void visitEDiceSeq(EDiceSeq *p) = 0;
   virtual void visitERange(ERange *p) = 0;
   virtual void visitERStep(ERStep *p) = 0;
   virtual void visitEVect(EVect *p) = 0;
+  virtual void visitEDice(EDice *p) = 0;
   virtual void visitE1d6(E1d6 *p) = 0;
   virtual void visitE1dN(E1dN *p) = 0;
   virtual void visitENd6(ENd6 *p) = 0;
@@ -136,13 +132,11 @@ public:
   virtual void visitPredInd(PredInd *p) = 0;
   virtual void visitPredRange(PredRange *p) = 0;
   virtual void visitPredRStep(PredRStep *p) = 0;
-  virtual void visitEListOp(EListOp *p) = 0;
-  virtual void visitELFilt(ELFilt *p) = 0;
+  virtual void visitESeqFilt(ESeqFilt *p) = 0;
   virtual void visitECall(ECall *p) = 0;
   virtual void visitSVarAs(SVarAs *p) = 0;
   virtual void visitSFDef(SFDef *p) = 0;
   virtual void visitListExp(ListExp *p) = 0;
-  virtual void visitListVal(ListVal *p) = 0;
 
 
   virtual void visitInteger(Integer x) = 0;
@@ -179,10 +173,10 @@ public:
 
 };
 
-class Numer : public Visitable
+class Numeral : public Visitable
 {
 public:
-  virtual Numer *clone() const = 0;
+  virtual Numeral *clone() const = 0;
 
 };
 
@@ -218,13 +212,6 @@ class Pred : public Visitable
 {
 public:
   virtual Pred *clone() const = 0;
-
-};
-
-class ExpLOp : public Visitable
-{
-public:
-  virtual ExpLOp *clone() const = 0;
 
 };
 
@@ -353,6 +340,20 @@ public:
   void swap(ESeq &);
 };
 
+class EDice : public Exp
+{
+public:
+  ExpD *expd_;
+
+  EDice(const EDice &);
+  EDice &operator=(const EDice &);
+  EDice(ExpD *p1);
+  ~EDice();
+  virtual void accept(Visitor *v);
+  virtual EDice *clone() const;
+  void swap(EDice &);
+};
+
 class EKeyW : public Exp
 {
 public:
@@ -367,18 +368,19 @@ public:
   void swap(EKeyW &);
 };
 
-class EListOp : public Exp
+class ESeqFilt : public Exp
 {
 public:
-  ExpLOp *explop_;
+  Exp *exp_;
+  Pred *pred_;
 
-  EListOp(const EListOp &);
-  EListOp &operator=(const EListOp &);
-  EListOp(ExpLOp *p1);
-  ~EListOp();
+  ESeqFilt(const ESeqFilt &);
+  ESeqFilt &operator=(const ESeqFilt &);
+  ESeqFilt(Exp *p1, Pred *p2);
+  ~ESeqFilt();
   virtual void accept(Visitor *v);
-  virtual EListOp *clone() const;
-  void swap(EListOp &);
+  virtual ESeqFilt *clone() const;
+  void swap(ESeqFilt &);
 };
 
 class ECall : public Exp
@@ -396,7 +398,7 @@ public:
   void swap(ECall &);
 };
 
-class IntNum : public Numer
+class IntNum : public Numeral
 {
 public:
   Integer integer_;
@@ -410,7 +412,7 @@ public:
   void swap(IntNum &);
 };
 
-class IntNegNum : public Numer
+class IntNegNum : public Numeral
 {
 public:
   Integer integer_;
@@ -427,11 +429,11 @@ public:
 class ValNum : public Val
 {
 public:
-  Numer *numer_;
+  Numeral *numeral_;
 
   ValNum(const ValNum &);
   ValNum &operator=(const ValNum &);
-  ValNum(Numer *p1);
+  ValNum(Numeral *p1);
   ~ValNum();
   virtual void accept(Visitor *v);
   virtual ValNum *clone() const;
@@ -466,29 +468,15 @@ public:
   void swap(ValStr &);
 };
 
-class EDiceSeq : public ExpSeq
-{
-public:
-  ExpD *expd_;
-
-  EDiceSeq(const EDiceSeq &);
-  EDiceSeq &operator=(const EDiceSeq &);
-  EDiceSeq(ExpD *p1);
-  ~EDiceSeq();
-  virtual void accept(Visitor *v);
-  virtual EDiceSeq *clone() const;
-  void swap(EDiceSeq &);
-};
-
 class ERange : public ExpSeq
 {
 public:
-  Val *val_1;
-  Val *val_2;
+  Exp *exp_1;
+  Exp *exp_2;
 
   ERange(const ERange &);
   ERange &operator=(const ERange &);
-  ERange(Val *p1, Val *p2);
+  ERange(Exp *p1, Exp *p2);
   ~ERange();
   virtual void accept(Visitor *v);
   virtual ERange *clone() const;
@@ -498,13 +486,13 @@ public:
 class ERStep : public ExpSeq
 {
 public:
-  Val *val_1;
-  Val *val_2;
-  Val *val_3;
+  Exp *exp_1;
+  Exp *exp_2;
+  Exp *exp_3;
 
   ERStep(const ERStep &);
   ERStep &operator=(const ERStep &);
-  ERStep(Val *p1, Val *p2, Val *p3);
+  ERStep(Exp *p1, Exp *p2, Exp *p3);
   ~ERStep();
   virtual void accept(Visitor *v);
   virtual ERStep *clone() const;
@@ -514,11 +502,11 @@ public:
 class EVect : public ExpSeq
 {
 public:
-  ListVal *listval_;
+  ListExp *listexp_;
 
   EVect(const EVect &);
   EVect &operator=(const EVect &);
-  EVect(ListVal *p1);
+  EVect(ListExp *p1);
   ~EVect();
   virtual void accept(Visitor *v);
   virtual EVect *clone() const;
@@ -856,21 +844,6 @@ public:
   void swap(PredRStep &);
 };
 
-class ELFilt : public ExpLOp
-{
-public:
-  Exp *exp_;
-  Pred *pred_;
-
-  ELFilt(const ELFilt &);
-  ELFilt &operator=(const ELFilt &);
-  ELFilt(Exp *p1, Pred *p2);
-  ~ELFilt();
-  virtual void accept(Visitor *v);
-  virtual ELFilt *clone() const;
-  void swap(ELFilt &);
-};
-
 class SVarAs : public Stmt
 {
 public:
@@ -909,13 +882,6 @@ class ListExp : public Visitable, public std::vector<Exp*>
 public:
   virtual void accept(Visitor *v);
   virtual ListExp *clone() const;
-};
-
-class ListVal : public Visitable, public std::vector<Val*>
-{
-public:
-  virtual void accept(Visitor *v);
-  virtual ListVal *clone() const;
 };
 
 

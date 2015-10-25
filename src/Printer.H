@@ -40,19 +40,18 @@ void render(char *s);
   void visitEDiv(EDiv *p);
   void visitEVal(EVal *p);
   void visitESeq(ESeq *p);
-  void visitEListOp(EListOp *p);
+  void visitEDice(EDice *p);
+  void visitESeqFilt(ESeqFilt *p);
   void visitECall(ECall *p);
   void visitListExp(ListExp *p);
-  void visitNumer(Numer *p); /* abstract class */
+  void visitNumeral(Numeral *p); /* abstract class */
   void visitIntNum(IntNum *p);
   void visitIntNegNum(IntNegNum *p);
   void visitVal(Val *p); /* abstract class */
   void visitValNum(ValNum *p);
   void visitValVar(ValVar *p);
   void visitValStr(ValStr *p);
-  void visitListVal(ListVal *p);
   void visitExpSeq(ExpSeq *p); /* abstract class */
-  void visitEDiceSeq(EDiceSeq *p);
   void visitERange(ERange *p);
   void visitERStep(ERStep *p);
   void visitEVect(EVect *p);
@@ -82,8 +81,6 @@ void render(char *s);
   void visitPredInd(PredInd *p);
   void visitPredRange(PredRange *p);
   void visitPredRStep(PredRStep *p);
-  void visitExpLOp(ExpLOp *p); /* abstract class */
-  void visitELFilt(ELFilt *p);
   void visitStmt(Stmt *p); /* abstract class */
   void visitSVarAs(SVarAs *p);
   void visitSFDef(SFDef *p);
@@ -175,19 +172,18 @@ class ShowAbsyn : public Visitor
   void visitEDiv(EDiv *p);
   void visitEVal(EVal *p);
   void visitESeq(ESeq *p);
-  void visitEListOp(EListOp *p);
+  void visitEDice(EDice *p);
+  void visitESeqFilt(ESeqFilt *p);
   void visitECall(ECall *p);
   void visitListExp(ListExp *p);
-  void visitNumer(Numer *p); /* abstract class */
+  void visitNumeral(Numeral *p); /* abstract class */
   void visitIntNum(IntNum *p);
   void visitIntNegNum(IntNegNum *p);
   void visitVal(Val *p); /* abstract class */
   void visitValNum(ValNum *p);
   void visitValVar(ValVar *p);
   void visitValStr(ValStr *p);
-  void visitListVal(ListVal *p);
   void visitExpSeq(ExpSeq *p); /* abstract class */
-  void visitEDiceSeq(EDiceSeq *p);
   void visitERange(ERange *p);
   void visitERStep(ERStep *p);
   void visitEVect(EVect *p);
@@ -217,8 +213,6 @@ class ShowAbsyn : public Visitor
   void visitPredInd(PredInd *p);
   void visitPredRange(PredRange *p);
   void visitPredRStep(PredRStep *p);
-  void visitExpLOp(ExpLOp *p); /* abstract class */
-  void visitELFilt(ELFilt *p);
   void visitStmt(Stmt *p); /* abstract class */
   void visitSVarAs(SVarAs *p);
   void visitSFDef(SFDef *p);

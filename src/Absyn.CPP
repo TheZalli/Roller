@@ -373,6 +373,50 @@ ESeq *ESeq::clone() const
 
 
 
+/********************   EDice    ********************/
+EDice::EDice(ExpD *p1)
+{
+  expd_ = p1;
+
+}
+
+EDice::EDice(const EDice & other)
+{
+  expd_ = other.expd_->clone();
+
+}
+
+EDice &EDice::operator=(const EDice & other)
+{
+  EDice tmp(other);
+  swap(tmp);
+  return *this;
+}
+
+void EDice::swap(EDice & other)
+{
+  std::swap(expd_, other.expd_);
+
+}
+
+EDice::~EDice()
+{
+  delete(expd_);
+
+}
+
+void EDice::accept(Visitor *v)
+{
+  v->visitEDice(this);
+}
+
+EDice *EDice::clone() const
+{
+  return new EDice(*this);
+}
+
+
+
 /********************   EKeyW    ********************/
 EKeyW::EKeyW(ExpKW *p1)
 {
@@ -417,46 +461,50 @@ EKeyW *EKeyW::clone() const
 
 
 
-/********************   EListOp    ********************/
-EListOp::EListOp(ExpLOp *p1)
+/********************   ESeqFilt    ********************/
+ESeqFilt::ESeqFilt(Exp *p1, Pred *p2)
 {
-  explop_ = p1;
+  exp_ = p1;
+  pred_ = p2;
 
 }
 
-EListOp::EListOp(const EListOp & other)
+ESeqFilt::ESeqFilt(const ESeqFilt & other)
 {
-  explop_ = other.explop_->clone();
+  exp_ = other.exp_->clone();
+  pred_ = other.pred_->clone();
 
 }
 
-EListOp &EListOp::operator=(const EListOp & other)
+ESeqFilt &ESeqFilt::operator=(const ESeqFilt & other)
 {
-  EListOp tmp(other);
+  ESeqFilt tmp(other);
   swap(tmp);
   return *this;
 }
 
-void EListOp::swap(EListOp & other)
+void ESeqFilt::swap(ESeqFilt & other)
 {
-  std::swap(explop_, other.explop_);
+  std::swap(exp_, other.exp_);
+  std::swap(pred_, other.pred_);
 
 }
 
-EListOp::~EListOp()
+ESeqFilt::~ESeqFilt()
 {
-  delete(explop_);
+  delete(exp_);
+  delete(pred_);
 
 }
 
-void EListOp::accept(Visitor *v)
+void ESeqFilt::accept(Visitor *v)
 {
-  v->visitEListOp(this);
+  v->visitESeqFilt(this);
 }
 
-EListOp *EListOp::clone() const
+ESeqFilt *ESeqFilt::clone() const
 {
-  return new EListOp(*this);
+  return new ESeqFilt(*this);
 }
 
 
@@ -595,15 +643,15 @@ IntNegNum *IntNegNum::clone() const
 
 
 /********************   ValNum    ********************/
-ValNum::ValNum(Numer *p1)
+ValNum::ValNum(Numeral *p1)
 {
-  numer_ = p1;
+  numeral_ = p1;
 
 }
 
 ValNum::ValNum(const ValNum & other)
 {
-  numer_ = other.numer_->clone();
+  numeral_ = other.numeral_->clone();
 
 }
 
@@ -616,13 +664,13 @@ ValNum &ValNum::operator=(const ValNum & other)
 
 void ValNum::swap(ValNum & other)
 {
-  std::swap(numer_, other.numer_);
+  std::swap(numeral_, other.numeral_);
 
 }
 
 ValNum::~ValNum()
 {
-  delete(numer_);
+  delete(numeral_);
 
 }
 
@@ -724,62 +772,18 @@ ValStr *ValStr::clone() const
 
 
 
-/********************   EDiceSeq    ********************/
-EDiceSeq::EDiceSeq(ExpD *p1)
-{
-  expd_ = p1;
-
-}
-
-EDiceSeq::EDiceSeq(const EDiceSeq & other)
-{
-  expd_ = other.expd_->clone();
-
-}
-
-EDiceSeq &EDiceSeq::operator=(const EDiceSeq & other)
-{
-  EDiceSeq tmp(other);
-  swap(tmp);
-  return *this;
-}
-
-void EDiceSeq::swap(EDiceSeq & other)
-{
-  std::swap(expd_, other.expd_);
-
-}
-
-EDiceSeq::~EDiceSeq()
-{
-  delete(expd_);
-
-}
-
-void EDiceSeq::accept(Visitor *v)
-{
-  v->visitEDiceSeq(this);
-}
-
-EDiceSeq *EDiceSeq::clone() const
-{
-  return new EDiceSeq(*this);
-}
-
-
-
 /********************   ERange    ********************/
-ERange::ERange(Val *p1, Val *p2)
+ERange::ERange(Exp *p1, Exp *p2)
 {
-  val_1 = p1;
-  val_2 = p2;
+  exp_1 = p1;
+  exp_2 = p2;
 
 }
 
 ERange::ERange(const ERange & other)
 {
-  val_1 = other.val_1->clone();
-  val_2 = other.val_2->clone();
+  exp_1 = other.exp_1->clone();
+  exp_2 = other.exp_2->clone();
 
 }
 
@@ -792,15 +796,15 @@ ERange &ERange::operator=(const ERange & other)
 
 void ERange::swap(ERange & other)
 {
-  std::swap(val_1, other.val_1);
-  std::swap(val_2, other.val_2);
+  std::swap(exp_1, other.exp_1);
+  std::swap(exp_2, other.exp_2);
 
 }
 
 ERange::~ERange()
 {
-  delete(val_1);
-  delete(val_2);
+  delete(exp_1);
+  delete(exp_2);
 
 }
 
@@ -817,19 +821,19 @@ ERange *ERange::clone() const
 
 
 /********************   ERStep    ********************/
-ERStep::ERStep(Val *p1, Val *p2, Val *p3)
+ERStep::ERStep(Exp *p1, Exp *p2, Exp *p3)
 {
-  val_1 = p1;
-  val_2 = p2;
-  val_3 = p3;
+  exp_1 = p1;
+  exp_2 = p2;
+  exp_3 = p3;
 
 }
 
 ERStep::ERStep(const ERStep & other)
 {
-  val_1 = other.val_1->clone();
-  val_2 = other.val_2->clone();
-  val_3 = other.val_3->clone();
+  exp_1 = other.exp_1->clone();
+  exp_2 = other.exp_2->clone();
+  exp_3 = other.exp_3->clone();
 
 }
 
@@ -842,17 +846,17 @@ ERStep &ERStep::operator=(const ERStep & other)
 
 void ERStep::swap(ERStep & other)
 {
-  std::swap(val_1, other.val_1);
-  std::swap(val_2, other.val_2);
-  std::swap(val_3, other.val_3);
+  std::swap(exp_1, other.exp_1);
+  std::swap(exp_2, other.exp_2);
+  std::swap(exp_3, other.exp_3);
 
 }
 
 ERStep::~ERStep()
 {
-  delete(val_1);
-  delete(val_2);
-  delete(val_3);
+  delete(exp_1);
+  delete(exp_2);
+  delete(exp_3);
 
 }
 
@@ -869,15 +873,15 @@ ERStep *ERStep::clone() const
 
 
 /********************   EVect    ********************/
-EVect::EVect(ListVal *p1)
+EVect::EVect(ListExp *p1)
 {
-  listval_ = p1;
+  listexp_ = p1;
 
 }
 
 EVect::EVect(const EVect & other)
 {
-  listval_ = other.listval_->clone();
+  listexp_ = other.listexp_->clone();
 
 }
 
@@ -890,13 +894,13 @@ EVect &EVect::operator=(const EVect & other)
 
 void EVect::swap(EVect & other)
 {
-  std::swap(listval_, other.listval_);
+  std::swap(listexp_, other.listexp_);
 
 }
 
 EVect::~EVect()
 {
-  delete(listval_);
+  delete(listexp_);
 
 }
 
@@ -1959,54 +1963,6 @@ PredRStep *PredRStep::clone() const
 
 
 
-/********************   ELFilt    ********************/
-ELFilt::ELFilt(Exp *p1, Pred *p2)
-{
-  exp_ = p1;
-  pred_ = p2;
-
-}
-
-ELFilt::ELFilt(const ELFilt & other)
-{
-  exp_ = other.exp_->clone();
-  pred_ = other.pred_->clone();
-
-}
-
-ELFilt &ELFilt::operator=(const ELFilt & other)
-{
-  ELFilt tmp(other);
-  swap(tmp);
-  return *this;
-}
-
-void ELFilt::swap(ELFilt & other)
-{
-  std::swap(exp_, other.exp_);
-  std::swap(pred_, other.pred_);
-
-}
-
-ELFilt::~ELFilt()
-{
-  delete(exp_);
-  delete(pred_);
-
-}
-
-void ELFilt::accept(Visitor *v)
-{
-  v->visitELFilt(this);
-}
-
-ELFilt *ELFilt::clone() const
-{
-  return new ELFilt(*this);
-}
-
-
-
 /********************   SVarAs    ********************/
 SVarAs::SVarAs(VarIdent p1, Exp *p2)
 {
@@ -2117,20 +2073,6 @@ void ListExp::accept(Visitor *v)
 ListExp *ListExp::clone() const
 {
   return new ListExp(*this);
-}
-
-
-/********************   ListVal    ********************/
-
-void ListVal::accept(Visitor *v)
-{
-  v->visitListVal(this);
-}
-
-
-ListVal *ListVal::clone() const
-{
-  return new ListVal(*this);
 }
 
 

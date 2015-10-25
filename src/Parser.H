@@ -8,14 +8,12 @@
 class Cmd;
 class Exp;
 class ListExp;
-class Numer;
+class Numeral;
 class Val;
-class ListVal;
 class ExpSeq;
 class ExpD;
 class ExpKW;
 class Pred;
-class ExpLOp;
 class Stmt;
 
 typedef union
@@ -27,14 +25,12 @@ typedef union
   Cmd* cmd_;
   Exp* exp_;
   ListExp* listexp_;
-  Numer* numer_;
+  Numeral* numeral_;
   Val* val_;
-  ListVal* listval_;
   ExpSeq* expseq_;
   ExpD* expd_;
   ExpKW* expkw_;
   Pred* pred_;
-  ExpLOp* explop_;
   Stmt* stmt_;
 } YYSTYPE;
 
@@ -44,12 +40,10 @@ Exp* pExp(FILE *inp);
 Exp* pExp(const char *str);
 ListExp* pListExp(FILE *inp);
 ListExp* pListExp(const char *str);
-Numer* pNumer(FILE *inp);
-Numer* pNumer(const char *str);
+Numeral* pNumeral(FILE *inp);
+Numeral* pNumeral(const char *str);
 Val* pVal(FILE *inp);
 Val* pVal(const char *str);
-ListVal* pListVal(FILE *inp);
-ListVal* pListVal(const char *str);
 ExpSeq* pExpSeq(FILE *inp);
 ExpSeq* pExpSeq(const char *str);
 ExpD* pExpD(FILE *inp);
@@ -58,8 +52,6 @@ ExpKW* pExpKW(FILE *inp);
 ExpKW* pExpKW(const char *str);
 Pred* pPred(FILE *inp);
 Pred* pPred(const char *str);
-ExpLOp* pExpLOp(FILE *inp);
-ExpLOp* pExpLOp(const char *str);
 Stmt* pStmt(FILE *inp);
 Stmt* pStmt(const char *str);
 

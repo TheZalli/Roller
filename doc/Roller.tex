@@ -90,7 +90,8 @@ All other symbols are terminals.\\
 {\nonterminal{Exp3}} & {\arrow}  &{\terminal{(}} {\nonterminal{Exp}} {\terminal{)}}  \\
  & {\delimit}  &{\nonterminal{Val}}  \\
  & {\delimit}  &{\nonterminal{ExpSeq}}  \\
- & {\delimit}  &{\nonterminal{ExpLOp}}  \\
+ & {\delimit}  &{\nonterminal{ExpD}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{[}} {\nonterminal{Pred}} {\terminal{]}}  \\
  & {\delimit}  &{\nonterminal{VarIdent}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
 \end{tabular}\\
 
@@ -101,27 +102,20 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Numer}} & {\arrow}  &{\nonterminal{Integer}}  \\
+{\nonterminal{Numeral}} & {\arrow}  &{\nonterminal{Integer}}  \\
  & {\delimit}  &{\terminal{{$-$}}} {\nonterminal{Integer}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Val}} & {\arrow}  &{\nonterminal{Numer}}  \\
+{\nonterminal{Val}} & {\arrow}  &{\nonterminal{Numeral}}  \\
  & {\delimit}  &{\nonterminal{VarIdent}}  \\
  & {\delimit}  &{\nonterminal{String}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListVal}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Val}}  \\
- & {\delimit}  &{\nonterminal{Val}} {\terminal{,}} {\nonterminal{ListVal}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ExpSeq}} & {\arrow}  &{\nonterminal{ExpD}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{Val}} {\terminal{,}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}} {\terminal{\}}}  \\
- & {\delimit}  &{\terminal{\{}} {\nonterminal{ListVal}} {\terminal{\}}}  \\
+{\nonterminal{ExpSeq}} & {\arrow}  &{\terminal{\{}} {\nonterminal{Exp}} {\terminal{..}} {\nonterminal{Exp}} {\terminal{\}}}  \\
+ & {\delimit}  &{\terminal{\{}} {\nonterminal{Exp}} {\terminal{,}} {\nonterminal{Exp}} {\terminal{..}} {\nonterminal{Exp}} {\terminal{\}}}  \\
+ & {\delimit}  &{\terminal{\{}} {\nonterminal{ListExp}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -167,10 +161,6 @@ All other symbols are terminals.\\
  & {\delimit}  &{\nonterminal{Val}}  \\
  & {\delimit}  &{\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}}  \\
  & {\delimit}  &{\nonterminal{Val}} {\terminal{,}} {\nonterminal{Val}} {\terminal{..}} {\nonterminal{Val}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ExpLOp}} & {\arrow}  &{\nonterminal{Exp}} {\terminal{[}} {\nonterminal{Pred}} {\terminal{]}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
