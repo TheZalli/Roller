@@ -8,10 +8,15 @@ StmtCmd.	Cmd ::= Stmt;
 token VarIdent	(letter | '_')+;
 --token VarIdent	( ('a'-'c') | ('e'-'z') | upper ) ( letter | '_' )*;
 
-comment "#";
-comment "#-" "-#";
+-- These are parsed in the interactive parser by C/C++ libraries
+token IntLiteral '-'? digit+;
+token FloatLiteral '-'? digit+ '.' digit+ ('e' '-'? digit+)?;
 
--- Expressions
+comment "////";
+comment "//*" "*//";
+
+
+-- Expressions --
 
 coercions Exp 3;
 
@@ -22,33 +27,44 @@ EDiv. 	Exp2 	::= Exp2 "/" Exp3;
 
 separator Exp ",";
 
--- -- Values
 
+-- -- Values -- --
 
--- An integer numeral value. Constant during the expression they are used in
-IntNum.		Numeral	::= Integer;
-IntNegNum.	Numeral	::= "-" Integer;
+-- An integer numeral value.
+NumInt.		Numeral	::= IntLiteral;
+NumFloat.	Numeral ::= FloatLiteral;
 
 -- An integer literal, string or variable value
-
 EVal. 	Exp3	::= Val;
 
 ValNum.	Val	::= Numeral;
 ValVar.	Val	::= VarIdent;
 ValStr.	Val	::= String;
 
---separator Val ",";
+
+-- -- Sequences -- --
+
+EList.		Exp3	::= "{" [Exp] "}";
 
 
--- -- Sequences
+-- -- Ranges -- --
 
-ESeq.		Exp3	::= ExpSeq;
+ERange.		Exp3		::= ExpRange;
 
-ERange.		ExpSeq	::= "{" Exp ".." Exp "}"; -- Uses numeral values
-ERStep.		ExpSeq	::= "{" Exp "," Exp ".." Exp "}"; -- Assumes linear sequence
-EVect.		ExpSeq	::= "{" [Exp] "}";
+-- Ranges use numeral values and a linear step is assumed with the default of 1
+-- These can be treated as objects or sequences, but trying to evaluate the sequence to the infinite end of an
+-- infinite range should be a terminating error.
 
--- -- Dice expressions
+Range.		ExpRange	::= Exp ".." Exp;
+RStep.		ExpRange	::= Exp "," Exp ".." Exp;
+
+RInf.		ExpRange	::= Exp "..";
+RStepInf.	ExpRange	::= Exp "," Exp "..";
+RNInf.		ExpRange	::= ".." Exp;
+RStepNInf.	ExpRange	::= ".." Exp "," Exp;
+
+
+-- -- Dice expressions -- --
 
 EDice.	Exp3	::= ExpD;
 
@@ -58,22 +74,28 @@ ENd6.	ExpD	::= Exp "d";
 ENdN.	ExpD	::= Exp "d" Exp;
 
 
--- -- Keyword functions
+-- -- Keyword functions -- --
 
-EKeyW.		Exp		::= ExpKW; -- (could this be Exp0?)
+EKeyW.		Exp0	::= ExpKW;
 
-EKCount.	ExpKW	::= "Count" Exp; -- Gives the length of the sequence. Gives 1 for scalars
-EKSum.		ExpKW	::= "Sum" Exp; -- Gives the sum of the sequence. default operation when converting from a sequence to a single value
-EKRepeat.	ExpKW	::= "Repeat" Exp Exp; -- 'Repeat 3 1d6' is equivalent to 3d6
-EKMean.		ExpKW	::= "Mean" Exp; -- Returns a real
+-- Gives the length of the sequence. Gives 1 for scalars
+EKWCount.	ExpKW	::= "Count" Exp;
+
+-- Gives the sum of the sequence. default operation when converting from a sequence to a single value
+EKWSum.		ExpKW	::= "Sum" Exp;
+
+EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
+EKWMean.	ExpKW	::= "Mean" Exp; 
 
 -- Performs accumulation/folding operation.
 -- Also maps if there is only one parameter for the function
-EKAcc.		ExpKW	::= "Acc" Exp VarIdent;
+EKWAcc.		ExpKW	::= "Acc" Exp VarIdent;
 
--- -- List operations
+
+-- -- List operations -- --
 
 coercions Pred 3;
+
 
 PredBranch.	Pred1	::= Pred1 "," Pred2;
 PredAnd.	Pred1	::= Pred1 "&" Pred2;
@@ -81,26 +103,31 @@ PredOr.		Pred1	::= Pred1 "|" Pred2;
 PredXOr.	Pred1	::= Pred1 "^" Pred2;
 
 PredEQ.		Pred2	::= "=" Val;
-PredNEQ.	Pred2	::= "!=" Val;
+--PredNEQ.	Pred2	::= "!=" Val;
 PredGT.		Pred2	::= "<" Val;
 PredLT.		Pred2	::= ">" Val;
 PredGTEq.	Pred2	::= "<=" Val;
 PredLTEq.	Pred2	::= ">=" Val;
 
-PredIsStr.	Pred3	::= "$" Val;
+-- Negates the predicate.
+PredNot.	Pred3	::= "!" Pred;
+
+PredIsStr.	Pred3	::= "$";
+PredIsInt.	Pred3	::= "#";
+PredIsFloat.Pred3	::= "%";
+
 PredInd.	Pred3	::= Val; -- Indexes
-PredRange.	Pred3	::= Val ".." Val; -- Takes a slice
-PredRStep.	Pred3	::= Val "," Val ".." Val; -- Ditto but with a step value
+PredRange.	Pred3	::= ExpRange; -- Slices
 
 ESeqFilt.	Exp3	::= Exp "[" Pred "]"; -- Predicate expression, filters or indexes the vector
 
 
--- Function call
+-- Function call --
 
 ECall.	Exp3	::= VarIdent "(" [Exp] ")";
 
 
--- Statements
+-- Statements --
 
-SVarAs.	Stmt	::= VarIdent "=" Exp;
-SFDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
+SVarAs.		Stmt	::= VarIdent "=" Exp;
+SFunDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
