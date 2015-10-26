@@ -12,8 +12,8 @@ token VarIdent	(letter | '_')+;
 token IntLiteral '-'? digit+;
 token FloatLiteral '-'? digit+ '.' digit+ ('e' '-'? digit+)?;
 
-comment "////";
-comment "//*" "*//";
+comment "//";
+comment "/*" "*/";
 
 
 -- Expressions --
@@ -56,12 +56,12 @@ ERange.		Exp3		::= ExpRange;
 -- infinite range should be a terminating error.
 
 Range.		ExpRange	::= Exp ".." Exp;
-RStep.		ExpRange	::= Exp "," Exp ".." Exp;
+RStep.		ExpRange	::= Exp "," Exp2 ".." Exp3;
 
 RInf.		ExpRange	::= Exp "..";
-RStepInf.	ExpRange	::= Exp "," Exp "..";
+RStepInf.	ExpRange	::= Exp "," Exp2 "..";
 RNInf.		ExpRange	::= ".." Exp;
-RStepNInf.	ExpRange	::= ".." Exp "," Exp;
+RStepNInf.	ExpRange	::= ".." Exp "," Exp2;
 
 
 -- -- Dice expressions -- --
@@ -76,7 +76,7 @@ ENdN.	ExpD	::= Exp "d" Exp;
 
 -- -- Keyword functions -- --
 
-EKeyW.		Exp0	::= ExpKW;
+EKeyW.		Exp	::= ExpKW;
 
 -- Gives the length of the sequence. Gives 1 for scalars
 EKWCount.	ExpKW	::= "Count" Exp;
