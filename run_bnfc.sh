@@ -2,11 +2,12 @@
 
 # you might need to change the EOL characters to Unix style
 
-set -e
 
 echo "--- Writing docs ---"
 bnfc --latex -o doc/ Roller.cf
 pdflatex -output-directory=doc/ -quiet doc/Roller.tex
+
+set -e
 
 echo "
 --- Writing sources ---"
@@ -17,5 +18,5 @@ then
 	echo "
 --- Building ---
 "
-	make -C src/
+	make -C src/ $1
 fi

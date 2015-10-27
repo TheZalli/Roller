@@ -18,25 +18,31 @@ comment "/*" "*/";
 
 -- Expressions --
 
-coercions Exp 4;
+--coercions Exp 4;
 
 EAdd. 	Exp1 	::= Exp1 "+" Exp2;
 ESub. 	Exp1 	::= Exp1 "-" Exp2;
 EMul. 	Exp2 	::= Exp2 "*" Exp3;
-EDiv. 	Exp2 	::= Exp2 "/" Exp3;
-EPow.	Exp3	::= Exp3 "^" Exp4;
+EDiv. 	Exp2 	::= Exp2 "/" Exp3; -- returns floating point and/or integer + modulo
+EPow.	Exp3	::= Exp3 "^" Exp4; -- exponent
+
+_.		Exp		::= Exp1;
+_.		Exp1	::= Exp2;
+_.		Exp2	::= Exp3;
+_.		Exp3	::= Exp4;
+_.		Exp4	::= "(" Exp ")";
 
 separator Exp ",";
 
 
 -- -- Values -- --
 
--- An integer numeral value.
+-- Numeral is an integer or floating point value.
 NumInt.		Numeral	::= IntLiteral;
 NumFloat.	Numeral ::= FloatLiteral;
 
--- An integer literal, string or variable value
-EVal. 	Exp3	::= Val;
+-- Val is an integer literal, string or variable value
+EVal. 	Exp4	::= Val;
 
 ValNum.	Val	::= Numeral;
 ValVar.	Val	::= VarIdent;
@@ -46,23 +52,20 @@ ValStr.	Val	::= String;
 -- -- Sequences -- --
 
 EList.		Exp3	::= "{" [Exp] "}";
-
+ERange.		Exp3	::= "{" ExpRange "}";
 
 -- -- Ranges -- --
-
-ERange.		Exp			::= ExpRange;
 
 -- Ranges use numeral values and a linear step is assumed with the default of 1
 -- These can be treated as objects or sequences, but trying to evaluate the sequence to the infinite end of an
 -- infinite range should be a terminating error.
 
-Range.		ExpRange	::= Exp ".." Exp;
-RStep.		ExpRange	::= Exp "," Exp2 ".." Exp3;
+--ERange.		Exp3		::= ExpRange;
 
-RInf.		ExpRange	::= Exp "..";
-RStepInf.	ExpRange	::= Exp "," Exp2 "..";
-RNInf.		ExpRange	::= ".." Exp;
-RStepNInf.	ExpRange	::= ".." Exp "," Exp2;
+Range.		ExpRange		::= Exp ".." Exp;
+RStep.		ExpRange		::= Exp "," Exp ".." Exp;
+RInf.		ExpRange		::= Exp "..";
+RStepInf.	ExpRange		::= Exp "," Exp "..";
 
 
 -- -- Dice expressions -- --
@@ -77,12 +80,12 @@ ENdN.	ExpD	::= Exp3 "d" Exp4;
 
 -- -- Keyword functions -- --
 
-EKeyW.		Exp		::= ExpKW;
+EKeyW.		Exp4		::= ExpKW;
 
 -- Repeats the second expression according to the value of the first expression (must be positive integer).
 -- Returns a list with each expression's value.
 -- Possibility: Add a repeat statement that can only call statements and doesn't return anything.
-EKWRepeat.	ExpKW	::= "Repeat" Exp ":" Exp;
+EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
 
 -- Gives the length of a sequence. Gives 1 for single values
 EKWCount.	ExpKW	::= "Count" Exp;
