@@ -6,11 +6,7 @@ ExpCmd.		Cmd ::= Exp;
 StmtCmd.	Cmd ::= Stmt;
 
 token VarIdent	(letter | '_')+;
---token VarIdent	( ('a'-'c') | ('e'-'z') | upper ) ( letter | '_' )*;
-
--- These are parsed in the interactive parser by C/C++ libraries
-token IntLiteral '-'? digit+;
-token FloatLiteral '-'? digit+ '.' digit+ ('e' '-'? digit+)?;
+token Newline	'\n';
 
 comment "//";
 comment "/*" "*/";
@@ -18,13 +14,7 @@ comment "/*" "*/";
 
 -- Expressions --
 
---coercions Exp 4;
-
-EAdd. 	Exp1 	::= Exp1 "+" Exp2;
-ESub. 	Exp1 	::= Exp1 "-" Exp2;
-EMul. 	Exp2 	::= Exp2 "*" Exp3;
-EDiv. 	Exp2 	::= Exp2 "/" Exp3; -- returns floating point and/or integer + modulo
-EPow.	Exp3	::= Exp3 "^" Exp4; -- exponent
+separator Exp ",";
 
 _.		Exp		::= Exp1;
 _.		Exp1	::= Exp2;
@@ -32,27 +22,34 @@ _.		Exp2	::= Exp3;
 _.		Exp3	::= Exp4;
 _.		Exp4	::= "(" Exp ")";
 
-separator Exp ",";
+EAdd. 	Exp1 	::= Exp1 "+" Exp2;
+ESub. 	Exp1 	::= Exp1 "-" Exp2;
+EMul. 	Exp2 	::= Exp2 "*" Exp3;
+EDiv. 	Exp2 	::= Exp2 "/" Exp3; -- returns floating point and/or integer + modulo
+EPow.	Exp3	::= Exp3 "^" Exp4; -- exponent
+
+ENeg.	Exp4	::= "-" Exp;
 
 
 -- -- Values -- --
 
 -- Numeral is an integer or floating point value.
-NumInt.		Numeral	::= IntLiteral;
-NumFloat.	Numeral ::= FloatLiteral;
+NumInt.		Numeral	::= Integer;
+NumFloat.	Numeral ::= Double;
 
 -- Val is an integer literal, string or variable value
 EVal. 	Exp4	::= Val;
 
-ValNum.	Val	::= Numeral;
-ValVar.	Val	::= VarIdent;
-ValStr.	Val	::= String;
+ValNum.	Val		::= Numeral;
+ValVar.	Val		::= VarIdent;
+ValStr.	Val		::= String;
 
 
 -- -- Sequences -- --
 
-EList.		Exp3	::= "{" [Exp] "}";
-ERange.		Exp3	::= "{" ExpRange "}";
+EList.		Exp4	::= "{" [Exp] "}";
+ERange.		Exp4	::= "{" Range "}";
+
 
 -- -- Ranges -- --
 
@@ -60,12 +57,12 @@ ERange.		Exp3	::= "{" ExpRange "}";
 -- These can be treated as objects or sequences, but trying to evaluate the sequence to the infinite end of an
 -- infinite range should be a terminating error.
 
---ERange.		Exp3		::= ExpRange;
+--ERange.		Exp3		::= Range;
 
-Range.		ExpRange		::= Exp ".." Exp;
-RStep.		ExpRange		::= Exp "," Exp ".." Exp;
-RInf.		ExpRange		::= Exp "..";
-RStepInf.	ExpRange		::= Exp "," Exp "..";
+RSimple.	Range		::= Exp ".." Exp;
+RStep.		Range		::= Exp "," Exp ".." Exp;
+RInf.		Range		::= Exp "..";
+RStepInf.	Range		::= Exp "," Exp "..";
 
 
 -- -- Dice expressions -- --
@@ -113,39 +110,49 @@ EKWAcc.		ExpKW	::= "Acc" Exp VarIdent;
 
 -- -- List operations -- --
 
-coercions Pred 3;
+separator Pred ",";
 
-PredBranch.	Pred1	::= Pred1 "," Pred2;
-PredAnd.	Pred1	::= Pred1 "&" Pred2;
-PredOr.		Pred1	::= Pred1 "|" Pred2;
-PredXOr.	Pred1	::= Pred1 "^" Pred2;
+_.				Pred	::= Pred1;
+_.				Pred1	::= Pred2;
+_.				Pred2	::= Pred3;
+_.				Pred3	::= "(" Pred ")";
 
-PredEQ.		Pred2	::= "=" Val;
---PredNEQ.	Pred2	::= "!=" Val;
-PredGT.		Pred2	::= "<" Val;
-PredLT.		Pred2	::= ">" Val;
-PredGTEq.	Pred2	::= "<=" Val;
-PredLTEq.	Pred2	::= ">=" Val;
+--PredBranch.		Pred	::= Pred "," Pred;
+PredAnd.		Pred1	::= Pred1 "&" Pred2;
+PredOr.			Pred1	::= Pred1 "|" Pred2;
+PredXOr.		Pred1	::= Pred1 "^" Pred2;
+
+PredEQ.			Pred2	::= "=" Val;
+--PredNEQ.		Pred2	::= "!=" Val;
+PredGT.			Pred2	::= "<" Val;
+PredLT.			Pred2	::= ">" Val;
+PredGTEq.		Pred2	::= "<=" Val;
+PredLTEq.		Pred2	::= ">=" Val;
 
 -- Negates the predicate.
-PredNot.	Pred3	::= "!" Pred;
+PredNot.	Pred3		::= "!" Pred;
 
-PredIsStr.	Pred3	::= "$";
-PredIsInt.	Pred3	::= "#";
-PredIsFloat.Pred3	::= "%";
+-- Type predicates
+PredIsStr.		Pred3	::= "$";
+PredIsInt.		Pred3	::= "#";
+PredIsFloat.	Pred3	::= "%";
 
-PredInd.	Pred3	::= Val; -- Indexes
-PredRange.	Pred3	::= ExpRange; -- Slices
+PredInd.		Pred3	::= Exp; -- Indexes. If the exp is a range then this slices
 
-ESeqFilt.	Exp3	::= Exp "[" Pred "]"; -- Predicate expression, filters or indexes the vector
+ESeqFilt.		Exp3	::= Exp "[" [Pred] "]"; -- Predicate expression, filters or indexes the vector
 
 
 -- Function call --
 
-ECall.	Exp3	::= VarIdent "(" [Exp] ")";
+ECall.	Exp4		::= VarIdent "(" [Exp] ")";
 
 
 -- Statements --
 
 SVarAs.		Stmt	::= VarIdent "=" Exp;
+SVarAdd.	Stmt	::= VarIdent "+=" Exp;
+SVarSub.	Stmt	::= VarIdent "-=" Exp;
+SVarMul.	Stmt	::= VarIdent "*=" Exp;
+SVarDiv.	Stmt	::= VarIdent "/=" Exp;
+
 SFunDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
