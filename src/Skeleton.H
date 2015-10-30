@@ -77,12 +77,12 @@ public:
   void visitListExp(ListExp *p);
   void visitListPred(ListPred *p);
 
-  void visit"VarIdent"("VarIdent" x);
-  void visit"Integer"("Integer" x);
-  void visit"Char"("Char" x);
-  void visit"Double"("Double" x);
-  void visit"String"("String" x);
-  void visit"Ident"("Ident" x);
+  void visitVarIdent(VarIdent x);
+  void visitInteger(Integer x);
+  void visitChar(Char x);
+  void visitDouble(Double x);
+  void visitString(String x);
+  void visitIdent(Ident x);
 
 };
 
