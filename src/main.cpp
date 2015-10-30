@@ -19,54 +19,19 @@ void usage() {
 }
 
 int main(int argc, char ** argv)
-{
-  /*FILE *input;
-  int quiet = 0;
-  char *filename = NULL;
-
-  if (argc > 1) {
-    if (strcmp(argv[1], "-s") == 0) {
-      quiet = 1;
-      if (argc > 2) {
-        filename = argv[2];
-      } else {
-        input = stdin;
-      }
-    } else {
-      filename = argv[1];
-    }
-  }
-
-  if (filename) {
-    input = fopen(filename, "r");
-    if (!input) {
-      usage();
-      exit(1);
-    }
-  } else input = stdin;
-  /* The default entry point is used. For other options see Parser.H */
-  /*Cmd *parse_tree = pCmd(input);
-  if (parse_tree)
-  {
-    printf("\nParse Succesful!\n");
-    if (!quiet) {
-      printf("\n[Abstract Syntax]\n");
-      ShowAbsyn *s = new ShowAbsyn();
-      printf("%s\n\n", s->show(parse_tree));
-      printf("[Linearized Tree]\n");
-      PrintAbsyn *p = new PrintAbsyn();
-      printf("%s\n\n", p->print(parse_tree));
-    }
-    return 0;
-  }*/
+{	
+	std::cout << "Welcome to Roller"<< std::endl;
+	std::cout << "Developed by mrZalli (https://github.com/mrZalli)" << std::endl;
+	std::cout << "!quit or !q to quit" << std::endl << std::endl;
 	
 	const String prompt = "> ";
+	
 	while (true) {
 		String command;
 		std::cout << prompt;
 		std::getline(std::cin, command);
 		
-		if (command == "!quit") {
+		if (command == "!q" || command == "!quit") {
 			std::cout << "Quitting" << std::endl;
 			return 0;
 		}
@@ -74,12 +39,12 @@ int main(int argc, char ** argv)
 		Cmd* parse_tree = pCmd(command.c_str());
 		
 		if (parse_tree) {
-			std::cout << "[Abstract Syntax]" << std::endl;
+			std::cout << std::endl << "[Abstract Syntax]" << std::endl;
 	        ShowAbsyn *s = new ShowAbsyn();
-	        std::cout << s->show(parse_tree) << std::endl;
+	        std::cout << s->show(parse_tree) << std::endl << std::endl;
 	        std::cout << "[Linearized Tree]" << std::endl;
 	        PrintAbsyn *p = new PrintAbsyn();
-	        std::cout << p->print(parse_tree) << std::endl;
+			std::cout << p->print(parse_tree) << std::endl << std::endl;
 		}
 		else {
 			std::cout << "Parse unsuccesful" << std::endl;

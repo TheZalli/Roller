@@ -40,4 +40,4 @@ ui_*.h
 *~
 *.log
 *.aux
-#src/*
+bin/*
