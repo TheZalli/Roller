@@ -456,7 +456,7 @@ Stmt* pStmt(const char *str)
 
 
 
-#line 460 "Parser.CPP" /* yacc.c:339  */
+#line 460 "Parser.cpp" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -558,7 +558,7 @@ union YYSTYPE
   ListPred* listpred_;
   Stmt* stmt_;
 
-#line 562 "Parser.CPP" /* yacc.c:355  */
+#line 562 "Parser.cpp" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -575,7 +575,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 579 "Parser.CPP" /* yacc.c:358  */
+#line 579 "Parser.cpp" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1763,25 +1763,25 @@ yyreduce:
         case 2:
 #line 482 "Roller.y" /* yacc.c:1646  */
     {  (yyval.cmd_) = new ExpCmd((yyvsp[0].exp_)); YY_RESULT_Cmd_= (yyval.cmd_); }
-#line 1767 "Parser.CPP" /* yacc.c:1646  */
+#line 1767 "Parser.cpp" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 483 "Roller.y" /* yacc.c:1646  */
     {  (yyval.cmd_) = new StmtCmd((yyvsp[0].stmt_)); YY_RESULT_Cmd_= (yyval.cmd_); }
-#line 1773 "Parser.CPP" /* yacc.c:1646  */
+#line 1773 "Parser.cpp" /* yacc.c:1646  */
     break;
 
   case 4:
 #line 485 "Roller.y" /* yacc.c:1646  */
     {  (yyval.exp_) = new EAdd((yyvsp[-2].exp_), (yyvsp[0].exp_)); YY_RESULT_Exp_= (yyval.exp_); }
-#line 1779 "Parser.CPP" /* yacc.c:1646  */
+#line 1779 "Parser.cpp" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 486 "Roller.y" /* yacc.c:1646  */
     {  (yyval.exp_) = new ESub((yyvsp[-2].exp_), (yyvsp[0].exp_)); YY_RESULT_Exp_= (yyval.exp_); }
-#line 1785 "Parser.CPP" /* yacc.c:1646  */
+#line 1785 "Parser.cpp" /* yacc.c:1646  */
     break;
 
   case 6:

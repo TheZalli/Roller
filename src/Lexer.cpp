@@ -1,6 +1,6 @@
-#line 2 "Lexer.CPP"
+#line 2 "Lexer.cpp"
 
-#line 4 "Lexer.CPP"
+#line 4 "Lexer.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -551,7 +551,7 @@ static void YY_BUFFER_RESET(void)
 }
 
 
-#line 555 "Lexer.CPP"
+#line 555 "Lexer.cpp"
 
 #define INITIAL 0
 #define YYINITIAL 1
@@ -770,7 +770,7 @@ YY_DECL
 #line 27 "Roller.l"
 
 
-#line 774 "Lexer.CPP"
+#line 774 "Lexer.cpp"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -1131,7 +1131,7 @@ YY_RULE_SETUP
 #line 90 "Roller.l"
 ECHO;
 	YY_BREAK
-#line 1135 "Lexer.CPP"
+#line 1135 "Lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(YYINITIAL):
 case YY_STATE_EOF(COMMENT):

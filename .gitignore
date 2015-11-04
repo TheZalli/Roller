@@ -22,7 +22,7 @@
 moc_*.cpp
 qrc_*.cpp
 ui_*.h
-Makefile*
+#Makefile*
 *-build-*
 
 # QtCreator
@@ -36,9 +36,9 @@ Makefile*
 # other
 
 *.bak
-#.exe #I'm still keeping this in case I want to demonstrate/test this in an windows environment I don't have relevant tools in
 *.synctex.*
 *~
 *.log
 *.aux
-#src/*
+bin/*
+*#

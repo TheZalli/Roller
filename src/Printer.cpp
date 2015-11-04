@@ -8,32 +8,12 @@
 //You may wish to change render
 void PrintAbsyn::render(Char c)
 {
-  if (c == '{')
-  {
-     bufAppend('\n');
-     indent();
-     bufAppend(c);
-     _n_ = _n_ + INDENT_WIDTH;
-     bufAppend('\n');
-     indent();
-  }
-  else if (c == '(' || c == '[')
+  if (c == '(' || c == '[')
      bufAppend(c);
   else if (c == ')' || c == ']')
   {
      backup();
      bufAppend(c);
-  }
-  else if (c == '}')
-  {
-     int t;
-     _n_ = _n_ - INDENT_WIDTH;
-     for (t=0; t<INDENT_WIDTH; t++) {
-       backup();
-     }
-     bufAppend(c);
-     bufAppend('\n');
-     indent();
   }
   else if (c == ',')
   {
