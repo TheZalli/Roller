@@ -110,6 +110,9 @@ EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
 -- Also maps if there is only one parameter for the function
 EKWAcc.		ExpKW	::= "Acc" VarIdent Exp;
 
+-- Flattens a list
+EKWFlatten.	ExpKW	::= "Flatten" Exp;
+
 -- Returns a string representation of the value
 EKWToStr.	ExpKW	::= "ToString" Exp;
 
@@ -117,7 +120,7 @@ EKWToStr.	ExpKW	::= "ToString" Exp;
 EKWToNum.	ExpKW	::= "ToNumeral" Exp;
 
 -- Converts a string to a sequence of letters
-EKWToSeq.	ExpKW	::= "SplitString" Exp;
+EKWToSeq.	ExpKW	::= "ToList" Exp;
 
 -- -- List operations -- --
 

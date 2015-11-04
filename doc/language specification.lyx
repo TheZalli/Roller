@@ -184,7 +184,7 @@ Ranges are defined with
 \begin_inset Formula $end$
 \end_inset
 
- is the last value and 
+ is the last value, or a greater value than the last value, and 
 \begin_inset Formula $next$
 \end_inset
 
@@ -838,6 +838,31 @@ Example:
 
 \end_deeper
 \begin_layout Itemize
+\begin_inset Formula $Flatten\, a$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Flattens the 
+\begin_inset Formula $a$
+\end_inset
+
+ list so that it contains no child lists
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $Flatten\,\{a,\,\{b,\,\{c,\, d\}\},\,\{e\}\}\rightarrow\{a,\, b,\, c,\, d,\, e\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
 \begin_inset Formula $ToString\, a$
 \end_inset
 
@@ -886,7 +911,7 @@ Otherwise generates an error
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $SplitString\, a$
+\begin_inset Formula $ToList\, a$
 \end_inset
 
 
@@ -894,7 +919,7 @@ Otherwise generates an error
 
 \begin_deeper
 \begin_layout Itemize
-Defined only for strings
+Defined for strings
 \end_layout
 
 \begin_layout Itemize
@@ -1389,6 +1414,19 @@ Holds true only for the list member that is at the index
 .
 \end_layout
 
+\begin_layout Itemize
+For normal lists the indexing starts from one.
+ This is because dice ranges start from one as well.
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $\{4,2,3\}[1]\rightarrow\{4\}$
+\end_inset
+
+
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
 \begin_inset Formula $List$
@@ -1404,6 +1442,165 @@ Holds true for the values whose indexes are in the
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $\{4,2,3\}[\{1,2\}]\rightarrow\{4,2\}$
+\end_inset
+
+, whereas 
+\begin_inset Formula $\{4,2,3\}[1,2]\rightarrow\{\{4\},\{2\}\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Errors
+\end_layout
+
+\begin_layout Standard
+An error is raised when the program runs into an erroneous situation and
+ can't continue.
+ If an error happens during a statetement, the program state shouldn't be
+ changed by that statement.
+\end_layout
+
+\begin_layout Standard
+Information of the type of the error with more info and suggestions should
+ be given to the user.
+ The error messages should be given in a human-readable form.
+\end_layout
+
+\begin_layout Standard
+Suggested error message format is: 
+\begin_inset Quotes eld
+\end_inset
+
+([Error number]) [Error name]: [Error message], at 
+\begin_inset Quotes eld
+\end_inset
+
+[Error location]
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset Quotes erd
+\end_inset
+
+, for example 
+\begin_inset Quotes eld
+\end_inset
+
+(11) Arithmetic error: division by zero, at 
+\begin_inset Quotes eld
+\end_inset
+
+1/x
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Parse error
+\end_layout
+
+\begin_layout Standard
+If the written input doesn't follow the semantic syntax of the language
+ an parse error should be raised.
+ Additional information could be what position the error was encountered.
+\end_layout
+
+\begin_layout Standard
+Various possible parse errors:
+\end_layout
+
+\begin_layout Itemize
+Invalid token error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+When the lexer finds an invalid token
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Quotes eld
+\end_inset
+
+Invalid token error: letters in an integer value, at 
+\begin_inset Quotes eld
+\end_inset
+
+41a3
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Quotes eld
+\end_inset
+
+Invalid token error: invalid character, at 
+\begin_inset Quotes eld
+\end_inset
+
+böö
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Semantic error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+When the semantic analyzer finds an invalid structure
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Quotes eld
+\end_inset
+
+Semantic error: unclosed parenthesis, at 
+\begin_inset Quotes eld
+\end_inset
+
+(1+2
+\begin_inset Quotes erd
+\end_inset
+
+
 \end_layout
 
 \end_deeper
