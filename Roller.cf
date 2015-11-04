@@ -75,14 +75,9 @@ ENd6.	ExpD	::= Exp3 "d";
 ENdN.	ExpD	::= Exp3 "d" Exp4;
 
 
--- -- Keyword functions -- --
+-- -- Keyword expressions -- --
 
 EKeyW.		Exp4		::= ExpKW;
-
--- Repeats the second expression according to the value of the first expression (must be positive integer).
--- Returns a list with each expression's value.
--- Possibility: Add a repeat statement that can only call statements and doesn't return anything.
-EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
 
 -- Gives the length of a sequence. Gives 1 for single values
 EKWCount.	ExpKW	::= "Count" Exp;
@@ -97,16 +92,32 @@ EKWMean.	ExpKW	::= "Mean" Exp;
 -- Gives an error in negative values
 EKWSqrt.	ExpKW	::= "Sqrt" Exp;
 
+-- Gives nth root of the second parameter
+EKWRoot.	ExpKW	::= "Root" Exp Exp;
+
 -- Rounding operations. Truncation is the default when changing floats to ints.
 EKWFloor.	ExpKW	::=	"Floor" Exp;	-- Rounds down
 EKWCeil.	ExpKW	::= "Ceil" Exp;		-- Rounds up
 EKWRound.	ExpKW	::= "Round" Exp;	-- Rounds towards nearest integer, 0.5 is rounded up
 EKWTrunc.	ExpKW	::= "Trunc" Exp;	-- Rounds towards zero
 
+-- Repeats the second expression according to the value of the first expression (must be positive integer).
+-- Returns a list with each expression's value.
+-- Possibility: Add a repeat statement that can only call statements and doesn't return anything.
+EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
+
 -- Performs accumulation/folding operation.
 -- Also maps if there is only one parameter for the function
-EKWAcc.		ExpKW	::= "Acc" Exp VarIdent;
+EKWAcc.		ExpKW	::= "Acc" VarIdent Exp;
 
+-- Returns a string representation of the value
+EKWToStr.	ExpKW	::= "ToString" Exp;
+
+-- Returns a numeral representation of the string, or returns a sum of a sequence
+EKWToNum.	ExpKW	::= "ToNumeral" Exp;
+
+-- Converts a string to a sequence of letters
+EKWToSeq.	ExpKW	::= "SplitString" Exp;
 
 -- -- List operations -- --
 
@@ -133,9 +144,10 @@ PredLTEq.		Pred2	::= ">=" Val;
 PredNot.	Pred3		::= "!" Pred;
 
 -- Type predicates
-PredIsStr.		Pred3	::= "$";
 PredIsInt.		Pred3	::= "#";
-PredIsFloat.	Pred3	::= "%";
+PredIsReal.		Pred3	::= "%";
+PredIsStr.		Pred3	::= "$";
+PredIsList.		Pred3	::= "{" Pred "}";
 
 PredInd.		Pred3	::= Exp; -- Indexes. If the exp is a range then this slices
 
@@ -156,3 +168,6 @@ SVarMul.	Stmt	::= VarIdent "*=" Exp;
 SVarDiv.	Stmt	::= VarIdent "/=" Exp;
 
 SFunDef.	Stmt	::= VarIdent "(" [Exp] ")" "=" Exp;
+
+-- Clears the variable or function
+SDelete.	Stmt	::= "Delete" VarIdent;
