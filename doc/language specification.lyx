@@ -69,7 +69,7 @@ Roller language specification draft
 \end_layout
 
 \begin_layout Standard
-This is the first draft of the language for the interactive parser 
+This is a draft of the language for the interactive parser 
 \begin_inset CommandInset href
 LatexCommand href
 name "Roller"
@@ -87,7 +87,7 @@ Values
 
 \begin_layout Standard
 The program can operate on a limited set of built-in types.
- These types can be put into list types.
+ These types can be put into lists.
 \end_layout
 
 \begin_layout Subsection
@@ -106,8 +106,7 @@ Numeral
 
 \begin_deeper
 \begin_layout Itemize
-Behaves like numeral types in other languages.
- A list of digits or a floating point value.
+ An integer or real value.
 \end_layout
 
 \begin_layout Itemize
@@ -127,12 +126,13 @@ String
 
 \begin_deeper
 \begin_layout Itemize
-From mathemathical operations, only addition operation is allowed for strings.
+From mathematical operations, only addition operation is allowed for strings.
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-Addition concatenates two strings, or an string and a numeral
+Addition concatenates two strings, or a string and a numeral into a
+ larger string.
 \end_layout
 
 \end_deeper
@@ -152,7 +152,7 @@ Lists are values inside curly brackets and separated by commas.
 \end_layout
 
 \begin_layout Subsubsection
-List operators
+List operations
 \end_layout
 
 \begin_layout Standard
@@ -431,7 +431,7 @@ All operators behave normally between single values (scalars)
 \end_layout
 
 \begin_layout Itemize
-If one of the operands is a liste and the another is a single value, then
+If one of the operands is a list and the another is a single value, then
  the operation is applied to the every element on the list recurisvely
 \end_layout
 
