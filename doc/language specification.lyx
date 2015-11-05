@@ -12,7 +12,7 @@
 \font_roman default
 \font_sans default
 \font_typewriter default
-\font_default_family default
+\font_default_family sfdefault
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
@@ -25,6 +25,7 @@
 \bibtex_command default
 \index_command default
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
 \use_geometry false
@@ -488,6 +489,60 @@ The different keywords and their functions are defined in 2.1.2
 
 \end_deeper
 \begin_layout Itemize
+If expression
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Syntax: 
+\begin_inset Formula $If\, a\, Then\, b\, Else\, c$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Returns 
+\begin_inset Formula $b$
+\end_inset
+
+ if the condition expression 
+\begin_inset Formula $a$
+\end_inset
+
+ is not an empty list (
+\begin_inset Formula $\{\}$
+\end_inset
+
+), otherwise returns expression 
+\begin_inset Formula $c$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Use with the filtering expressions
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $If\, foo[>3]\, Then\,1\mbox{d}20+2\, Else\,3\mbox{d}6$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $If\, a[=1]\, Then\,"\mbox{a is one}"\, Else\, If\, a[=2]\, Then\,"\mbox{a is two}"\, Else\,"\mbox{a is not one or two}"$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
 Namespace calls
 \end_layout
 
@@ -839,6 +894,27 @@ Example:
 \end_deeper
 \begin_layout Itemize
 \begin_inset Formula $Flatten\, a$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Converts all the child lists of a into single values
+\end_layout
+
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $Flatten\,\{a,\,\{b,\,\{c,\, d\}\},\,\{e\}\}\rightarrow\{a,\, b+c+d,\, e\}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $ToFlat\, a$
 \end_inset
 
 
