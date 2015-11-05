@@ -125,13 +125,18 @@ EKWToNum.	ExpKW	::= "ToNumeral" Exp;
 -- Converts a string to a sequence of letters
 EKWToSeq.	ExpKW	::= "ToList" Exp;
 
--- -- If expression -- --
+-- -- Conditional expressions -- --
 
+-- If expression
 -- Returns the Then part if the conditional is not an empty list ({}), otherwise returns the Else part.
-EIf.		Exp3	::= "If" Exp "Then" Exp Elses "EndIf";
+EIf.		Exp3	::= "If" Exp "Then" Exp Elses;
 
-Else.		Elses	::= "Else" Exp;
 ElseIfs.	Elses	::= "ElseIf" Exp "Then" Exp Elses;
+Else.		Elses	::= "Else" Exp;
+
+-- Switch/case expression
+ESwitch.	Exp3	::= "Switch" Exp Cases "Default" Exp;
+SwCase.		Cases	::= "Case" Exp ":" Exp Cases;
 
 -- -- List operations -- --
 
