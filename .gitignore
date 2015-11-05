@@ -42,3 +42,4 @@ Makefile*
 *.log
 *.aux
 #src/*
+*#
