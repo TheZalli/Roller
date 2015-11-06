@@ -61,8 +61,6 @@ ERange.		Exp4	::= "{" Range "}";
 
 RSimple.	Range		::= Exp ".." Exp;
 RStep.		Range		::= Exp "," Exp ".." Exp;
-RInf.		Range		::= Exp "..";
-RStepInf.	Range		::= Exp "," Exp "..";
 
 
 -- -- Dice expressions -- --
@@ -114,7 +112,7 @@ EKWAcc.		ExpKW	::= "Acc" VarIdent Exp;
 EKWFlatten.	ExpKW	::= "Flatten" Exp;
 
 -- Flattens a list by removing "list boundaries" of child lists
-EKWFlatten.	ExpKW	::= "ToFlat" Exp;
+EKWToFlat.	ExpKW	::= "ToFlat" Exp;
 
 -- Returns a string representation of the value
 EKWToStr.	ExpKW	::= "ToString" Exp;
@@ -129,14 +127,17 @@ EKWToSeq.	ExpKW	::= "ToList" Exp;
 
 -- If expression
 -- Returns the Then part if the conditional is not an empty list ({}), otherwise returns the Else part.
-EIf.		Exp3	::= "If" Exp "Then" Exp Elses;
-
-ElseIfs.	Elses	::= "ElseIf" Exp "Then" Exp Elses;
-Else.		Elses	::= "Else" Exp;
+EIf.		Exp3	::= "If" Exp "Then" Exp "Else" Exp;
 
 -- Switch/case expression
 ESwitch.	Exp3	::= "Switch" Exp Cases "Default" Exp;
-SwCase.		Cases	::= "Case" Exp ":" Exp Cases;
+
+SCEmpty.	Cases	::= ;
+SCCase.		Cases	::= "Case" Exp ":" Exp Cases;
+
+-- Try and catch expression
+
+ETry.		Exp3	::= "Try" Exp "Catch" ":" Exp;
 
 -- -- List operations -- --
 

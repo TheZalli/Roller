@@ -79,6 +79,8 @@ target "https://github.com/mrZalli/Roller"
 
 .
  No fully functional parser exists yet.
+ I'm sorry if this looks hard to understand since this is mainly meant for
+ me to gather my thoughts.
 \end_layout
 
 \begin_layout Section
@@ -95,7 +97,7 @@ Single values
 \end_layout
 
 \begin_layout Standard
-There are two different types of values: numerals and strings.
+There are three different types of values: numerals, strings and errors.
  Numerals can further be split into integers and reals (floating point).
  Single values can be implicitly converted to single value lists.
 \end_layout
@@ -106,7 +108,7 @@ Numeral
 
 \begin_deeper
 \begin_layout Itemize
- An integer or real value.
+An integer or real value.
 \end_layout
 
 \begin_layout Itemize
@@ -131,11 +133,53 @@ From mathematical operations, only addition operation is allowed for strings.
 
 \begin_deeper
 \begin_layout Itemize
-Addition concatenates two strings, or a string and a numeral into a
- larger string.
+Addition concatenates two strings, or a string and a numeral into a larger
+ string.
 \end_layout
 
 \end_deeper
+\end_deeper
+\begin_layout Itemize
+Error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+A signal about erroneous execution in a command.
+\end_layout
+
+\begin_layout Itemize
+Contains the error type and an error message about the nature of error.
+\end_layout
+
+\begin_layout Itemize
+Can only be created with the 
+\begin_inset Formula $Raise$
+\end_inset
+
+ keyword and can be catched with the 
+\begin_inset Formula $Try$
+\end_inset
+
+ and 
+\begin_inset Formula $Catch$
+\end_inset
+
+ keywords.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+No other operations can be done to the error other than returning or printing
+ it
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Evaluating an error usually returns from the expression or statement unless
+ catched.
+\end_layout
+
 \end_deeper
 \begin_layout Subsection
 Lists
@@ -221,20 +265,7 @@ If the
 \end_inset
 
  or not.
- If the 
-\begin_inset Formula $end$
-\end_inset
-
- parameter is omitted, the range is infinite, but trying to access it's
- last value raises an error 
-\series bold
-or
-\series default
- causes undefined behaviour.
-\end_layout
-
-\begin_layout Standard
-If the step value has the wrong sign (eg.
+ If the step value has the wrong sign (eg.
  
 \begin_inset Formula $0,4..\left(-12\right)$
 \end_inset
@@ -495,10 +526,15 @@ If expression
 \begin_deeper
 \begin_layout Itemize
 Syntax: 
-\begin_inset Formula $If\, a\, Then\, b\, Else\, c$
+\begin_inset Formula $If\: a\: Then\: b\: Else\: c$
 \end_inset
 
 
+\end_layout
+
+\begin_layout Itemize
+The else part is required since this is an expression and has to return
+ a value
 \end_layout
 
 \begin_layout Itemize
@@ -527,7 +563,7 @@ Use with the filtering expressions
 
 \begin_layout Itemize
 Example: 
-\begin_inset Formula $If\, foo[>3]\, Then\,1\mbox{d}20+2\, Else\,3\mbox{d}6$
+\begin_inset Formula $If\: foo[>3]\: Then\:1\mbox{d}20+2\: Else\:3\mbox{d}6$
 \end_inset
 
 
@@ -535,12 +571,48 @@ Example:
 
 \begin_layout Itemize
 Example: 
-\begin_inset Formula $If\, a[=1]\, Then\,"\mbox{a is one}"\, Else\, If\, a[=2]\, Then\,"\mbox{a is two}"\, Else\,"\mbox{a is not one or two}"$
+\begin_inset Formula $If\: a[=1]\, Then\,"\mbox{a is one}"\, Else\: If\: a[=2]\: Then\,"\mbox{a is two}"\, Else\,"\mbox{a is not one or two}"$
 \end_inset
 
 
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+Switch/Case expression
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Syntax: 
+\begin_inset Formula $Switch\, a\: Case\, value\,:\, expression\ldots Default:\, c$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Compares the value of the expression 
+\begin_inset Formula $a$
+\end_inset
+
+ against all of the 
+\begin_inset Formula $value$
+\end_inset
+
+ parts of the case-parts and the 
+\begin_inset Formula $expression$
+\end_inset
+
+ of the first matching case part is returned.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If nothing matches the default part is returned.
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 Namespace calls
@@ -701,7 +773,7 @@ Keyword expressions
 
 \begin_deeper
 \begin_layout Itemize
-\begin_inset Formula $Count\, a$
+\begin_inset Formula $Count\: a$
 \end_inset
 
 
@@ -714,7 +786,7 @@ Gives the length of a list.
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $Sum\, a$
+\begin_inset Formula $Sum\: a$
 \end_inset
 
 
@@ -732,7 +804,7 @@ If any of the members are a string, the sum is all of the values converted
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $Mean\, a$
+\begin_inset Formula $Mean\: a$
 \end_inset
 
 
@@ -749,7 +821,7 @@ Returns the mean value of a numeral list.
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $Sqrt\, a$
+\begin_inset Formula $Sqrt\: a$
 \end_inset
 
 
@@ -893,7 +965,7 @@ Example:
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $Flatten\, a$
+\begin_inset Formula $Flatten\: a$
 \end_inset
 
 
@@ -914,7 +986,7 @@ Example:
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $ToFlat\, a$
+\begin_inset Formula $ToFlat\: a$
 \end_inset
 
 
@@ -939,7 +1011,7 @@ Example:
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $ToString\, a$
+\begin_inset Formula $ToString\: a$
 \end_inset
 
 
@@ -956,7 +1028,7 @@ Returns a string representation of
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $ToNumeral\, a$
+\begin_inset Formula $ToNumeral\: a$
 \end_inset
 
 
@@ -987,7 +1059,7 @@ Otherwise generates an error
 
 \end_deeper
 \begin_layout Itemize
-\begin_inset Formula $ToList\, a$
+\begin_inset Formula $ToList\: a$
 \end_inset
 
 
@@ -1011,6 +1083,52 @@ The letters are single character strings
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+\begin_inset Formula $Raise\: a$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Creates an error with 
+\begin_inset Formula $a$
+\end_inset
+
+ as it's error message.
+\end_layout
+
+\begin_layout Itemize
+Evaluating this effectively terminates the expression
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $Try\: a\: Catch\,:\, b$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Evaluates 
+\begin_inset Formula $a$
+\end_inset
+
+ and if it returns an error returns 
+\begin_inset Formula $b$
+\end_inset
+
+, otherwise returns the value of 
+\begin_inset Formula $a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Subsection
 Statements
@@ -1019,10 +1137,11 @@ Statements
 \begin_layout Standard
 Statements have side-effects, which means that they change the state of
  the environment, more specifically the namespace.
+ The statements can raise errors.
 \end_layout
 
 \begin_layout Subsubsection
-Variable assignment statements
+Variable statements
 \end_layout
 
 \begin_layout Itemize
@@ -1073,8 +1192,86 @@ Does the operation with the variable and the expression as operands and
  places the result into the variable.
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
-If the variable is not defined this raises an error
+Example: 
+\begin_inset Formula $foo+=4$
+\end_inset
+
+ is equivalent to 
+\begin_inset Formula $foo=foo+4$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+If the variable doesn't exist this raises a 
+\begin_inset Formula $Undeclared\, Variable$
+\end_inset
+
+ error
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Delete statement, 
+\begin_inset Formula $Delete\: name$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Deletes the variable or function 
+\begin_inset Formula $name$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+If the operand doesn't exist this raises a 
+\begin_inset Formula $Undeclared\, Name$
+\end_inset
+
+ error
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Try and catch statement, 
+\begin_inset Formula $Try\: a\: Catch\,:\, cmd$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If the statement 
+\begin_inset Formula $a$
+\end_inset
+
+ raises any error, then the command 
+\begin_inset Formula $cmd$
+\end_inset
+
+ is executed, which can be an expression or statement.
+\end_layout
+
+\begin_layout Itemize
+Works like the try and catch expression, except on statements.
+\end_layout
+
+\begin_layout Itemize
+Doesn't return a value, but if the 
+\begin_inset Formula $cmd$
+\end_inset
+
+ is an expression then it's value is printed as normal.
 \end_layout
 
 \end_deeper
