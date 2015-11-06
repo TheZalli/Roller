@@ -110,8 +110,11 @@ EKWRepeat.	ExpKW	::= "Repeat" Exp Exp;
 -- Also maps if there is only one parameter for the function
 EKWAcc.		ExpKW	::= "Acc" VarIdent Exp;
 
--- Flattens a list
+-- Flattens a list by converting all the members to single values
 EKWFlatten.	ExpKW	::= "Flatten" Exp;
+
+-- Flattens a list by removing "list boundaries" of child lists
+EKWFlatten.	ExpKW	::= "ToFlat" Exp;
 
 -- Returns a string representation of the value
 EKWToStr.	ExpKW	::= "ToString" Exp;
@@ -121,6 +124,19 @@ EKWToNum.	ExpKW	::= "ToNumeral" Exp;
 
 -- Converts a string to a sequence of letters
 EKWToSeq.	ExpKW	::= "ToList" Exp;
+
+-- -- Conditional expressions -- --
+
+-- If expression
+-- Returns the Then part if the conditional is not an empty list ({}), otherwise returns the Else part.
+EIf.		Exp3	::= "If" Exp "Then" Exp Elses;
+
+ElseIfs.	Elses	::= "ElseIf" Exp "Then" Exp Elses;
+Else.		Elses	::= "Else" Exp;
+
+-- Switch/case expression
+ESwitch.	Exp3	::= "Switch" Exp Cases "Default" Exp;
+SwCase.		Cases	::= "Case" Exp ":" Exp Cases;
 
 -- -- List operations -- --
 
