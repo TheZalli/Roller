@@ -1,5 +1,5 @@
-#LyX 2.0 created this file. For more info see http://www.lyx.org/
-\lyxformat 413
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
 \begin_document
 \begin_header
 \textclass article
@@ -12,13 +12,13 @@
 \font_roman default
 \font_sans default
 \font_typewriter default
+\font_math auto
 \font_default_family sfdefault
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
 \font_sf_scale 100
 \font_tt_scale 100
-
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -29,15 +29,24 @@
 \use_hyperref false
 \papersize default
 \use_geometry false
-\use_amsmath 1
-\use_esint 1
-\use_mhchem 1
-\use_mathdots 1
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
 \cite_engine basic
+\cite_engine_type default
+\biblio_style plain
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
 \suppress_date false
+\justification true
 \use_refstyle 1
 \index Index
 \shortcut idx
@@ -61,7 +70,7 @@
 \begin_body
 
 \begin_layout Author
-mrZalli
+Zalli
 \end_layout
 
 \begin_layout Title
@@ -99,7 +108,10 @@ Single values
 \begin_layout Standard
 There are three different types of values: numerals, strings and errors.
  Numerals can further be split into integers and reals (floating point).
- Single values can be implicitly converted to single value lists.
+\end_layout
+
+\begin_layout Standard
+Single values can be implicitly converted to single value lists.
 \end_layout
 
 \begin_layout Itemize
@@ -127,6 +139,10 @@ String
 \end_layout
 
 \begin_deeper
+\begin_layout Itemize
+An UTF-8 character string.
+\end_layout
+
 \begin_layout Itemize
 From mathematical operations, only addition operation is allowed for strings.
 \end_layout
@@ -202,8 +218,11 @@ List operations
 \begin_layout Standard
 Operations meant for single values are applied recursively on every list
  member separately when used on lists.
- Lists can be implicitly converted to single values, which calls the lists
- sum.
+\end_layout
+
+\begin_layout Standard
+Numeral lists can be implicitly converted to single values, which evaluates
+ as the sum of the list.
 \end_layout
 
 \begin_layout Subsubsection
@@ -279,7 +298,7 @@ Variables
 
 \begin_layout Standard
 A variable can hold any value.
- Variable identifier is recognized by the regular expression 
+ Variable identifiers are recognized by the regexp 
 \begin_inset Formula $\left(\,[a-zA-Z]\,|\,\_\,\right)$
 \end_inset
 
@@ -297,13 +316,14 @@ Functions
 
 \begin_layout Standard
 Functions are repeatable expressions with a zero or more parameters.
- Functions always return a value, or cause an error.
+ Functions always return a value, which might be an error.
 \end_layout
 
 \begin_layout Standard
 Parameter is the function's local variable, while argument is the value
  given to the parameter on function call.
- Variables and function names must be unique.
+ Variable names and function names are in the same namespace, and must be
+ unique between eachother.
 \end_layout
 
 \begin_layout Subsubsection
@@ -312,7 +332,7 @@ Parameters
 
 \begin_layout Standard
 By default all variables are in the global namespace, but functions can
- define parameter variables that are in the function's namespace.
+ define parameter variables which are always only in the function's namespace.
 \end_layout
 
 \begin_layout Standard
@@ -326,7 +346,7 @@ Commands
 \end_layout
 
 \begin_layout Standard
-The Roller application takes commands as an input.
+The Roller interpreter application takes commands as it's input.
  There are two types of commands: expressions and statements.
 \end_layout
 
@@ -341,13 +361,12 @@ Expressions
 \end_layout
 
 \begin_layout Standard
-All expressions must return a value except if the expression encounters
- an error.
+All expressions must return a value, which can be an error.
 \end_layout
 
 \begin_layout Standard
-In that case, the execution of the command the expression was in, must be
- stopped and the user should be informed.
+If error was returned it has the information about where it was raised and
+ it's callstack.
 \end_layout
 
 \begin_layout Subsubsection
@@ -368,7 +387,7 @@ Value can be a single value or a list.
 \end_layout
 
 \begin_layout Itemize
-The value types are defined in the part 1
+The value types are defined earlier in the part 1
 \end_layout
 
 \end_deeper
@@ -386,7 +405,8 @@ Uses the dice notation, so
 \begin_inset Formula $N\mbox{d}M$
 \end_inset
 
- means throw N amount of M sided die, if both N and M are integers.
+ means throw N amount of M sided die, where N and M are integers or integer
+ expressions.
  If the parameters are not present the defaults are used.
 \end_layout
 
@@ -458,12 +478,12 @@ All mathematical operators are infix, except the negation operator.
 \end_layout
 
 \begin_layout Itemize
-All operators behave normally between single values (scalars)
+All operators behave as expected between single values (scalars).
 \end_layout
 
 \begin_layout Itemize
 If one of the operands is a list and the another is a single value, then
- the operation is applied to the every element on the list recurisvely
+ the operation is applied to the every element on the list element-wise.
 \end_layout
 
 \begin_deeper
@@ -495,18 +515,68 @@ Example:
 \end_deeper
 \end_deeper
 \begin_layout Itemize
+Comparison operators
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+All comparison operators are infix.
+\end_layout
+
+\begin_layout Itemize
+Operates only between scalar numeral values.
+\end_layout
+
+\begin_layout Itemize
+Evaluates as 
+\begin_inset Formula $1$
+\end_inset
+
+ if the comparison holds true and evaluates as 
+\begin_inset Formula $0$
+\end_inset
+
+ if it doesn't hold true.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Logical connectives
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Logical connectives connect different filtering predicates or expressions.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $0$
+\end_inset
+
+ is considered as false, anything else is considered as true.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If a real value is really close to zero, treat it as zero to get rid of
+ floating point errors.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
 Keyword expressions
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
 All keywords start with a capital letter followed by non-capital or capital
- letters
+ letters.
 \end_layout
 
 \begin_layout Itemize
 All keyword expressions consist of a keyword and the parameters.
- The keyword is always before the parameters
+ The keyword is always before the parameters.
 \end_layout
 
 \begin_layout Itemize
@@ -515,9 +585,15 @@ es.
 \end_layout
 
 \begin_layout Itemize
-The different keywords and their functions are defined in 2.1.2
+The different keywords and their functions are defined in 2.1.2.
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+Some common keyword expressions are explained below.
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 If expression
@@ -534,7 +610,7 @@ Syntax:
 
 \begin_layout Itemize
 The else part is required since this is an expression and has to return
- a value
+ a value.
 \end_layout
 
 \begin_layout Itemize
@@ -546,7 +622,11 @@ Returns
 \begin_inset Formula $a$
 \end_inset
 
- is not an empty list (
+ is not a scalar 
+\begin_inset Formula $0$
+\end_inset
+
+ or an empty list (
 \begin_inset Formula $\{\}$
 \end_inset
 
@@ -558,9 +638,10 @@ Returns
 \end_layout
 
 \begin_layout Itemize
-Use with the filtering expressions
+Can be used with the filtering expressions.
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
 Example: 
 \begin_inset Formula $If\: foo[>3]\: Then\:1\mbox{d}20+2\: Else\:3\mbox{d}6$
@@ -578,6 +659,7 @@ Example:
 \end_layout
 
 \end_deeper
+\end_deeper
 \begin_layout Itemize
 Switch/Case expression
 \end_layout
@@ -589,6 +671,11 @@ Syntax:
 \end_inset
 
 
+\end_layout
+
+\begin_layout Itemize
+The default part is required since this is an expression and has to return
+ a value.
 \end_layout
 
 \begin_layout Itemize
@@ -680,10 +767,17 @@ Returns a list of the members that fit the for each of the predicates in
 \end_layout
 
 \begin_layout Itemize
-Filtering considers the list to be flat and the filtering is not done to
- the members of the child lists.
+Filtering considers each list member separately, so normally filtering is
+ not done to the child list members.
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+There is however a list predicate that matches child lists and can be used
+ to match child list members.
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
 The different predicates are defined in the part 3
 \end_layout
@@ -732,7 +826,8 @@ Division (
 
 \begin_deeper
 \begin_layout Itemize
-Result is a real numeral.
+Result is a scalar real numeral if the operands were scalar integer or real
+ numerals.
 \end_layout
 
 \end_deeper
@@ -768,12 +863,73 @@ Note:
 \end_deeper
 \end_deeper
 \begin_layout Itemize
-Keyword expressions
+Comparison operators
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-\begin_inset Formula $Count\: a$
+Equivalence (
+\begin_inset Formula $=$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Inequivalence (
+\begin_inset Formula $!=$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Greater than (
+\begin_inset Formula $>$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Less than (
+\begin_inset Formula $<$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Greater or equal (
+\begin_inset Formula $>=$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Less or equal (
+\begin_inset Formula $<=$
+\end_inset
+
+)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Logical connectives
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Available connectives are (notice that false is equal to numeral 0 and true
+ is anything else):
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Conjunction/and, 
+\begin_inset Formula $a\,\&\, b$
 \end_inset
 
 
@@ -781,7 +937,85 @@ Keyword expressions
 
 \begin_deeper
 \begin_layout Itemize
-Gives the length of a list.
+Defined true iff (if and only if) both of the operand predicates (
+\begin_inset Formula $a$
+\end_inset
+
+, 
+\series bold
+
+\begin_inset Formula $b$
+\end_inset
+
+)
+\series default
+ are true.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Disjunction/or, 
+\begin_inset Formula $a\,|\, b$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Defined true iff any of the operands are true.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Exclusive disjunction/xor, 
+\begin_inset Formula $a\,\mathcircumflex\mathcircumflex\, b$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Defined true iff one of the operands are different.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Negation/not, 
+\begin_inset Formula $!a$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Defined true iff the operand is false.
+\end_layout
+
+\begin_layout Itemize
+Has high precedence
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Keyword expressions
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $Length\: a$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Gives the length of a list
 \end_layout
 
 \end_deeper
@@ -798,8 +1032,28 @@ Gives the sum of a list
 \end_layout
 
 \begin_layout Itemize
-If any of the members are a string, the sum is all of the values converted
- to strings and concatenated with spaces between.
+Only defined for lists with numeral values
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $Concat\, a\, separator$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Concatenates all of the items of a list into a string with the 
+\begin_inset Formula $separator$
+\end_inset
+
+ string inserted between them
+\end_layout
+
+\begin_layout Itemize
+Defined for all of the lists
 \end_layout
 
 \end_deeper
@@ -816,7 +1070,7 @@ Only defined on numeral values
 \end_layout
 
 \begin_layout Itemize
-Returns the mean value of a numeral list.
+Returns the mean value of a numeral list
 \end_layout
 
 \end_deeper
@@ -829,10 +1083,6 @@ Returns the mean value of a numeral list.
 
 \begin_deeper
 \begin_layout Itemize
-Only defined on numeral values
-\end_layout
-
-\begin_layout Itemize
 Returns the square root of 
 \begin_inset Formula $a$
 \end_inset
@@ -840,6 +1090,12 @@ Returns the square root of
  recursively
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+Only defined on numeral values
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 \begin_inset Formula $Root\: n\: a$
@@ -892,7 +1148,7 @@ Repeats the
 \end_inset
 
  times and returns a list of the 
-\begin_inset Formula $b$
+\begin_inset Formula $a$
 \end_inset
 
 's value for each repetition.
@@ -948,6 +1204,18 @@ Accumulates the
 \end_layout
 
 \begin_layout Itemize
+The 
+\begin_inset Formula $function$
+\end_inset
+
+ must have exactly two parameters.
+\end_layout
+
+\begin_layout Itemize
+The first argument to the function is the accumulated value.
+\end_layout
+
+\begin_layout Itemize
 Example: 
 \begin_inset Formula $Acc\: add\:\left\{ 1,2,4,3\right\} $
 \end_inset
@@ -963,6 +1231,22 @@ Example:
 
 \end_layout
 
+\begin_layout Itemize
+Example: 
+\begin_inset Formula $Acc\, f\,\left\{ 1,2,3,4\right\} $
+\end_inset
+
+, where 
+\begin_inset Formula $f\left(a,\, b\right)=-a-b$
+\end_inset
+
+, is equivalent to 
+\begin_inset Formula $-\left(-\left(-1-2\right)-3\right)-4=-4$
+\end_inset
+
+
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
 \begin_inset Formula $Flatten\: a$
@@ -973,7 +1257,11 @@ Example:
 
 \begin_deeper
 \begin_layout Itemize
-Converts all the child lists of a into single values
+Converts all the child lists of 
+\begin_inset Formula $a$
+\end_inset
+
+ into single values
 \end_layout
 
 \begin_layout Itemize
@@ -1042,7 +1330,7 @@ If
 
  is a string this returns it's numeral representation.
  If the string doesn't contain a numeral (integer or floating point) this
- generates an error
+ returns an error
 \end_layout
 
 \begin_layout Itemize
@@ -1053,10 +1341,12 @@ If
  is a numeral list this returns it's sum
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
-Otherwise generates an error
+Otherwise returns an error
 \end_layout
 
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 \begin_inset Formula $ToList\: a$
@@ -1092,7 +1382,7 @@ The letters are single character strings
 
 \begin_deeper
 \begin_layout Itemize
-Creates an error with 
+Returns an error with 
 \begin_inset Formula $a$
 \end_inset
 
@@ -1137,7 +1427,15 @@ Statements
 \begin_layout Standard
 Statements have side-effects, which means that they change the state of
  the environment, more specifically the namespace.
- The statements can raise errors.
+\end_layout
+
+\begin_layout Standard
+Statements have higher precedence than the expressions.
+\end_layout
+
+\begin_layout Standard
+Instead of returning errors, the statements raise errors.
+ The effect is the same though, the error is printed to the command line.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1165,9 +1463,14 @@ Creates or replaces a variable with the of
 
 \end_layout
 
+\begin_layout Itemize
+Can't be mixed with the equality comparison expression because statements
+ have higher precedence than expressions.
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
-Assignment and operation, 
+Operation and assignment, 
 \begin_inset Formula $+=$
 \end_inset
 
@@ -1207,7 +1510,7 @@ Example:
 
 \end_deeper
 \begin_layout Itemize
-If the variable doesn't exist this raises a 
+If the variable doesn't exist this raises an 
 \begin_inset Formula $Undeclared\, Variable$
 \end_inset
 
@@ -1233,7 +1536,7 @@ Deletes the variable or function
 \end_layout
 
 \begin_layout Itemize
-If the operand doesn't exist this raises a 
+If the operand doesn't exist this raises an 
 \begin_inset Formula $Undeclared\, Name$
 \end_inset
 
@@ -1334,15 +1637,15 @@ List of the precedence levels different predicates have:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="4" columns="2">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Precedence level
+Predicate precedence level
 \end_layout
 
 \end_inset
@@ -1430,81 +1733,12 @@ Logical connectives
 
 \begin_layout Standard
 Logical connectives connect different predicates.
- Available connectives are:
 \end_layout
 
-\begin_layout Itemize
-Conjunction/and, 
-\begin_inset Formula $a\,\&\, b$
-\end_inset
-
-
+\begin_layout Standard
+The connectives are defined earlier in the expressions.
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-Defined true iff (if and only if) both of the operand predicates (
-\begin_inset Formula $a$
-\end_inset
-
-, 
-\series bold
-
-\begin_inset Formula $b$
-\end_inset
-
-)
-\series default
- are true.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Disjunction/or, 
-\begin_inset Formula $a\,|\, b$
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Defined true iff any of the operands are true.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Exclusive disjunction/xor, 
-\begin_inset Formula $a\,\mathcircumflex\, b$
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Defined true iff one of the operands are true.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Negation/not, 
-\begin_inset Formula $!a$
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Defined true iff the operand is false.
-\end_layout
-
-\begin_layout Itemize
-Has high precedence
-\end_layout
-
-\end_deeper
 \begin_layout Subsection
 Comparison predicates
 \end_layout
@@ -1735,8 +1969,8 @@ Errors
 \end_layout
 
 \begin_layout Standard
-An error is raised when the program runs into an erroneous situation and
- can't continue.
+An error is returned (expressions) or raised (statements) when the program
+ runs into an erroneous situation and can't continue.
  If an error happens during a statetement, the program state shouldn't be
  changed by that statement.
 \end_layout
@@ -1789,8 +2023,13 @@ Parse error
 
 \begin_layout Standard
 If the written input doesn't follow the semantic syntax of the language
- an parse error should be raised.
+ an parse error should be created.
  Additional information could be what position the error was encountered.
+\end_layout
+
+\begin_layout Standard
+The details and different types of these errors are dependent on the implementat
+ion of the parser.
 \end_layout
 
 \begin_layout Standard
@@ -1874,6 +2113,42 @@ Semantic error: unclosed parenthesis, at
 \end_inset
 
 
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Execution error
+\end_layout
+
+\begin_layout Standard
+Error that was encountered during the execution of a command.
+\end_layout
+
+\begin_layout Standard
+Various possible errors:
+\end_layout
+
+\begin_layout Itemize
+Arithmetic error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Division by zero
+\end_layout
+
+\begin_layout Itemize
+Use of special floating point values, like NaN or infinity inapproriately
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Invalid type error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Use of wrong type
 \end_layout
 
 \end_deeper
