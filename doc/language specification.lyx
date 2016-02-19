@@ -1519,32 +1519,6 @@ If the variable doesn't exist this raises an
 
 \end_deeper
 \begin_layout Itemize
-Delete statement, 
-\begin_inset Formula $Delete\: name$
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Deletes the variable or function 
-\begin_inset Formula $name$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-If the operand doesn't exist this raises an 
-\begin_inset Formula $Undeclared\, Name$
-\end_inset
-
- error
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
 Try and catch statement, 
 \begin_inset Formula $Try\: a\: Catch\,:\, cmd$
 \end_inset
@@ -1575,6 +1549,135 @@ Doesn't return a value, but if the
 \end_inset
 
  is an expression then it's value is printed as normal.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Delete statement, 
+\begin_inset Formula $Delete\: name$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Deletes the variable or function 
+\begin_inset Formula $name$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+If the operand doesn't exist this raises an 
+\begin_inset Formula $Undeclared\, Name$
+\end_inset
+
+ error
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Clear statement, 
+\begin_inset Formula $Clear/Clear\, var/Clear\, fun$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Deletes all of the functions and/or variables.
+\end_layout
+
+\begin_layout Itemize
+If the argument is 
+\begin_inset Formula $fun$
+\end_inset
+
+ deletes all of the functions, if it is 
+\begin_inset Formula $var$
+\end_inset
+
+ deletes all of the variables, if it is empty, deletes them both.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Run statement, 
+\begin_inset Formula $Run\, filepath$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Runs the desired file as a roller script, evaluating each line as a command.
+\end_layout
+
+\begin_layout Itemize
+If the path has no filetype extension and the file doesn't exist, '.txt'
+ is assumed as the extension.
+\end_layout
+
+\begin_layout Itemize
+Can return an IO error.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Save statement, 
+\begin_inset Formula $Save\, filepath$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Saves the current variables and functions into the desired path as a script
+ file.
+\end_layout
+
+\begin_layout Itemize
+Has an interactive interface that asks if you want to override an existing
+ file.
+\end_layout
+
+\begin_layout Itemize
+The saved scriptfile must be run to load it.
+\end_layout
+
+\begin_layout Itemize
+Can return an IO error.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Load statement, 
+\begin_inset Formula $Load\, filepath$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Equivalent to first calling the 
+\begin_inset Formula $Clear$
+\end_inset
+
+ statement, and then 
+\begin_inset Formula $Run$
+\end_inset
+
+ statement with 
+\begin_inset Formula $filepath$
+\end_inset
+
+.
 \end_layout
 
 \end_deeper
@@ -2116,6 +2219,16 @@ Semantic error: unclosed parenthesis, at
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+IO error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+An IO error when parsing.
+\end_layout
+
+\end_deeper
 \begin_layout Subsection
 Execution error
 \end_layout
@@ -2149,6 +2262,16 @@ Invalid type error
 \begin_deeper
 \begin_layout Itemize
 Use of wrong type
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+IO error
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+An error during an IO operation with stdin, stdout, files, etc.
 \end_layout
 
 \end_deeper

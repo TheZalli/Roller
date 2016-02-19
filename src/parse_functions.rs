@@ -1,12 +1,12 @@
 use syntax_structures::*;
 
 
-named!(pub parse_cmd<CmdType>, alt!(
+named!(pub parse_cmd<Cmd>, alt!(
 		parse_stmt => {
-			|_| CmdType::Statement
+			|_| Cmd::Empty
 		}
 		| parse_expr => {
-			|_| CmdType::Expression
+			|_| Cmd::Empty
 		}
 	)
 );

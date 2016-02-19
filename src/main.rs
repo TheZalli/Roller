@@ -6,6 +6,7 @@ use std::io;
 
 mod syntax_structures;
 mod parse_functions;
+mod eval;
 
 use parse_functions::*;
 
