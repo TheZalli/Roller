@@ -171,7 +171,7 @@ PredIsList.		Pred3	::= "{" Pred "}";
 
 PredInd.		Pred3	::= Exp; -- Indexes. If the exp is a range then this slices
 
-ESeqFilt.		Exp3	::= Exp "[" [Pred] "]"; -- Predicate expression, filters or indexes the vector
+ESeqFilt.		Exp3	::= Exp "[" [Pred] "]"; -- Predicate expression, filters or slices the vector
 
 
 -- Function call --

@@ -1,0 +1,11 @@
+[package]
+name = "roller"
+version = "0.1.0"
+authors = ["mrZalli <misterzalli@gmail.com>"]
+
+[dependencies]
+regex = "0.1"
+
+[dependencies.nom]
+version = "~1.2.0"
+features = ["regexp"]
