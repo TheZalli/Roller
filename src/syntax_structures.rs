@@ -1,12 +1,47 @@
 #![allow(dead_code)]
 use std::boxed::Box;
 use std::path::PathBuf;
+use std::f64;
+
+/// The error allowed for floating point equality comparison.
+const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
+
+/// Floating point equality comparison.
+fn float_eq(x: f64, y: f64) -> bool {
+	let abs_diff = (x - y).abs();
+	abs_diff <= EPSILON
+}
 
 /// An variable and function identifier
 pub type Ident = String;
 
 /// A keyword identifier
 pub type KWIdent = String;
+
+/// A numeral, either an integer or real (floating point)
+#[derive(Debug)]
+pub enum NumType {
+	Int(i64),
+	Real(f64),
+}
+
+impl PartialEq for NumType {
+	fn eq(&self, other: &Self) -> bool {
+		match ( self, other ) {
+			( &NumType::Int(x), &NumType::Int(y) ) =>
+				x == y,
+
+			  ( &NumType::Real(x), &NumType::Int(y)  )
+			| ( &NumType::Int(y),  &NumType::Real(x) ) =>
+				float_eq(x, y as f64),
+
+			( &NumType::Real(x), &NumType::Real(y) ) =>
+				float_eq(x, y),
+		}
+	}
+}
+
+//impl Eq for NumType {}
 
 /// A command given to the interpreter
 #[derive(Debug, PartialEq)]
@@ -51,18 +86,24 @@ pub enum LiteralExpr {
 	Error,
 }
 
-/// A numeral, either an integer or real (floating point)
-#[derive(Debug, PartialEq)]
-pub enum NumType {
-	Int(i32),
-	Real(f32), // TODO: deal with floating point errors
-	Invalid, // NaN, infinity, undefined
-}
-
 #[derive(Debug, PartialEq)]
 pub enum ListValExpr {
 	Vector(Vec<Expr>),
-	Range(Box<(Expr, Expr, Expr)>), // (start, step, end)
+	Range(Box<RollerRange>), // (start, step, end)
+}
+
+#[derive(Debug, PartialEq)]
+struct RollerRange {
+	start: Expr,
+	step: Expr,
+	end: Expr,
+}
+
+impl RollerRange {
+	// TODO: error checking if step is of wrong sign
+	fn new(start: Expr, step: Expr, end: Expr) -> RollerRange {
+		RollerRange{start: start, step: step, end: end}
+	}
 }
 
 #[derive(Debug, PartialEq)]
@@ -72,6 +113,7 @@ pub enum Pred {
 	Cmp(CmpOp, Box<Expr>),
 	LogConn(LogConnOp, Box<(Pred, Pred)>),
 	Type(TypePred),
+	List(Option<Box<Pred>>),
 }
 
 #[derive(Debug, PartialEq)]
@@ -111,5 +153,4 @@ pub enum TypePred {
 	Int,
 	Real,
 	String,
-	List(Option<Box<Pred>>),
 }

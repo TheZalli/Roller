@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate nom;
+extern crate regex;
 
 use std::io::prelude::*;
 use std::io;
 
 mod syntax_structures;
 mod parse_functions;
-mod eval;
+//mod eval;
 
 use parse_functions::*;
 
