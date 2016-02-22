@@ -26,6 +26,6 @@ fn main() {
 			_ => input = temp
 		}
 
-		println!("\n{:?}", parse_cmd(input.as_bytes() ));
+		println!("\n{:?}", parse_cmd(&input));
 	}
 }

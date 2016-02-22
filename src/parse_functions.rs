@@ -1,32 +1,47 @@
 use syntax_structures::*;
 
 use nom::{IResult,digit};
-use nom::IResult::*;
+//use nom::IResult::*;
 
-use std::str;
 use std::str::FromStr;
 
-named!(pub parse_cmd<Cmd>,
+named!(pub parse_cmd(&str) -> Cmd,
 	alt!(
-		parse_stmt => {
+		/*parse_stmt => {
 			|_| Cmd::Empty
 		}
-		| parse_expr => {
-			|_| Cmd::Empty
+		|*/ parse_expr => {
+			|exp: Expr| Cmd::Expression(exp)
+		}
+	)
+);
+/*
+named!(parse_stmt(&str) -> &str,
+	map_res!(
+		map_res!(
+			tag!("s"),
+			str::as_bytes
+		),
+		str::from_utf8
+	)
+);*/
+
+
+named!(parse_expr(&str) -> Expr,
+	alt!(
+		parse_literal => {
+			|litexp: LiteralExpr| Expr::Literal(Box::new(litexp))
 		}
 	)
 );
 
-named!(parse_stmt, tag!("s"));
-named!(parse_expr, tag!("e"));
-
-named!(parse_literal<LiteralExpr>,
+named!(parse_literal(&str) -> LiteralExpr,
 	alt!(
-		parse_int_literal => {
-			|i: i64| LiteralExpr::Num(NumType::Int(i))
-		}
-		| parse_float_literal => {
+		parse_float_literal => {
 			|i: f64| LiteralExpr::Num(NumType::Real(i))
+		}
+		| parse_int_literal => {
+			|i: i64| LiteralExpr::Num(NumType::Int(i))
 		}
 		| parse_str_literal => {
 			|string: String| LiteralExpr::Str(string)
@@ -34,39 +49,27 @@ named!(parse_literal<LiteralExpr>,
 	)
 );
 
-named!(parse_int_literal<i64>,
+named!(parse_int_literal(&str) -> i64,
 	map_res!(
-		map_res!(
-			digit,
-			str::from_utf8
-		),
+		digit,
 		FromStr::from_str
 	)
 );
 
-named!(parse_float_literal<f64>,
-	map_res!(
-	 	map_res!(
-			digit,
-			str::from_utf8
-		),
-	FromStr::from_str
+named!(parse_float_literal(&str) -> f64,
+	chain!(
+		cap_vec: re_capture!(r"(\d*\.\d+)") ~
+		str_slice: expr_opt!(cap_vec.get(1)) ~
+		float: expr_res!(f64::from_str(str_slice)),
+		|| { float }
 	)
 );
 
-fn parse_str_literal(i: &[u8]) -> IResult<&[u8], String> {
+fn parse_str_literal(i: &str) -> IResult<&str, String> {
 	chain!(i,
-		expr_res!(str::from_utf8(i)) ~
-		// captures strings that start and end with a double quotation mark.
 		cap_vec: re_capture!("\"([^\"]*)\"") ~
-		str_slice: expr_opt!(cap_vec.get(1))  ~
-		string: expr_res!(String::from_str(str_slice)) ,
+		str_slice: expr_opt!(cap_vec.get(1)) ~
+		string: expr_res!(String::from_str(str_slice)),
 		|| { string }
 	)
 }
-
-/*fn parse_str_literal(i: &[u8]) -> IResult<&[u8], String> {
-	one_of!(i, ['"' as u8]);
-
-	one_of!(i, ['"' as u8]);
-}*/
