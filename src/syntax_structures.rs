@@ -67,7 +67,7 @@ pub enum Stmt {
 pub enum Expr {
 	Literal(Box<LiteralExpr>),
 	Var(Ident),
-	FunCall(Ident, Vec<Expr>),
+	FunCall( (Ident, Vec<Expr>) ),
 	DiceThrow(Box<(Expr, Expr)>),
 	Math(MathOp, Box<(Expr, Expr)>),
 	Cmp(CmpOp, Box<(Expr, Expr)>),
