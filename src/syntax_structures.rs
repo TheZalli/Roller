@@ -3,6 +3,8 @@ use std::boxed::Box;
 use std::path::PathBuf;
 use std::f64;
 
+use lexer::Ident;
+
 /// The error allowed for floating point equality comparison.
 const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
 
@@ -12,8 +14,7 @@ fn float_eq(x: f64, y: f64) -> bool {
 	abs_diff <= EPSILON
 }
 
-/// An variable and function identifier
-pub type Ident = String;
+
 
 /// A keyword identifier
 pub type KWIdent = String;
@@ -45,18 +46,18 @@ impl PartialEq for NumType {
 
 /// A command given to the interpreter
 #[derive(Debug, PartialEq)]
-pub enum Cmd {
-	Statement(Stmt),
-	Expression(Expr),
+pub enum Cmd<'a> {
+	Statement(Stmt<'a>),
+	Expression(Expr<'a>),
 	Empty,
 }
 
 /// A statement, a command that changes the environment and doesn't return.
 #[derive(Debug, PartialEq)]
-pub enum Stmt {
-	Assign(Ident, Expr),
-	FnDef(Ident, Vec<Ident>, Expr),
-	Delete(Ident),
+pub enum Stmt<'a> {
+	Assign(Ident<'a>, Expr<'a>),
+	FnDef(Ident<'a>, Vec<Ident<'a>>, Expr<'a>),
+	Delete(Ident<'a>),
 	Clear,
 	Run(PathBuf),
 	Save(PathBuf),
@@ -64,18 +65,18 @@ pub enum Stmt {
 
 /// An expression, a command that returns a value and doesn't change the environment.
 #[derive(Debug, PartialEq)]
-pub enum Expr {
+pub enum Expr<'a> {
 	Literal(Box<LiteralExpr>),
-	Var(Ident),
-	FunCall( (Ident, Vec<Expr>) ),
-	DiceThrow(Box<(Expr, Expr)>),
-	Math(MathOp, Box<(Expr, Expr)>),
-	Cmp(CmpOp, Box<(Expr, Expr)>),
-	LogConn(LogConnOp, Box<(Expr, Expr)>),
-	Unary(UnaryOp, Box<Expr>),
-	ListVal(ListValExpr),
-	Filter(Pred, Box<(Expr, Pred)>),
-	KeyWord(KWIdent, Box<Expr>),
+	Var(Ident<'a>),
+	FunCall( (Ident<'a>, Vec<Expr<'a> >) ),
+	DiceThrow(Box<(Expr<'a>, Expr<'a>)>),
+	Math(MathOp, Box<(Expr<'a>, Expr<'a>)>),
+	Cmp(CmpOp, Box<(Expr<'a>, Expr<'a>)>),
+	LogConn(LogConnOp, Box<(Expr<'a>, Expr<'a>)>),
+	Unary(UnaryOp, Box<Expr<'a>>),
+	ListVal(ListValExpr<'a>),
+	Filter(Box<(Expr<'a>, Pred<'a>)>),
+	KeyWord(KWIdent, Box<Expr<'a> >),
 }
 
 /// A single literal value
@@ -87,33 +88,33 @@ pub enum LiteralExpr {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ListValExpr {
-	Vector(Vec<Expr>),
-	Range(Box<RollerRange>), // (start, step, end)
+pub enum ListValExpr<'a> {
+	Vector(Vec<Expr<'a> >),
+	Range(Box<RollerRange<'a> >), // (start, step, end)
 }
 
 #[derive(Debug, PartialEq)]
-struct RollerRange {
-	start: Expr,
-	step: Expr,
-	end: Expr,
+struct RollerRange<'a> {
+	start: Expr<'a>,
+	step: Expr<'a>,
+	end: Expr<'a>,
 }
 
-impl RollerRange {
+impl<'a> RollerRange<'a> {
 	// TODO: error checking if step is of wrong sign
-	fn new(start: Expr, step: Expr, end: Expr) -> RollerRange {
+	fn new(start: Expr<'a>, step: Expr<'a>, end: Expr<'a>) -> RollerRange<'a> {
 		RollerRange{start: start, step: step, end: end}
 	}
 }
 
 #[derive(Debug, PartialEq)]
 /// A predicate for the filtering expression.
-pub enum Pred {
-	Index(Box<Expr>),
-	Cmp(CmpOp, Box<Expr>),
-	LogConn(LogConnOp, Box<(Pred, Pred)>),
+pub enum Pred<'a> {
+	Index(Box<Expr<'a> >),
+	Cmp(CmpOp, Box<Expr<'a> >),
+	LogConn(LogConnOp, Box<(Pred<'a>, Pred<'a>)>),
 	Type(TypePred),
-	List(Option<Box<Pred>>),
+	List(Option<Box<Pred<'a> >>),
 }
 
 #[derive(Debug, PartialEq)]

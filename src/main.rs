@@ -7,9 +7,13 @@ use std::io;
 
 mod syntax_structures;
 mod parse_functions;
+mod lexer;
 //mod eval;
 
 use parse_functions::*;
+use lexer::*;
+
+use nom::IResult;
 
 fn main() {
 	let mut input;
@@ -32,7 +36,14 @@ fn main() {
 				input = temp;
 			}
 		}
-
-		println!("{:?}", parse_cmd(&input));
+		let lexed = tokenize(&input);
+		print!("{:?} -> ", lexed);
+		match lexed {
+			IResult::Done( _ , lexlist) => {
+				let parsed = parse_cmd(&lexlist);
+				println!("{:?}", parsed);
+			},
+			_ => { println!("Parsing failed"); }
+		}
 	}
 }
