@@ -9,19 +9,19 @@ use std::iter::{FromIterator, IntoIterator};
 use std::ops::Deref;
 
 /// An variable and function identifier
-pub type Ident<'a> = &'a str;
+pub type Ident = String;
 
 named!(pub ignore_ws(&str) -> &str,
 	take_while_s!(char::is_whitespace)
 );
 
-#[derive(Debug, Clone, Copy)]
-pub enum Lexeme<'a> {
+#[derive(Debug, Clone)]
+pub enum Lexeme {
 	IntLit(i64), // integer literals
 	RealLit(f64), // floating point literals
-	StrLit(&'a str), // string literals
-	Id(Ident<'a>), // function and variable identifiers
-	Operator(&'a str), // mathematical and other operators
+	StrLit(Box<String>), // string literals
+	Id(Box<Ident>), // function and variable identifiers
+	Operator(Box<String>), // mathematical and other operators
 	TypeChar(char), // Type pattern characters: #, %, $
 	Comma, // ,
 	LeftParen, // (
@@ -35,19 +35,19 @@ pub enum Lexeme<'a> {
 
 /// This exists solely because of the Rusts orphan rules.
 //pub enum LexList { List(Vec<Lexeme>) }
-#[derive(Debug)]
-pub struct LexList<'a>(pub Vec<Lexeme<'a> >);
+#[derive(Debug, Clone)]
+pub struct LexList(pub Vec<Lexeme>);
 
-impl<'a> Deref for LexList<'a> {
-	type Target = Vec<Lexeme<'a> >;
+impl Deref for LexList {
+	type Target = Vec<Lexeme>;
 
-	fn deref<'b>(&'b self) -> &'b Vec<Lexeme<'a> > {
+	fn deref(&self) -> &Vec<Lexeme > {
         let &LexList(ref val) = self;
 		&val
     }
 }
 
-impl<'a> InputLength for LexList<'a> {
+impl InputLength for LexList {
 	#[inline]
 	fn input_len(&self) -> usize {
 		let LexList(ref val) = *self;
@@ -66,15 +66,15 @@ pub fn tokenize(input: &str) -> IResult<&str, LexList > {
 	}
 }
 
-pub fn parse_token<'a>(input: &'a str) -> IResult<&str, Lexeme<'a>> {
+pub fn parse_token(input: &str) -> IResult<&str, Lexeme> {
 	chain!(input,
 		ignore_ws ~
 		lex: alt_complete!(
 			parse_literal => {
-				|lex: Lexeme<'a>| lex
+				|lex: Lexeme| lex
 			}
 			| parse_identifier => {
-				|lex: Lexeme<'a>| lex
+				|lex: Lexeme| lex
 			}
 		),
 		|| { lex }
@@ -84,16 +84,16 @@ pub fn parse_token<'a>(input: &'a str) -> IResult<&str, Lexeme<'a>> {
 
 /// Parses literal values.
 //named!(parse_literal(&str) -> Lexeme,
-pub fn parse_literal<'a>(input: &'a str) -> IResult<&str, Lexeme<'a>> {
+pub fn parse_literal(input: &str) -> IResult<&str, Lexeme> {
 	alt_complete!(input,
 		parse_float_literal => {
-			|lex: Lexeme<'a>| lex
+			|lex: Lexeme| lex
 		}
 		| parse_int_literal => {
-			|lex: Lexeme<'a>| lex
+			|lex: Lexeme| lex
 		}
 		| parse_str_literal => {
-			|lex: Lexeme<'a>| lex
+			|lex: Lexeme| lex
 		}
 	)
 }
@@ -129,9 +129,9 @@ fn parse_str_literal(i: &str) -> IResult<&str, Lexeme> {
 	chain!(i,
 		ignore_ws ~
 		cap_vec: re_capture!("^\"([^\"]*)\"") ~ // capture the string literal with a regex pattern
-		str_slice: expr_opt!(cap_vec.get(1)), // get the captured str
-		//string: expr_res!(String::from_str(str_slice)), // type conversion
-		|| { Lexeme::StrLit(*str_slice) }
+		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
+		string: expr_res!(String::from_str(str_slice)), // type conversion
+		|| { Lexeme::StrLit(Box::new(string)) }
 	)
 }
 
@@ -143,8 +143,8 @@ named!(parse_identifier(&str) -> Lexeme,
 		ignore_ws ~
 		// capture an identifier string with a regex pattern
 		cap_vec: re_capture!(r#"(_*[\pL][\pL\pN_]*|_+[\pL\pN]+)"#) ~
-		str_slice: expr_opt!(cap_vec.get(1)), // get the captured str
-		//id: expr_res!(Ident::from_str(str_slice)), // type conversion
-		|| { Lexeme::Id(*str_slice) }
+		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
+		id: expr_res!(Ident::from_str(str_slice)), // type conversion
+		|| { Lexeme::Id(Box::new(id)) }
 	)
 );

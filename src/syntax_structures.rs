@@ -46,18 +46,18 @@ impl PartialEq for NumType {
 
 /// A command given to the interpreter
 #[derive(Debug, PartialEq)]
-pub enum Cmd<'a> {
-	Statement(Stmt<'a>),
-	Expression(Expr<'a>),
+pub enum Cmd {
+	Statement(Stmt),
+	Expression(Expr),
 	Empty,
 }
 
 /// A statement, a command that changes the environment and doesn't return.
 #[derive(Debug, PartialEq)]
-pub enum Stmt<'a> {
-	Assign(Ident<'a>, Expr<'a>),
-	FnDef(Ident<'a>, Vec<Ident<'a>>, Expr<'a>),
-	Delete(Ident<'a>),
+pub enum Stmt {
+	Assign(Ident, Expr),
+	FnDef(Ident, Vec<Ident>, Expr),
+	Delete(Ident),
 	Clear,
 	Run(PathBuf),
 	Save(PathBuf),
@@ -65,56 +65,56 @@ pub enum Stmt<'a> {
 
 /// An expression, a command that returns a value and doesn't change the environment.
 #[derive(Debug, PartialEq)]
-pub enum Expr<'a> {
+pub enum Expr {
 	Literal(Box<LiteralExpr>),
-	Var(Ident<'a>),
-	FunCall( (Ident<'a>, Vec<Expr<'a> >) ),
-	DiceThrow(Box<(Expr<'a>, Expr<'a>)>),
-	Math(MathOp, Box<(Expr<'a>, Expr<'a>)>),
-	Cmp(CmpOp, Box<(Expr<'a>, Expr<'a>)>),
-	LogConn(LogConnOp, Box<(Expr<'a>, Expr<'a>)>),
-	Unary(UnaryOp, Box<Expr<'a>>),
-	ListVal(ListValExpr<'a>),
-	Filter(Box<(Expr<'a>, Pred<'a>)>),
-	KeyWord(KWIdent, Box<Expr<'a> >),
+	Var(Box<Ident>),
+	FunCall( (Box<Ident>, Vec<Expr >) ),
+	DiceThrow(Box<(Expr, Expr)>),
+	Math(MathOp, Box<(Expr, Expr)>),
+	Cmp(CmpOp, Box<(Expr, Expr)>),
+	LogConn(LogConnOp, Box<(Expr, Expr)>),
+	Unary(UnaryOp, Box<Expr>),
+	ListVal(ListValExpr),
+	Filter(Box<(Expr, Pred)>),
+	KeyWord(KWIdent, Box<Expr >),
 }
 
 /// A single literal value
 #[derive(Debug, PartialEq)]
 pub enum LiteralExpr {
 	Num(NumType),
-	Str(String),
+	Str(Box<String>),
 	Error,
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ListValExpr<'a> {
-	Vector(Vec<Expr<'a> >),
-	Range(Box<RollerRange<'a> >), // (start, step, end)
+pub enum ListValExpr {
+	Vector(Vec<Expr >),
+	Range(Box<RollerRange >), // (start, step, end)
 }
 
 #[derive(Debug, PartialEq)]
-struct RollerRange<'a> {
-	start: Expr<'a>,
-	step: Expr<'a>,
-	end: Expr<'a>,
+struct RollerRange {
+	start: Expr,
+	step: Expr,
+	end: Expr,
 }
 
-impl<'a> RollerRange<'a> {
+impl RollerRange {
 	// TODO: error checking if step is of wrong sign
-	fn new(start: Expr<'a>, step: Expr<'a>, end: Expr<'a>) -> RollerRange<'a> {
+	fn new(start: Expr, step: Expr, end: Expr) -> RollerRange {
 		RollerRange{start: start, step: step, end: end}
 	}
 }
 
 #[derive(Debug, PartialEq)]
 /// A predicate for the filtering expression.
-pub enum Pred<'a> {
-	Index(Box<Expr<'a> >),
-	Cmp(CmpOp, Box<Expr<'a> >),
-	LogConn(LogConnOp, Box<(Pred<'a>, Pred<'a>)>),
+pub enum Pred {
+	Index(Box<Expr >),
+	Cmp(CmpOp, Box<Expr >),
+	LogConn(LogConnOp, Box<(Pred, Pred)>),
 	Type(TypePred),
-	List(Option<Box<Pred<'a> >>),
+	List(Option<Box<Pred >>),
 }
 
 #[derive(Debug, PartialEq)]

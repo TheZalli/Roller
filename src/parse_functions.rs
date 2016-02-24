@@ -14,15 +14,16 @@ use std::str::FromStr;
 	expr_opt!(input_clone, opt)
 }*/
 
-fn take1_from_lexlist<'a>(input: &LexList<'a>) -> IResult<&'a LexList<'a>, Lexeme<'a>> {
+fn take1_from_lexlist(input: &LexList) -> IResult<&LexList, Lexeme> {
 	let &LexList(ref val) = input;
 	let ref opt = val.split_first();
 
 	match opt {
 		&Some( ( ref first, ref rest ) ) => {
 				IResult::Done(
-				&LexList(slice_from_vec_back_to_vec(rest, &val, 1)), // we took one off
-				(*first).clone() )
+					&LexList(slice_from_vec_back_to_vec(rest, &val, 1)), // we took one off
+					(*first).to_owned()
+				)
 			},
 		&None => expr_opt!(&LexList(val.to_owned()), None) // TODO: remove cloning
 	}// TODO make cleaner*/
@@ -80,13 +81,13 @@ macro_rules! take_enum_from_lexlist {
 
 /// Parses commands
 //named!(pub parse_cmd(&LexList) -> Cmd,
-pub fn parse_cmd<'a>(input: &'a LexList) -> IResult<&'a LexList<'a>, Cmd<'a> > {
+pub fn parse_cmd(input: &LexList) -> IResult<&LexList, Cmd > {
 	alt!(input,
 		/*parse_stmt => {
 			|_| Cmd::Empty
 		}
 		|*/ parse_expr => {
-			|exp: Expr<'a>| Cmd::Expression(exp)
+			|exp: Expr| Cmd::Expression(exp)
 		}
 	)
 }
@@ -99,16 +100,16 @@ pub fn parse_cmd<'a>(input: &'a LexList) -> IResult<&'a LexList<'a>, Cmd<'a> > {
 
 /// Parses expressions
 //named!(parse_expr(&LexList) -> Expr,
-pub fn parse_expr<'a>(input: &'a LexList) -> IResult<&'a LexList<'a>, Expr<'a> > {
+pub fn parse_expr(input: &LexList) -> IResult<&LexList, Expr > {
 	alt_complete!(input,
 		/*get_literal => {
 			|litexp: LiteralExpr| Expr::Literal(Box::new(litexp))
 		}
 		|*/ parse_function_call => {
-			|fun_sign: (Ident<'a>, Vec<Expr<'a> >)| Expr::FunCall(fun_sign) // this is a very fun line
+			|fun_sign: (Box<Ident>, Vec<Expr >)| Expr::FunCall(fun_sign) // this is a very fun line
 		}
 		| take_enum_from_lexlist!(Lexeme::Id(id)) => {
-			|id: Ident<'a>| Expr::Var(id)
+			|id: Box<Ident>| Expr::Var(id)
 		}
 	)
 }
@@ -127,8 +128,8 @@ named!(get_identifier(&Vec<Lexeme>) -> Ident,
 */
 
 //named!(parse_function_call(&LexList) -> (Ident, Vec<Expr>),
-pub fn parse_function_call<'a>(input: &'a LexList) ->
-		IResult<&'a LexList<'a>, (Ident<'a>, Vec<Expr<'a>>)> {
+pub fn parse_function_call(input: &LexList) ->
+		IResult<&LexList, (Box<Ident>, Vec<Expr>)> {
 	tuple!(input,
 		take_enum_from_lexlist!(Lexeme::Id(Ident)),
 		chain!(
