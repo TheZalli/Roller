@@ -3,6 +3,10 @@ use nom::IResult;
 use nom::Err;
 use nom::ErrorKind;
 use nom::InputLength;
+use nom::util::AsBytes;
+
+use bincode::SizeLimit;
+use bincode::rustc_serialize::{encode, decode};
 
 use std::str::FromStr;
 use std::iter::{FromIterator, IntoIterator};
@@ -15,7 +19,7 @@ named!(pub ignore_ws(&str) -> &str,
 	take_while_s!(char::is_whitespace)
 );
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, RustcEncodable, RustcDecodable)]
 pub enum Lexeme {
 	IntLit(i64), // integer literals
 	RealLit(f64), // floating point literals
@@ -33,7 +37,17 @@ pub enum Lexeme {
 	End, // newline, evaluates the command and prints the expression value
 }
 
-/// This exists solely because of the Rusts orphan rules.
+impl AsBytes for Lexeme {
+	fn as_bytes(&self) -> &[u8] {
+		&encode(&self, SizeLimit::Infinite).unwrap()
+	}
+}
+
+/*impl PartialEq<u8> for Lexeme {
+
+}*/
+
+/*// This exists solely because of the Rusts orphan rules.
 //pub enum LexList { List(Vec<Lexeme>) }
 #[derive(Debug, Clone)]
 pub struct LexList(pub Vec<Lexeme>);
@@ -53,14 +67,14 @@ impl InputLength for LexList {
 		let LexList(ref val) = *self;
 		val.len()
 	}
-}
+}*/
 
 /// Takes the command string as input and returns it split into lexeme tokens.
-pub fn tokenize(input: &str) -> IResult<&str, LexList > {
+pub fn tokenize(input: &str) -> IResult<&str, &[Lexeme] > {
 	let res1 = try_parse!(input, many1!(parse_token));
 	match res1 {
 		(i2 , v) => {
-			IResult::Done(i2, LexList(Vec::from_iter(v.into_iter())) )
+			IResult::Done(i2,v.as_slice())
 		},
 		//_ => IResult::Error(Err::Code(ErrorKind::Custom(4)) )
 	}

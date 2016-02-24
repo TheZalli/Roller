@@ -4,8 +4,10 @@ version = "0.1.0"
 authors = ["mrZalli <misterzalli@gmail.com>"]
 
 [dependencies]
-regex = "0.1"
-#lazy_static = "0.1"
+regex = "0.1.*"
+#lazy_static = "0.1.*"
+bincode = "0.4.*"
+rustc-serialize = "0.3.*"
 
 [dependencies.nom]
 version = "~1.2.0"

@@ -13,7 +13,7 @@ use std::str::FromStr;
 	let opt = input_clone.pop_front();
 	expr_opt!(input_clone, opt)
 }*/
-
+/*
 fn take1_from_lexlist(input: &LexList) -> IResult<&LexList, Lexeme> {
 	let &LexList(ref val) = input;
 	let ref opt = val.split_first();
@@ -26,9 +26,9 @@ fn take1_from_lexlist(input: &LexList) -> IResult<&LexList, Lexeme> {
 				)
 			},
 		&None => expr_opt!(&LexList(val.to_owned()), None) // TODO: remove cloning
-	}// TODO make cleaner*/
-}
-/// Takes a slice and returns a vector from it that has smaller or equal capacity and length as original_vec.
+	}// TODO make cleaner
+}*/
+/*// Takes a slice and returns a vector from it that has smaller or equal capacity and length as original_vec.
 /// Assumes that the slice is smaller by the amount size_smaller than than the original_vec.
 fn slice_from_vec_back_to_vec<'a, T>(slice: &'a[T], original_vec: &'a Vec<T>, size_smaller: usize)
 		-> Vec<T> {
@@ -40,7 +40,7 @@ fn slice_from_vec_back_to_vec<'a, T>(slice: &'a[T], original_vec: &'a Vec<T>, si
 	unsafe {
 		Vec::from_raw_parts(slice.as_ptr() as *mut T, len - size_smaller, capacity - size_smaller)
 	}
-}
+}*/
 
 /*fn vd_parser_into_lexlist_parser<T>(input: IResult<&VecDeque<Lexeme>, T >)
 		-> IResult<&LexList, T > {
@@ -52,7 +52,7 @@ fn slice_from_vec_back_to_vec<'a, T>(slice: &'a[T], original_vec: &'a Vec<T>, si
 	}
 }*/
 
-macro_rules! take_enum_from_lexlist {
+/*macro_rules! take_enum_from_lexlist {
 	($input:expr, $en:ident :: $kind:ident) =>
 	{
 		match try_parse!($input, take1_from_lexlist) {
@@ -68,7 +68,7 @@ macro_rules! take_enum_from_lexlist {
 			( i2, _ ) => IResult::Error(Err::Code(ErrorKind::Custom(2)) )
 		}
 	};
-}
+}*/
 
 /*macro_rules! take_enum_from_lexlist {
 	($input:expr, $en:ident :: $kind:ident) => (
@@ -81,7 +81,7 @@ macro_rules! take_enum_from_lexlist {
 
 /// Parses commands
 //named!(pub parse_cmd(&LexList) -> Cmd,
-pub fn parse_cmd(input: &LexList) -> IResult<&LexList, Cmd > {
+pub fn parse_cmd(input: &[Lexeme]) -> IResult<&[Lexeme], Cmd > {
 	alt!(input,
 		/*parse_stmt => {
 			|_| Cmd::Empty
@@ -100,7 +100,7 @@ pub fn parse_cmd(input: &LexList) -> IResult<&LexList, Cmd > {
 
 /// Parses expressions
 //named!(parse_expr(&LexList) -> Expr,
-pub fn parse_expr(input: &LexList) -> IResult<&LexList, Expr > {
+pub fn parse_expr(input: &[Lexeme]) -> IResult<&[Lexeme], Expr > {
 	alt_complete!(input,
 		/*get_literal => {
 			|litexp: LiteralExpr| Expr::Literal(Box::new(litexp))
@@ -108,9 +108,9 @@ pub fn parse_expr(input: &LexList) -> IResult<&LexList, Expr > {
 		|*/ parse_function_call => {
 			|fun_sign: (Box<Ident>, Vec<Expr >)| Expr::FunCall(fun_sign) // this is a very fun line
 		}
-		| take_enum_from_lexlist!(Lexeme::Id(id)) => {
+		/*| tag!(Lexeme) => {
 			|id: Box<Ident>| Expr::Var(id)
-		}
+		}*/
 	)
 }
 //);
@@ -128,17 +128,26 @@ named!(get_identifier(&Vec<Lexeme>) -> Ident,
 */
 
 //named!(parse_function_call(&LexList) -> (Ident, Vec<Expr>),
-pub fn parse_function_call(input: &LexList) ->
-		IResult<&LexList, (Box<Ident>, Vec<Expr>)> {
+pub fn parse_function_call(input: &[Lexeme]) ->
+		IResult<&[Lexeme], (Box<Ident>, Vec<Expr>)> {
 	tuple!(input,
-		take_enum_from_lexlist!(Lexeme::Id(Ident)),
 		chain!(
-			take_enum_from_lexlist!(Lexeme::LeftParen) ~
+			lex: take!(1) ~
+			id: expr_opt!(
+				match lex[0] {
+					Lexeme::Id(s) => Some(s),
+					_ => None
+				}
+			),
+			|| {id}
+		),
+		chain!(
+			tag!(Lexeme::LeftParen) ~
 			list: separated_list!(
-				take_enum_from_lexlist!(Lexeme::Comma),
+				tag!(Lexeme::Comma),
 				parse_expr
 			) ~
-			take_enum_from_lexlist!(Lexeme::RightParen),
+			tag!(Lexeme::RightParen),
 			|| {list}
 		)
 	)

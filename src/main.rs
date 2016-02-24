@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate nom;
 extern crate regex;
+extern crate bincode;
+extern crate rustc_serialize;
 
 use std::io::prelude::*;
 use std::io;
@@ -40,7 +42,7 @@ fn main() {
 		print!("{:?} -> ", lexed);
 		match lexed {
 			IResult::Done( _ , lexlist) => {
-				let parsed = parse_cmd(&lexlist);
+				let parsed = parse_cmd(lexlist);
 				println!("{:?}", parsed);
 			},
 			_ => { println!("Parsing failed"); }
