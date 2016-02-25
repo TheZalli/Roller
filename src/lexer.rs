@@ -1,31 +1,19 @@
-#![allow(dead_code)]
-use nom::IResult;
-use nom::Err;
-use nom::ErrorKind;
-use nom::InputLength;
-use nom::util::AsBytes;
-
-use bincode::SizeLimit;
-use bincode::rustc_serialize::{encode, decode};
-
+//#![allow(dead_code)]
+//use std::str::pattern::Pattern;
 use std::str::FromStr;
-use std::iter::{FromIterator, IntoIterator};
-use std::ops::Deref;
+
+use regex::{Regex, Captures};
 
 /// An variable and function identifier
 pub type Ident = String;
 
-named!(pub ignore_ws(&str) -> &str,
-	take_while_s!(char::is_whitespace)
-);
-
-#[derive(Debug, Clone, PartialEq, RustcEncodable, RustcDecodable)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Lexeme {
 	IntLit(i64), // integer literals
 	RealLit(f64), // floating point literals
-	StrLit(Box<String>), // string literals
-	Id(Box<Ident>), // function and variable identifiers
-	Operator(Box<String>), // mathematical and other operators
+	StrLit(String), // string literals
+	Id(Ident), // function and variable identifiers
+	Operator(String), // mathematical and other operators
 	TypeChar(char), // Type pattern characters: #, %, $
 	Comma, // ,
 	LeftParen, // (
@@ -37,128 +25,166 @@ pub enum Lexeme {
 	End, // newline, evaluates the command and prints the expression value
 }
 
-impl AsBytes for Lexeme {
-	fn as_bytes(&self) -> &[u8] {
-		&encode(&self, SizeLimit::Infinite).unwrap()
+pub type ErrType = u32; // TODO: make a better errortype
+
+/// The type of the input.
+pub type InType<'a> = &'a str;
+
+/// The final result of a parser.
+pub type ParseResult<R> = Result<R, ErrType>;
+
+/// The output of a parser and the consumed input.
+pub type ParseState<'a, T> = (T, InType<'a>);
+
+/// State or error of a parser
+pub type ParseOutput<'a, T> = Result<ParseState<'a, T>, ErrType>;
+
+/// A state of the lexer
+struct LexState<'a> {
+	tokens: Vec<Lexeme>,
+	// the input left to parse
+	input: InType<'a>,
+	//is_done: bool,
+}
+
+impl<'a> LexState<'a> {
+	fn new(input: InType<'a>) -> LexState<'a> {
+		LexState{tokens: Vec::new(), input: input}
+	}
+
+	fn add_from_parse_state(&mut self, st: ParseState<'a, Lexeme>) {
+		self.tokens.push(st.0);
+		self.input = st.1;
+	}
+
+	/*fn add_token(&mut self, token: Lexeme) {
+		self.tokens.push(token)
+	}
+
+	fn get_input(&self) -> &InType {
+		&self.input
+	}
+
+	fn set_input(&mut self, i: InType<'a>) {
+		self.input = i
+	}
+
+	fn map_input(&mut self, f: (fn (InType) -> InType)) {
+		self.input = f(self.input)
+	}*/
+
+	fn is_done(&self) -> bool {
+		self.input.is_empty()
 	}
 }
 
-/*impl PartialEq<u8> for Lexeme {
+pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
+	let mut state = LexState::new(input);
 
-}*/
+	// beware infinite loops!
+	while !state.is_done() {
+		match parse_token(state.input) {
+			Ok(p_st) => {
+				state.add_from_parse_state(p_st);
+			},
+			Err(e) => return Err(e),
+		};
+	}
 
-/*// This exists solely because of the Rusts orphan rules.
-//pub enum LexList { List(Vec<Lexeme>) }
-#[derive(Debug, Clone)]
-pub struct LexList(pub Vec<Lexeme>);
-
-impl Deref for LexList {
-	type Target = Vec<Lexeme>;
-
-	fn deref(&self) -> &Vec<Lexeme > {
-        let &LexList(ref val) = self;
-		&val
-    }
+	Ok(state.tokens)
 }
 
-impl InputLength for LexList {
-	#[inline]
-	fn input_len(&self) -> usize {
-		let LexList(ref val) = *self;
-		val.len()
-	}
-}*/
-
-/// Takes the command string as input and returns it split into lexeme tokens.
-pub fn tokenize(input: &str) -> IResult<&str, &[Lexeme] > {
-	let res1 = try_parse!(input, many1!(parse_token));
-	match res1 {
-		(i2 , v) => {
-			IResult::Done(i2,v.as_slice())
+/* // Converts a parse output into a result.
+/ // Returns an error if the output has an error, or if the input has not been consumed.
+fn expect_results<T>(st: ParseOutput<T>) -> ParseResult<T> {
+	match st {
+		Ok( (x, i) ) => {
+			if i.is_empty() {
+				Ok(x)
+			} else {
+				Err(2)
+			}
 		},
-		//_ => IResult::Error(Err::Code(ErrorKind::Custom(4)) )
+		Err(e) => Err(e)
+	}
+}*/
+
+/// Parses one token and consumes the input
+/// IMPORTANT: If no input was consumed, an error should be returned, so that tokenize won't go into infinite loop.
+fn parse_token(input: InType) -> ParseOutput<Lexeme> {
+	let input = ignore_whitespace(input);
+
+	parse_identifier(input)
+	.or(parse_end(input))
+}
+
+/// Evaluates the input with the given regex and returns the captures and the right side of the input splitted from the right end of the whole capture (the rest is consumed).
+/// Returns an error if nothing was captured.
+//fn parse_pat_capture<'a, P: Sized + Pattern<'a>>(input: InType<'a>, pat: P) ->
+fn parse_pat_capture<'a>(input: InType<'a>, pat: Regex) -> ParseOutput<'a, Captures<'a>> {
+	match pat.captures(input) {
+		Some(cap) => {
+			// a safe unwrap, since we know that we captured something,
+			// which means that the entire capture, which is at zero, exists.
+			let split_point = cap.pos(0).unwrap().1;
+			Ok( (cap, input.split_at(split_point).1) )
+		},
+		None => Err(1)
 	}
 }
 
-pub fn parse_token(input: &str) -> IResult<&str, Lexeme> {
-	chain!(input,
-		ignore_ws ~
-		lex: alt_complete!(
-			parse_literal => {
-				|lex: Lexeme| lex
-			}
-			| parse_identifier => {
-				|lex: Lexeme| lex
-			}
-		),
-		|| { lex }
-	)
-
+/// Same as parse_pat_capture, expect doesn't capture.
+/// This function just consumes the pattern if found and returns an error not found
+fn expect_pattern<'a>(input: InType<'a>, pat: Regex) -> ParseOutput<'a, ()> {
+	match pat.find(input) {
+		Some( ( _ , right) ) => {
+			Ok( ( (), input.split_at(right).1) )
+		},
+		None => Err(2)
+	}
 }
 
-/// Parses literal values.
-//named!(parse_literal(&str) -> Lexeme,
-pub fn parse_literal(input: &str) -> IResult<&str, Lexeme> {
-	alt_complete!(input,
-		parse_float_literal => {
-			|lex: Lexeme| lex
+/// A macro that consumes and parses the first pattern that matches the regex from the input and returns it in an enum variant.
+macro_rules! parse_first_capture {
+	($input:expr, $regex:expr, $enum_name:ident :: $enum_var:ident ( $type_name:ident ) ) => {
+		match parse_pat_capture($input, $regex) {
+			Ok( (cap, i) ) => match $type_name::from_str(&cap[1]) {
+				Ok(first_cap) => Ok( ($enum_name::$enum_var(first_cap), i) ),
+				Err(e) => Err(3) // TODO: fix
+			},
+			Err(e) => Err(e)
 		}
-		| parse_int_literal => {
-			|lex: Lexeme| lex
+	};
+
+	($input:expr, $regex:expr, $enum_name:ident :: $enum_var:ident ) => {
+		match expect_pattern($input, $regex) {
+			Ok(i) => Ok( ($enum_name::$enum_var, i) ),
+			Err(e) => Err(e)
 		}
-		| parse_str_literal => {
-			|lex: Lexeme| lex
-		}
-	)
+	};
 }
-//);
 
-/// Parses integer literals.
-named!(parse_int_literal(&str) -> Lexeme,
-	chain!(
-		ignore_ws ~
-		cap_vec: re_capture!(r"^(-?\d*)") ~ // capture an integer numeral with a regex pattern
-		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
-		int: expr_res!(i64::from_str(str_slice)), // type conversion
-		|| { Lexeme::IntLit(int) }
-	)
-);
+/// Consumes the whitespace from the start of the input
+fn ignore_whitespace(input: InType) -> InType {
+	input.trim_left()
+}
 
-/// Parses float literals.
-/// The number before the decimal point is optional and it is assumed to be 0 if missing.
-named!(parse_float_literal(&str) -> Lexeme,
-	chain!(
-		ignore_ws ~
-		cap_vec: re_capture!(r"^(-?\d*\.\d+)") ~ // capture a real numeral with a regex pattern
-		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
-		float: expr_res!(f64::from_str(str_slice)), // type conversion
-		|| { Lexeme::RealLit(float) }
-	)
-);
-
-/// Parses double quote limited string literals.
-/// The strings may not contain double quote characters.
-/// There are no escape characters in the strings (yet).
-fn parse_str_literal(i: &str) -> IResult<&str, Lexeme> {
-	chain!(i,
-		ignore_ws ~
-		cap_vec: re_capture!("^\"([^\"]*)\"") ~ // capture the string literal with a regex pattern
-		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
-		string: expr_res!(String::from_str(str_slice)), // type conversion
-		|| { Lexeme::StrLit(Box::new(string)) }
-	)
+/// Parses an end of line.
+fn parse_end(input: InType) -> ParseOutput<Lexeme> {
+	if input.trim().is_empty() {
+		Ok( (Lexeme::End, "") )
+	} else {
+		Err(4)
+	}
 }
 
 /// Parses an identifier.
 /// The first character must be an unicode letters or underscores, and the rest can be unicode letters, numbers and underscores, but there must be at least one character that is not an underscore. (Similar to Rusts identifier syntax)
 // TODO: Use Unicode identifier and pattern syntax http://www.unicode.org/reports/tr31/tr31-23.html
-named!(parse_identifier(&str) -> Lexeme,
-	chain!(
-		ignore_ws ~
-		// capture an identifier string with a regex pattern
-		cap_vec: re_capture!(r#"(_*[\pL][\pL\pN_]*|_+[\pL\pN]+)"#) ~
-		str_slice: expr_opt!(cap_vec.get(1)) ~ // get the captured str
-		id: expr_res!(Ident::from_str(str_slice)), // type conversion
-		|| { Lexeme::Id(Box::new(id)) }
-	)
-);
+fn parse_identifier(input: InType) -> ParseOutput<Lexeme> {
+	lazy_static! {
+		static ref pat: Regex = Regex::new(r#"^(_*[\pL][\pL\pN_]*|_+[\pL\pN]+)"#).unwrap();
+	}
+	let re: Regex = pat.clone();
+	parse_first_capture!(input, re, Lexeme::Id(Ident))
+}

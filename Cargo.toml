@@ -5,11 +5,7 @@ authors = ["mrZalli <misterzalli@gmail.com>"]
 
 [dependencies]
 regex = "0.1.*"
-#lazy_static = "0.1.*"
-bincode = "0.4.*"
-rustc-serialize = "0.3.*"
-
-[dependencies.nom]
-version = "~1.2.0"
-#git = "https://github.com/Geal/nom.git"
-features = ["regexp"]
+lazy_static = "0.1.*"
+#combine = "1.2.*"
+#bincode = "0.4.*"
+#rustc-serialize = "0.3.*"

@@ -14,8 +14,6 @@ fn float_eq(x: f64, y: f64) -> bool {
 	abs_diff <= EPSILON
 }
 
-
-
 /// A keyword identifier
 pub type KWIdent = String;
 
@@ -67,8 +65,8 @@ pub enum Stmt {
 #[derive(Debug, PartialEq)]
 pub enum Expr {
 	Literal(Box<LiteralExpr>),
-	Var(Box<Ident>),
-	FunCall( (Box<Ident>, Vec<Expr >) ),
+	Var(Ident),
+	FunCall( (Ident, Vec<Expr >) ),
 	DiceThrow(Box<(Expr, Expr)>),
 	Math(MathOp, Box<(Expr, Expr)>),
 	Cmp(CmpOp, Box<(Expr, Expr)>),
@@ -76,21 +74,21 @@ pub enum Expr {
 	Unary(UnaryOp, Box<Expr>),
 	ListVal(ListValExpr),
 	Filter(Box<(Expr, Pred)>),
-	KeyWord(KWIdent, Box<Expr >),
+	KeyWord(KWIdent, Box<Expr>),
 }
 
 /// A single literal value
 #[derive(Debug, PartialEq)]
 pub enum LiteralExpr {
 	Num(NumType),
-	Str(Box<String>),
+	Str(String),
 	Error,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum ListValExpr {
-	Vector(Vec<Expr >),
-	Range(Box<RollerRange >), // (start, step, end)
+	Vector(Vec<Expr>),
+	Range(Box<RollerRange>), // (start, step, end)
 }
 
 #[derive(Debug, PartialEq)]
@@ -108,13 +106,13 @@ impl RollerRange {
 }
 
 #[derive(Debug, PartialEq)]
-/// A predicate for the filtering expression.
+/// A predicate pattern for the filtering expression.
 pub enum Pred {
 	Index(Box<Expr >),
 	Cmp(CmpOp, Box<Expr >),
 	LogConn(LogConnOp, Box<(Pred, Pred)>),
 	Type(TypePred),
-	List(Option<Box<Pred >>),
+	List(Option<Box<Pred>>),
 }
 
 #[derive(Debug, PartialEq)]
