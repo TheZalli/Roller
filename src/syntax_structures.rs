@@ -3,7 +3,7 @@ use std::boxed::Box;
 use std::path::PathBuf;
 use std::f64;
 
-use lexer::Ident;
+use parse_util::Ident;
 
 /// The error allowed for floating point equality comparison.
 const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
@@ -14,8 +14,8 @@ fn float_eq(x: f64, y: f64) -> bool {
 	abs_diff <= EPSILON
 }
 
-/// A keyword identifier
-pub type KWIdent = String;
+// / A keyword identifier
+//pub type KWIdent = String;
 
 /// A numeral, either an integer or real (floating point)
 #[derive(Debug)]
@@ -64,17 +64,50 @@ pub enum Stmt {
 /// An expression, a command that returns a value and doesn't change the environment.
 #[derive(Debug, PartialEq)]
 pub enum Expr {
+	/// A literal expression.
 	Literal(Box<LiteralExpr>),
+	/// Variable
 	Var(Ident),
-	FunCall( (Ident, Vec<Expr >) ),
+	/// A function call.
+	FunCall {
+		/// Name of the function.
+		name: Ident,
+		params: Vec<Expr >
+	},
+	/// A dice throw.
 	DiceThrow(Box<(Expr, Expr)>),
-	Math(MathOp, Box<(Expr, Expr)>),
-	Cmp(CmpOp, Box<(Expr, Expr)>),
-	LogConn(LogConnOp, Box<(Expr, Expr)>),
-	Unary(UnaryOp, Box<Expr>),
+	/// A math expression.
+	Math {
+		op: MathOp,
+		sides: Box<(Expr, Expr)>
+	},
+	/// A comparison predicate.
+	Cmp {
+		op: CmpOp,
+		sides: Box<(Expr, Expr)>
+	},
+	/// A logical connective.
+	LogConn {
+		op: LogConnOp,
+		sides: Box<(Expr, Expr)>
+	},
+	/// An unary operation.
+	Unary {
+		op: UnaryOp,
+		sides: Box<Expr>
+	},
+	/// A list of values or range.
 	ListVal(ListValExpr),
-	Filter(Box<(Expr, Pred)>),
-	KeyWord(KWIdent, Box<Expr>),
+	/// A list filtering
+	Filter {
+		list: Box<Expr>,
+		pred: Pred
+	},
+
+	/*KeyWord {
+		keyword: KWIdent,
+		params: Vec<Expr>
+	},*/
 }
 
 /// A single literal value
@@ -88,7 +121,7 @@ pub enum LiteralExpr {
 #[derive(Debug, PartialEq)]
 pub enum ListValExpr {
 	Vector(Vec<Expr>),
-	Range(Box<RollerRange>), // (start, step, end)
+	Range(Box<RollerRange>),
 }
 
 #[derive(Debug, PartialEq)]
@@ -108,10 +141,20 @@ impl RollerRange {
 #[derive(Debug, PartialEq)]
 /// A predicate pattern for the filtering expression.
 pub enum Pred {
-	Index(Box<Expr >),
-	Cmp(CmpOp, Box<Expr >),
-	LogConn(LogConnOp, Box<(Pred, Pred)>),
-	Type(TypePred),
+	/// Indexing predicate, like in C-like languages.
+	Index(Box<Expr>),
+	/// A comparison predicate.
+	Cmp {
+		op: CmpOp,
+		sides: Box<(Expr, Expr)>
+	},
+	/// A logical connective.
+	LogConn {
+		op: LogConnOp,
+		sides: Box<(Expr, Expr)>
+	},
+	//Type(TypePred),
+	/// A list pattern predicate {[Predicate]}. Matches lists
 	List(Option<Box<Pred>>),
 }
 
@@ -121,7 +164,7 @@ pub enum MathOp {
 	Sub,
 	Mul,
 	Div,
-	Exp,
+	Pow,
 }
 
 #[derive(Debug, PartialEq)]

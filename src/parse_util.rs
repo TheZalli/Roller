@@ -1,4 +1,8 @@
 
+
+/// An variable and function identifier
+pub type Ident = String;
+
 pub type ErrType = u32; // TODO: make a better errortype
 
 /// The type of the input.
