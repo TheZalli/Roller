@@ -5,9 +5,7 @@ extern crate regex;
 //extern crate rustc_serialize;
 //extern crate combine;
 
-mod syntax_structures;
-mod parse_util;
-mod lexer;
+mod parser;
 mod eval;
 
 use std::io::prelude::*;
@@ -17,15 +15,15 @@ use std::io;
 //use combine::primitives::{State, Stream, ParseResult};
 
 //use parse_functions::*;
-use lexer::*;
+use parser::*;
 
 
 
 fn main() {
 	let mut input;
 
-	// our main loop
-	// Currently there is no way to exit other than the interrupt signal (ctrl + c in Unix-like)
+	// The REP loop
+	// Currently there is no way to exit other than the interrupt signal (ctrl + c)
 	loop {
 		print!(">> ");
 		// flush so our prompt is visible
@@ -42,14 +40,7 @@ fn main() {
 				input = temp;
 			}
 		}
-		let result = tokenize(&input as &str);
-		println!("{:?} ", result);
-		/*match lexed {
-			IResult::Done( _ , lexlist) => {
-				let parsed = parse_cmd(lexlist);
-				println!("{:?}", parsed);
-			},
-			_ => { println!("Parsing failed"); }
-		}*/
+		let tokens = tokenize(&input as &str);
+		println!("{:?} ", tokens);
 	}
 }

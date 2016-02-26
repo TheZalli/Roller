@@ -1,5 +1,4 @@
 
-
 /// An variable and function identifier
 pub type Ident = String;
 

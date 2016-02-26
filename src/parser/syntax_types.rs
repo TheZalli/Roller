@@ -3,7 +3,7 @@ use std::boxed::Box;
 use std::path::PathBuf;
 use std::f64;
 
-use parse_util::Ident;
+use parser::parse_util::Ident;
 
 /// The error allowed for floating point equality comparison.
 const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
@@ -121,21 +121,11 @@ pub enum LiteralExpr {
 #[derive(Debug, PartialEq)]
 pub enum ListValExpr {
 	Vector(Vec<Expr>),
-	Range(Box<RollerRange>),
-}
-
-#[derive(Debug, PartialEq)]
-struct RollerRange {
-	start: Expr,
-	step: Expr,
-	end: Expr,
-}
-
-impl RollerRange {
-	// TODO: error checking if step is of wrong sign
-	fn new(start: Expr, step: Expr, end: Expr) -> RollerRange {
-		RollerRange{start: start, step: step, end: end}
-	}
+	Range {
+		start: Box<Expr>,
+		step: Box<Expr>,
+		end: Box<Expr>,
+	},
 }
 
 #[derive(Debug, PartialEq)]
@@ -189,10 +179,10 @@ pub enum UnaryOp {
 	Neg,
 	Not,
 }
-
+/*
 #[derive(Debug, PartialEq)]
 pub enum TypePred {
 	Int,
 	Real,
 	String,
-}
+}*/
