@@ -4,6 +4,8 @@ use std::str::FromStr;
 
 use regex::{Regex, Captures};
 
+use parse_util::*;
+
 /// An variable and function identifier
 pub type Ident = String;
 
@@ -25,19 +27,12 @@ pub enum Lexeme {
 	End, // newline, evaluates the command and prints the expression value
 }
 
-pub type ErrType = u32; // TODO: make a better errortype
-
-/// The type of the input.
-pub type InType<'a> = &'a str;
-
-/// The final result of a parser.
-pub type ParseResult<R> = Result<R, ErrType>;
-
-/// The output of a parser and the consumed input.
-pub type ParseState<'a, T> = (T, InType<'a>);
-
-/// State or error of a parser
-pub type ParseOutput<'a, T> = Result<ParseState<'a, T>, ErrType>;
+// Lexeme regex patterns
+lazy_static! {
+	static ref ID_REGEX: Regex = Regex::new(r#"^(_*[\pL][\pL\pN_]*|_+[\pL\pN]+)"#).unwrap();
+	static ref INT_REGEX: Regex = Regex::new(r#"^(\d+)"#).unwrap();
+	static ref FLOAT_REGEX: Regex = Regex::new(r#"^(\d*\.\d+)"#).unwrap();
+}
 
 /// A state of the lexer
 struct LexState<'a> {
@@ -94,34 +89,21 @@ pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 	Ok(state.tokens)
 }
 
-/* // Converts a parse output into a result.
-/ // Returns an error if the output has an error, or if the input has not been consumed.
-fn expect_results<T>(st: ParseOutput<T>) -> ParseResult<T> {
-	match st {
-		Ok( (x, i) ) => {
-			if i.is_empty() {
-				Ok(x)
-			} else {
-				Err(2)
-			}
-		},
-		Err(e) => Err(e)
-	}
-}*/
-
 /// Parses one token and consumes the input
 /// IMPORTANT: If no input was consumed, an error should be returned, so that tokenize won't go into infinite loop.
 fn parse_token(input: InType) -> ParseOutput<Lexeme> {
 	let input = ignore_whitespace(input);
 
 	parse_identifier(input)
+	.or(parse_float(input))
+	.or(parse_int(input))
 	.or(parse_end(input))
 }
 
 /// Evaluates the input with the given regex and returns the captures and the right side of the input splitted from the right end of the whole capture (the rest is consumed).
 /// Returns an error if nothing was captured.
 //fn parse_pat_capture<'a, P: Sized + Pattern<'a>>(input: InType<'a>, pat: P) ->
-fn parse_pat_capture<'a>(input: InType<'a>, pat: Regex) -> ParseOutput<'a, Captures<'a>> {
+fn parse_pat_capture<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, Captures<'a>> {
 	match pat.captures(input) {
 		Some(cap) => {
 			// a safe unwrap, since we know that we captured something,
@@ -178,13 +160,20 @@ fn parse_end(input: InType) -> ParseOutput<Lexeme> {
 	}
 }
 
+/// Parses an integer literal.
+/// Please parse floating point literals before parsing integers, because otherwise the start of a float can be mistaken as an integer.
+fn parse_int(input: InType) -> ParseOutput<Lexeme> {
+	parse_first_capture!(input, &INT_REGEX, Lexeme::IntLit(i64))
+}
+
+/// Parses a floating point/real literal.
+fn parse_float(input: InType) -> ParseOutput<Lexeme> {
+	parse_first_capture!(input, &FLOAT_REGEX, Lexeme::RealLit(f64))
+}
+
 /// Parses an identifier.
 /// The first character must be an unicode letters or underscores, and the rest can be unicode letters, numbers and underscores, but there must be at least one character that is not an underscore. (Similar to Rusts identifier syntax)
 // TODO: Use Unicode identifier and pattern syntax http://www.unicode.org/reports/tr31/tr31-23.html
 fn parse_identifier(input: InType) -> ParseOutput<Lexeme> {
-	lazy_static! {
-		static ref pat: Regex = Regex::new(r#"^(_*[\pL][\pL\pN_]*|_+[\pL\pN]+)"#).unwrap();
-	}
-	let re: Regex = pat.clone();
-	parse_first_capture!(input, re, Lexeme::Id(Ident))
+	parse_first_capture!(input, &ID_REGEX, Lexeme::Id(Ident))
 }

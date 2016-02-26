@@ -6,7 +6,7 @@ extern crate regex;
 //extern crate combine;
 
 mod syntax_structures;
-mod parse_functions;
+mod parse_util;
 mod lexer;
 mod eval;
 
