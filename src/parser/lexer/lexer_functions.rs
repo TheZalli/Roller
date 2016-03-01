@@ -8,64 +8,30 @@ use regex::{Regex, Captures};
 use parser::parse_util::*;
 use parser::lexer::lexer_util::*;
 
-/// A state of the lexer
-struct LexState<'a> {
-	tokens: Vec<Lexeme>,
-	// the input left to parse
-	input: InType<'a>,
-	//is_done: bool,
-}
-
-impl<'a> LexState<'a> {
-	fn new(input: InType<'a>) -> LexState<'a> {
-		LexState{tokens: Vec::new(), input: input}
-	}
-
-	fn add_from_parse_state(&mut self, st: ParseState<'a, Lexeme>) {
-		self.tokens.push(st.0);
-		self.input = st.1;
-	}
-
-	/*fn add_token(&mut self, token: Lexeme) {
-		self.tokens.push(token)
-	}
-
-	fn get_input(&self) -> &InType {
-		&self.input
-	}
-
-	fn set_input(&mut self, i: InType<'a>) {
-		self.input = i
-	}
-
-	fn map_input(&mut self, f: (fn (InType) -> InType)) {
-		self.input = f(self.input)
-	}*/
-
-	fn is_done(&self) -> bool {
-		self.input.is_empty()
-	}
-}
+/// The type of the input.
+pub type InType<'a> = &'a str;
 
 pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
-	let mut state = LexState::new(input);
+	let mut input = input.clone();
+	let mut tokens = Vec::new();
 
-	// beware infinite loops!
-	while !state.is_done() {
-		match get_token(state.input) {
-			Ok(p_st) => {
-				state.add_from_parse_state(p_st);
+	while !input.is_empty() {
+		match get_token(input) {
+			Ok( (token, i) ) => {
+				//state_add(p_st);
+				tokens.push(token);
+				input = i;
 			},
 			Err(e) => return Err(e),
 		};
 	}
 
-	Ok(state.tokens)
+	Ok(tokens)
 }
 
 /// Tokenizes one token and consumes the input
 /// IMPORTANT: If no input was consumed, an error should be returned, so that tokenize won't go into infinite loop.
-fn get_token(input: InType) -> ParseOutput<Lexeme> {
+fn get_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	let input = ignore_whitespace(input);
 
 	Err(0)
@@ -80,7 +46,7 @@ fn get_token(input: InType) -> ParseOutput<Lexeme> {
 /// Evaluates the input with the given regex and returns the captures and the right side of the input splitted from the right end of the whole capture (the rest is consumed).
 /// Returns an error if nothing was captured.
 //fn lex_pat_capture<'a, P: Sized + Pattern<'a>>(input: InType<'a>, pat: P) ->
-fn lex_pat_capture<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, Captures<'a>> {
+fn lex_pat_capture<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<Captures<'a>, InType<'a> > {
 	match pat.captures(input) {
 		Some(cap) => {
 			// a safe unwrap, since we know that we captured something,
@@ -94,7 +60,7 @@ fn lex_pat_capture<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, Captur
 
 /// Same as lex_pat_capture, expect doesn't capture.
 /// This function just consumes the pattern if found and returns an error not found
-fn expect_pattern<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, ()> {
+fn expect_pattern<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<(), InType<'a> > {
 	match pat.find(input) {
 		Some( ( _ , right) ) => {
 			Ok( ( (), input.split_at(right).1) )
@@ -105,7 +71,7 @@ fn expect_pattern<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, ()> {
 
 /// Similar to expect_pattern, but with a character pattern, because std::pattern is unstable.
 /// Expects that the first character is pat
-fn expect_char<'a>(input: InType<'a>, pat: char) -> ParseOutput<'a, ()> {
+fn expect_char<'a>(input: InType<'a>, pat: char) -> ParseOutput<(), InType> {
 	match input.starts_with(pat) {
 		true => {
 			Ok( ( (), input.split_at(1).1) )
@@ -153,7 +119,7 @@ fn ignore_whitespace(input: InType) -> InType {
 }
 
 /// Tokenizes an end of line.
-fn lex_end(input: InType) -> ParseOutput<Lexeme> {
+fn lex_end(input: InType) -> ParseOutput<Lexeme, InType> {
 	if input.trim().is_empty() {
 		Ok( (Lexeme::End, "") )
 	} else {
@@ -163,24 +129,24 @@ fn lex_end(input: InType) -> ParseOutput<Lexeme> {
 
 /// Tokenizes an integer literal.
 /// Please parse floating point literals before parsing integers, because otherwise the start of a float can be mistaken as an integer.
-fn lex_int(input: InType) -> ParseOutput<Lexeme> {
+fn lex_int(input: InType) -> ParseOutput<Lexeme, InType> {
 	lex_first_capture!(input, &INT_REGEX, 1, Lexeme::IntLit(i64))
 }
 
 /// Tokenizes a floating point/real literal.
-fn lex_float(input: InType) -> ParseOutput<Lexeme> {
+fn lex_float(input: InType) -> ParseOutput<Lexeme, InType> {
 	lex_first_capture!(input, &FLOAT_REGEX, 1, Lexeme::RealLit(f64))
 }
 
 /// Tokenizes a double-quotation mark limited string literal.
 /// No escaping supported yet.
 // TODO: Add escape support.
-fn lex_str_lit<'a>(input: InType<'a>) -> ParseOutput<'a, Lexeme> {
+fn lex_str_lit<'a>(input: InType<'a>) -> ParseOutput<Lexeme, InType> {
 	lex_first_capture!(input, &STR_REGEX, 1, Lexeme::StrLit(String))
 }
 
 /// Tokenizes a float, integer or string literal.
-fn lex_literal<'a>(input: InType<'a>) -> ParseOutput<'a, Lexeme> {
+fn lex_literal<'a>(input: InType<'a>) -> ParseOutput<Lexeme, InType<'a>> {
 	lex_str_lit(input)
 	.or(lex_float(input))
 	.or(lex_int(input))
@@ -190,13 +156,13 @@ fn lex_literal<'a>(input: InType<'a>) -> ParseOutput<'a, Lexeme> {
 /// The first character must be an unicode letters or underscores, and the rest can be unicode letters, numbers and underscores.
 /// Reserved keywords are not allowed as variable and function names, but this is checked after the lexer.
 // TODO: Use Unicode identifier and pattern syntax http://www.unicode.org/reports/tr31/tr31-23.html
-fn lex_identifier(input: InType) -> ParseOutput<Lexeme> {
+fn lex_identifier(input: InType) -> ParseOutput<Lexeme, InType> {
 	lex_first_capture!(input, &ID_REGEX, 1, Lexeme::Id(Ident))
 }
 
 /// Tokenizes an operator.
 /// Parses range ellipsis operator and the mathematical operations.
-fn lex_operator(input: InType) -> ParseOutput<Lexeme> {
+fn lex_operator(input: InType) -> ParseOutput<Lexeme, InType> {
 	let op_result = Err(0)
 		.or(lex_first_capture!(input, &RANGE_ELLIPSIS_REGEX, OpToken::RangeEllipsis))
 		.or(lex_first_char_capture!(input, DICE_THROW, OpToken::DiceThrow))
@@ -214,7 +180,7 @@ fn lex_operator(input: InType) -> ParseOutput<Lexeme> {
 }
 
 /// Tokenizes a single predicate from a filter's pattern.
-fn lex_pred(input:InType) -> ParseOutput<Lexeme> {
+fn lex_pred(input:InType) -> ParseOutput<Lexeme, InType> {
 	let pred_result = Err(0)
 		.or(lex_first_char_capture!(input, NOT, PredToken::Not))
 		//.or(lex_first_char_capture!(input, EQ, PredToken::Eq))
@@ -232,7 +198,7 @@ fn lex_pred(input:InType) -> ParseOutput<Lexeme> {
 }
 
 /// Tokenizes all of the misc one-character tokens
-fn lex_misc_char_tokens(input: InType) -> ParseOutput<Lexeme> {
+fn lex_misc_char_tokens(input: InType) -> ParseOutput<Lexeme, InType> {
 	Err(0)
 	.or(lex_first_char_capture!(input, EQ, Lexeme::Eq))
 	.or(lex_first_char_capture!(input, COMMA, Lexeme::Comma))

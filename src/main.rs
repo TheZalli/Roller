@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
-//extern crate bincode;
-//extern crate rustc_serialize;
-//extern crate combine;
 
 mod parser;
 mod eval;
@@ -11,10 +8,6 @@ mod eval;
 use std::io::prelude::*;
 use std::io;
 
-//use combine::{parser, Parser, ParserExt};
-//use combine::primitives::{State, Stream, ParseResult};
-
-//use parse_functions::*;
 use parser::*;
 
 
@@ -40,7 +33,12 @@ fn main() {
 				input = temp;
 			}
 		}
-		let tokens = tokenize(&input as &str);
-		println!("{:?} ", tokens);
+		let token_res = tokenize(&input as &str);
+		println!("{:?} ", token_res);
+
+		if let Ok(tk_vec) = token_res {
+			let synparsed = parse_cmd(&tk_vec);
+			println!("{:?} ", synparsed);
+		}
 	}
 }

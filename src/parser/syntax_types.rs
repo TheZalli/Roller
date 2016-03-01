@@ -14,15 +14,35 @@ fn float_eq(x: f64, y: f64) -> bool {
 	abs_diff <= EPSILON
 }
 
-// / A keyword identifier
-//pub type KWIdent = String;
 
-/// A numeral, either an integer or real (floating point)
+#[derive(Debug, PartialEq)]
+pub enum Value {
+	Num(NumType),
+	Str(String),
+	List(ListVal),
+	Error
+}
+
+/// A numeral, either an integer or real
 #[derive(Debug)]
 pub enum NumType {
 	Int(i64),
 	Real(f64),
 }
+
+#[derive(Debug, PartialEq)]
+pub enum ListVal {
+	Vector(Vec<Expr>),
+	Range {
+		start: Box<Expr>,
+		step: Box<Expr>,
+		end: Box<Expr>,
+	},
+}
+
+
+// / A keyword identifier
+//pub type KWIdent = String;
 
 impl PartialEq for NumType {
 	fn eq(&self, other: &Self) -> bool {
@@ -64,8 +84,8 @@ pub enum Stmt {
 /// An expression, a command that returns a value and doesn't change the environment.
 #[derive(Debug, PartialEq)]
 pub enum Expr {
-	/// A literal expression.
-	Literal(Box<LiteralExpr>),
+	/// A scalar or list value
+	Val(Value),
 	/// Variable
 	Var(Ident),
 	/// A function call.
@@ -96,8 +116,6 @@ pub enum Expr {
 		op: UnaryOp,
 		sides: Box<Expr>
 	},
-	/// A list of values or range.
-	ListVal(ListValExpr),
 	/// A list filtering
 	Filter {
 		list: Box<Expr>,
@@ -108,24 +126,6 @@ pub enum Expr {
 		keyword: KWIdent,
 		params: Vec<Expr>
 	},*/
-}
-
-/// A single literal value
-#[derive(Debug, PartialEq)]
-pub enum LiteralExpr {
-	Num(NumType),
-	Str(String),
-	Error,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum ListValExpr {
-	Vector(Vec<Expr>),
-	Range {
-		start: Box<Expr>,
-		step: Box<Expr>,
-		end: Box<Expr>,
-	},
 }
 
 #[derive(Debug, PartialEq)]

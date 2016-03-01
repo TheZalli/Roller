@@ -4,17 +4,14 @@ pub type Ident = String;
 
 pub type ErrType = u32; // TODO: make a better errortype
 
-/// The type of the input.
-pub type InType<'a> = &'a str;
-
 /// The final result of a parser.
 pub type ParseResult<R> = Result<R, ErrType>;
 
 /// The output of a parser and the consumed input.
-pub type ParseState<'a, T> = (T, InType<'a>);
+pub type ParseState<T, I> = (T, I);
 
 /// State or error of a parser
-pub type ParseOutput<'a, T> = Result<ParseState<'a, T>, ErrType>;
+pub type ParseOutput<T, I> = Result<ParseState<T, I>, ErrType>;
 
 /* // Converts a parse output into a result.
 / // Returns an error if the output has an error, or if the input has not been consumed.
