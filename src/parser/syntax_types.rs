@@ -35,7 +35,7 @@ pub enum ListVal {
 	Vector(Vec<Expr>),
 	Range {
 		start: Box<Expr>,
-		step: Box<Expr>,
+		step: Option<Box<Expr>>,
 		end: Box<Expr>,
 	},
 }

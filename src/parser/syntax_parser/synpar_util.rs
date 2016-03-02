@@ -1,4 +1,4 @@
-use parser::parse_util::*;
+/*use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 
@@ -26,4 +26,4 @@ fn lexeme_literal_to_value(token: Lexeme) -> ParseResult<Value> {
 		Lexeme::StrLit(s) =>  Ok(Value::Str(s)),
 		_ => Err(123) // TODO: fix
 	}
-}
+}*/

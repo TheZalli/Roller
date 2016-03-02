@@ -39,7 +39,7 @@ fn get_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	.or(lex_pred(input))
 	.or(lex_identifier(input))
 	.or(lex_literal(input))
-	.or(lex_misc_char_tokens(input))
+	.or(lex_misc_tokens(input))
 	.or(lex_end(input))
 }
 
@@ -164,7 +164,6 @@ fn lex_identifier(input: InType) -> ParseOutput<Lexeme, InType> {
 /// Parses range ellipsis operator and the mathematical operations.
 fn lex_operator(input: InType) -> ParseOutput<Lexeme, InType> {
 	let op_result = Err(0)
-		.or(lex_first_capture!(input, &RANGE_ELLIPSIS_REGEX, OpToken::RangeEllipsis))
 		.or(lex_first_char_capture!(input, DICE_THROW, OpToken::DiceThrow))
 		.or(lex_first_char_capture!(input, MINUS, OpToken::Minus))
 		.or(lex_first_char_capture!(input, POW, OpToken::Pow))
@@ -197,9 +196,10 @@ fn lex_pred(input:InType) -> ParseOutput<Lexeme, InType> {
 	}
 }
 
-/// Tokenizes all of the misc one-character tokens
-fn lex_misc_char_tokens(input: InType) -> ParseOutput<Lexeme, InType> {
+/// Tokenizes all of the misc tokens
+fn lex_misc_tokens(input: InType) -> ParseOutput<Lexeme, InType> {
 	Err(0)
+	.or(lex_first_capture!(input, &RANGE_ELLIPSIS_REGEX, Lexeme::RangeEllipsis))
 	.or(lex_first_char_capture!(input, EQ, Lexeme::Eq))
 	.or(lex_first_char_capture!(input, COMMA, Lexeme::Comma))
 

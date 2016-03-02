@@ -10,8 +10,6 @@ use std::io;
 
 use parser::*;
 
-
-
 fn main() {
 	let mut input;
 

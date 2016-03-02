@@ -19,6 +19,8 @@ pub mod lexemes {
 		Op(OpToken),
 		/// Predicate operations
 		Pred(PredToken),
+		/// .. or ...
+		RangeEllipsis,
 		/// =
 		/// This is not a variant of the PredToken, since also statements use it
 		Eq,
@@ -44,9 +46,6 @@ pub mod lexemes {
 	/// (From highest to lowest precedence)
 	#[derive(Debug, Clone, PartialEq)]
 	pub enum OpToken {
-		/// .. or ...
-		RangeEllipsis,
-
 		Minus,
 		Pow,
 
