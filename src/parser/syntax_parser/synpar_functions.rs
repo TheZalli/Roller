@@ -1,6 +1,7 @@
 use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
+use parser::syntax_parser::synpar_util::*;
 
 pub type InType<'a> = &'a [Lexeme];
 
@@ -12,12 +13,12 @@ pub fn parse_cmd<'a>(tokens: InType<'a>) -> ParseOutput<Cmd, InType<'a>> {
 
 fn parse_stmt(input: InType) -> ParseOutput<Cmd, InType> {
 	let res = Err(0)
-	// .or(parse_assign(tokens))
-	// .or(parse_fundef(tokens))
-	// .or(parse_delete(tokens))
-	// .or(parse_clear(tokens))
-	// .or(parse_run(tokens))
-	// .or(parse_save(tokens))
+		// .or(parse_assign(input))
+		// .or(parse_fundef(input))
+		// .or(parse_delete(input))
+		// .or(parse_clear(input))
+		// .or(parse_run(input))
+		// .or(parse_save(input))
 	;
 
 	match res {
@@ -28,12 +29,12 @@ fn parse_stmt(input: InType) -> ParseOutput<Cmd, InType> {
 
 fn parse_expr(input: InType) -> ParseOutput<Cmd, InType> {
 	let res = Err(0)
-	// .or(parse_kwexpr(tokens))
-	// .or(parse_filter(tokens))
-	// .or(parse_op(tokens))
-	// .or(parse_value(tokens))
-	// .or(parse_funcall(tokens))
-	 .or(parse_var(input))
+		// .or(parse_kwexpr(input))
+		// .or(parse_filter(input))
+		// .or(parse_op(input))
+		.or(parse_value(input))
+		// .or(parse_funcall(input))
+		 .or(parse_var(input))
 	 ;
 
 	match res {
@@ -70,6 +71,11 @@ fn parse_end(input: InType) -> ParseOutput<(), InType> {
 }
 
 fn parse_var(input: InType) -> ParseOutput<Expr, InType> {
-	expect_token!(input, Lexeme::Id(Ident))
-		.map(|(x,i)| (Expr::Var(x), i) )
+	map_output(expect_token!(input, Lexeme::Id(Ident)), &Expr::Var)
+}
+
+fn parse_value(input: InType) -> ParseOutput<Expr, InType> {
+	map_output(
+		lex_output_to_val_output(consume_token(input)),
+	&Expr::Val)
 }
