@@ -32,7 +32,8 @@ fn parse_expr(input: InType) -> ParseOutput<Expr, InType> {
 	// .or(parse_kwexpr(input))
 	// .or(parse_filter(input))
 	// .or(parse_op(input))
-	.or(parse_value(input))
+	.or(parse_literal(input))
+	.or(parse_list(input))
 	// .or(parse_funcall(input))
 	 .or(parse_var(input))
 }
@@ -83,50 +84,38 @@ macro_rules! expect_token {
 	};
 }
 
-/// Parses and consumes an End token, or results an error.
-fn parse_end(input: InType) -> ParseOutput<(), InType> {
-	match input.first() {
-		Some(&Lexeme::End) => Ok( ( (), &input[1..]) ),
-		_ => Err(5)
-	}
-}
+// / Parses and consumes an End token, or results an error.
+// fn parse_end(input: InType) -> ParseOutput<(), InType> {
+// 	match input.first() {
+// 		Some(&Lexeme::End) => Ok( ( (), &input[1..]) ),
+// 		_ => Err(5)
+// 	}
+// }
 
 fn parse_var(input: InType) -> ParseOutput<Expr, InType> {
 	map_output(expect_token!(input, Lexeme::Id(Ident)), &Expr::Var)
 }
 
-/// Parses a value expression, like literals and lists
-fn parse_value(input: InType) -> ParseOutput<Expr, InType>  {
-	map_output(
-		Err(0)
-		.or(parse_literal(input))
-		.or(parse_list(input)),
-		&Expr::Val
-	)
-}
-
-
 /// Parses a numerical literal or a string literal
-fn parse_literal(input: InType) -> ParseOutput<Value, InType> {
-	// map_output(
-	// 	lex_output_to_val_output(consume_token(input)),
-	// &Expr::Val)
-	match consume_token(input) {
-		Ok( (Lexeme::IntLit(n), i) ) =>  Ok( (Value::Num(NumType::Int(n)), i) ),
-		Ok( (Lexeme::RealLit(f), i) ) => Ok( (Value::Num(NumType::Real(f)), i) ),
-		Ok( (Lexeme::StrLit(s), i) ) =>  Ok( (Value::Str(s), i) ),
-		_ => Err(6) // TODO: fix
-	}
+fn parse_literal(input: InType) -> ParseOutput<Expr, InType> {
+	map_output(
+		match consume_token(input) {
+			Ok( (Lexeme::IntLit(n), i) ) =>  Ok( (Value::Num(NumType::Int(n)), i) ),
+			Ok( (Lexeme::RealLit(f), i) ) => Ok( (Value::Num(NumType::Real(f)), i) ),
+			Ok( (Lexeme::StrLit(s), i) ) =>  Ok( (Value::Str(s), i) ),
+			_ => Err(6) // TODO: fix
+		}
+	, &Expr::Val)
 }
 
 /// Parses a list, which is a comma separated list or a Range
 /// Calls parse_expr several times.
-fn parse_list(input: InType) -> ParseOutput<Value, InType> {
-	// parse the
+fn parse_list(input: InType) -> ParseOutput<Expr, InType> {
+	// parse either a list or range
 	let (to_ret, input) =
 		match expect_token!(input, Lexeme::LeftBracket) {
 			Ok( ( (), input) ) => {
-				try!(map_output(parse_cs_list(input).or(parse_range(input)), &Value::List))
+				try!(parse_cs_list(input).or(parse_range(input)))
 			},
 			Err(e) => return Err(e)
 		}
@@ -135,7 +124,7 @@ fn parse_list(input: InType) -> ParseOutput<Value, InType> {
 	// note: this can fail only if we parsed a range, since comma separated list fails if it
 	// doesn't end on a right bracket.
 	match expect_token!(input, Lexeme::RightBracket) {
-		Ok( ( (), input)) => Ok( (to_ret, input) ),
+		Ok( ( (), input)) => Ok( (Expr::List(to_ret), input) ),
 		Err(e) => Err(e)
 	}
 }
@@ -143,10 +132,10 @@ fn parse_list(input: InType) -> ParseOutput<Value, InType> {
 /// Parses a comma separated, bracket delimited list.
 /// Does NOT consume the delimiting bracket.
 /// The function assumes that the first square bracket has been consumed.
-fn parse_cs_list(input: InType) -> ParseOutput<ListVal, InType> {
+fn parse_cs_list(input: InType) -> ParseOutput<ExprList, InType> {
 	// if we have an empty list
 	if let Ok(Lexeme::RightBracket) = peek_token(input) {
-		return Ok( (ListVal::Vector(Vec::new()), input) );
+		return Ok( (ExprList::Vector(Vec::new()), input) );
 	}
 
 	let mut expr_vec = Vec::new();
@@ -187,12 +176,12 @@ fn parse_cs_list(input: InType) -> ParseOutput<ListVal, InType> {
 			Err(e) => return Err(e) // no lexeme found, the input is empty
 		}
 	}
-	return Ok( (ListVal::Vector(expr_vec), input) );
+	return Ok( (ExprList::Vector(expr_vec), input) );
 }
 
 // / Parses a range of the form a...c, or a,b...c.
 // / Does NOT expect any delimiting characters.
-fn parse_range(input: InType) -> ParseOutput<ListVal, InType> {
+fn parse_range(input: InType) -> ParseOutput<ExprList, InType> {
 	// this function does a lot of moving/shadowing of the variable input
 
 	// parse the start
@@ -230,9 +219,9 @@ fn parse_range(input: InType) -> ParseOutput<ListVal, InType> {
 	let (exp_end, input) = try!(parse_expr(input));
 
 	// return our range
-	Ok::<(ListVal, InType), ErrType>(
+	Ok::<(ExprList, InType), ErrType>(
 		(
-			ListVal::Range {
+			ExprList::Range {
 				start: Box::new(exp_start),
 				step: step_exp_opt.map(Box::new),
 				end: Box::new(exp_end)

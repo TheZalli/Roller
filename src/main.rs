@@ -27,7 +27,7 @@ fn main() {
 				continue; // go to loop start, do not pass parse and eval
 			},
 			_ => {
-				//if temp.trim().is_empty() { continue; } // ignore empty lines
+				if temp.trim().is_empty() { continue; } // ignore empty lines
 				input = temp;
 			}
 		}

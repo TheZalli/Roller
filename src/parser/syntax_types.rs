@@ -1,37 +1,12 @@
 #![allow(dead_code)]
 use std::boxed::Box;
 use std::path::PathBuf;
-use std::f64;
 
+pub use eval::types::*;
 use parser::parse_util::Ident;
 
-/// The error allowed for floating point equality comparison.
-const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
-
-/// Floating point equality comparison.
-fn float_eq(x: f64, y: f64) -> bool {
-	let abs_diff = (x - y).abs();
-	abs_diff <= EPSILON
-}
-
-
 #[derive(Debug, PartialEq)]
-pub enum Value {
-	Num(NumType),
-	Str(String),
-	List(ListVal),
-	Error
-}
-
-/// A numeral, either an integer or real
-#[derive(Debug)]
-pub enum NumType {
-	Int(i64),
-	Real(f64),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum ListVal {
+pub enum ExprList {
 	Vector(Vec<Expr>),
 	Range {
 		start: Box<Expr>,
@@ -40,34 +15,15 @@ pub enum ListVal {
 	},
 }
 
-
 // / A keyword identifier
 //pub type KWIdent = String;
-
-impl PartialEq for NumType {
-	fn eq(&self, other: &Self) -> bool {
-		match ( self, other ) {
-			( &NumType::Int(x), &NumType::Int(y) ) =>
-				x == y,
-
-			  ( &NumType::Real(x), &NumType::Int(y)  )
-			| ( &NumType::Int(y),  &NumType::Real(x) ) =>
-				float_eq(x, y as f64),
-
-			( &NumType::Real(x), &NumType::Real(y) ) =>
-				float_eq(x, y),
-		}
-	}
-}
-
-//impl Eq for NumType {}
 
 /// A command given to the interpreter
 #[derive(Debug, PartialEq)]
 pub enum Cmd {
 	Statement(Stmt),
 	Expression(Expr),
-	Empty,
+	//Empty,
 }
 
 /// A statement, a command that changes the environment and doesn't return.
@@ -84,8 +40,10 @@ pub enum Stmt {
 /// An expression, a command that returns a value and doesn't change the environment.
 #[derive(Debug, PartialEq)]
 pub enum Expr {
-	/// A scalar or list value
+	/// A scalar value
 	Val(Value),
+	/// A list or range of expressions
+	List(ExprList),
 	/// Variable
 	Var(Ident),
 	/// A function call.
