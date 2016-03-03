@@ -5,14 +5,21 @@ use parser::syntax_parser::synpar_util::*;
 
 pub fn parse_expr(input: InType) -> ParseOutput<Expr, InType> {
 	Err(0)
-	// .or(parse_paren_expr(input))
+	 .or(parse_paren_expr(input))
 	// .or(parse_kwexpr(input))
-	// .or(parse_filter(input))
 	// .or(parse_op(input))
+	// .or(parse_funcall(input))
+	.or(parse_var(input))
 	.or(parse_literal(input))
 	.or(parse_list(input))
-	// .or(parse_funcall(input))
-	 .or(parse_var(input))
+	// .or(parse_filter(input))
+}
+
+fn parse_paren_expr(input: InType) -> ParseOutput<Expr, InType> {
+	let ( (), input) = try!(expect_token!(input, Lexeme::LeftParen));
+	let (to_ret, input) = try!(parse_expr(input));
+	let ( (), input) = try!(expect_token!(input, Lexeme::RightParen));
+	Ok( (to_ret, input) )
 }
 
 fn parse_var(input: InType) -> ParseOutput<Expr, InType> {
@@ -27,8 +34,9 @@ fn parse_literal(input: InType) -> ParseOutput<Expr, InType> {
 			Ok( (Lexeme::RealLit(f), i) ) => Ok( (Value::Num(NumType::Real(f)), i) ),
 			Ok( (Lexeme::StrLit(s), i) ) =>  Ok( (Value::Str(s), i) ),
 			_ => Err(6) // TODO: fix
-		}
-	, &Expr::Val)
+		},
+		&Expr::Val
+	)
 }
 
 /// Parses a list, which is a comma separated list or a Range
@@ -63,7 +71,6 @@ fn parse_cs_list(input: InType) -> ParseOutput<ExprList, InType> {
 
 	let mut expr_vec = Vec::new();
 	let mut input = input;
-
 
 	// check the first item
 	// this is done so that we can match the rest with a comma following an expression (, exp)
@@ -102,7 +109,7 @@ fn parse_cs_list(input: InType) -> ParseOutput<ExprList, InType> {
 	return Ok( (ExprList::Vector(expr_vec), input) );
 }
 
-// / Parses a range of the form a...c, or a,b...c.
+// / Parses a range of the form a..c, or a,b..c.
 // / Does NOT expect any delimiting characters.
 fn parse_range(input: InType) -> ParseOutput<ExprList, InType> {
 	// this function does a lot of moving/shadowing of the variable input
@@ -135,7 +142,7 @@ fn parse_range(input: InType) -> ParseOutput<ExprList, InType> {
 			Err(e) => return Err(e) // peek failed, input is empty probably
 		}
 	;
-	// ignore the ellipsis token ('...')
+	// ignore the ellipsis token ('..')
 	let ((), input) = try!(expect_token!(input, Lexeme::RangeEllipsis));
 
 	// parse the end
