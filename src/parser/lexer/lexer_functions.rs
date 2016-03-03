@@ -8,9 +8,6 @@ use regex::{Regex, Captures};
 use parser::parse_util::*;
 use parser::lexer::lexer_util::*;
 
-/// The type of the input.
-pub type InType<'a> = &'a str;
-
 pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 	let mut input = input.clone();
 	let mut tokens = Vec::new();

@@ -1,6 +1,9 @@
 pub use self::lexemes::*;
 pub use self::patterns::*;
 
+/// The type of the input.
+pub type InType<'a> = &'a str;
+
 /// Lexical token enums
 pub mod lexemes {
 	use parser::parse_util::*;
