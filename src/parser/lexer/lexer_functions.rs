@@ -7,6 +7,7 @@ use regex::{Regex, Captures};
 
 use parser::parse_util::*;
 use parser::lexer::lexer_util::*;
+use parser::syntax_types::*;
 
 pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 	let mut input = input.clone();
@@ -161,16 +162,16 @@ fn lex_identifier(input: InType) -> ParseOutput<Lexeme, InType> {
 /// Parses range ellipsis operator and the mathematical operations.
 fn lex_operator(input: InType) -> ParseOutput<Lexeme, InType> {
 	let op_result = Err(0)
-		.or(lex_first_char_capture!(input, DICE_THROW, OpToken::DiceThrow))
-		.or(lex_first_char_capture!(input, MINUS, OpToken::Minus))
-		.or(lex_first_char_capture!(input, POW, OpToken::Pow))
-		.or(lex_first_char_capture!(input, MUL, OpToken::Mul))
-		.or(lex_first_char_capture!(input, DIV, OpToken::Div))
-		.or(lex_first_char_capture!(input, ADD, OpToken::Add))
+		.or(lex_first_char_capture!(input, DICE_THROW, MathOp::Dice))
+		.or(lex_first_char_capture!(input, POW, MathOp::Pow))
+		.or(lex_first_char_capture!(input, MUL, MathOp::Mul))
+		.or(lex_first_char_capture!(input, DIV, MathOp::Div))
+		.or(lex_first_char_capture!(input, PLUS, MathOp::Plus))
+		.or(lex_first_char_capture!(input, MINUS, MathOp::Minus))
 	;
 
 	match op_result {
-		Ok( (op_tk, i) ) => Ok( (Lexeme::Op(op_tk), i) ),
+		Ok( (x, i) ) => Ok( (Lexeme::Op(x), i) ),
 		Err(e) => Err(e),
 	}
 }
@@ -188,7 +189,7 @@ fn lex_pred(input:InType) -> ParseOutput<Lexeme, InType> {
 	;
 
 	match pred_result {
-		Ok( (pr_tk, i) ) => Ok( (Lexeme::Pred(pr_tk), i) ),
+		Ok( (x, i) ) => Ok( (Lexeme::Pred(x), i) ),
 		Err(e) => Err(e),
 	}
 }

@@ -7,6 +7,8 @@ pub type InType<'a> = &'a str;
 /// Lexical token enums
 pub mod lexemes {
 	use parser::parse_util::*;
+	use parser::syntax_types::*;
+
 	/// A lexical token.
 	#[derive(Debug, Clone, PartialEq)]
 	pub enum Lexeme {
@@ -19,7 +21,7 @@ pub mod lexemes {
 		/// Function and variable identifiers
 		Id(Ident),
 		/// Mathematical and other operators
-		Op(OpToken),
+		Op(MathOp),
 		/// Predicate operations
 		Pred(PredToken),
 		/// .. or ...
@@ -47,18 +49,17 @@ pub mod lexemes {
 
 	/// Operator tokens.
 	/// (From highest to lowest precedence)
-	#[derive(Debug, Clone, PartialEq)]
+	/*#[derive(Debug, Clone, PartialEq)]
 	pub enum OpToken {
-		Minus,
 		Pow,
 
 		Mul,
 		Div,
 		DiceThrow,
 
-		Add,
-		//Sub,
-	}
+		Plus,
+		Minus,
+	}*/
 
 	/// Predicate operation tokens.
 	/// (From highest to lowest precedence)
@@ -96,13 +97,12 @@ pub mod patterns {
 
 	// operator token characters
 	/// Negation and substraction.
-	pub const MINUS: char = '-';
 	pub const POW: char = '^';
 	pub const MUL: char = '*';
 	pub const DIV: char = '/';
 	pub const DICE_THROW: char = 'd';
-	pub const ADD: char = '+';
-	//pub const SUB: char = '-';
+	pub const PLUS: char = '+';
+	pub const MINUS: char = '-';
 
 	// predicate token characters
 	pub const NOT: char = '!';

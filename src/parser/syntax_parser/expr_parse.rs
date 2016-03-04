@@ -3,24 +3,68 @@ use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::synpar_util::*;
 
+/// Parses expressions
 pub fn parse_expr(input: InType) -> ParseOutput<Expr, InType> {
 	Err(0)
 	 .or(parse_paren_expr(input))
-	// .or(parse_kwexpr(input))
-	// .or(parse_op(input))
-	// .or(parse_funcall(input))
-	.or(parse_var(input))
-	.or(parse_literal(input))
-	.or(parse_list(input))
-	// .or(parse_filter(input))
+	 // .or(parse_kwexpr(input))
+	 .or(parse_negation(input))
+	 //.or(parse_infix_op(input))
+	 // .or(parse_funcall(input))
+	 .or(parse_var(input))
+	 .or(parse_literal(input))
+	 .or(parse_list(input))
+	 // .or(parse_filter(input))
+
 }
 
+
+
+/// Parses a parenthesized expression
 fn parse_paren_expr(input: InType) -> ParseOutput<Expr, InType> {
 	let ( (), input) = try!(expect_token!(input, Lexeme::LeftParen));
 	let (to_ret, input) = try!(parse_expr(input));
 	let ( (), input) = try!(expect_token!(input, Lexeme::RightParen));
 	Ok( (to_ret, input) )
 }
+
+/// Parses value negation.
+fn parse_negation(input: InType) -> ParseOutput<Expr, InType> {
+	match consume_token(input) {
+		Ok( (Lexeme::Op(MathOp::Minus), input) ) => {
+			let (exp, input) = try!(parse_expr(input));
+			Ok( (
+				Expr::Unary{ op: UnaryOp::Neg, right: Box::new(exp)},
+				input
+			) )
+		},
+		Ok(_) => Err(1),
+		Err(e) => Err(e),
+	}
+}
+
+/*// Parses infix mathematical operations.
+fn parse_infix_op(input: InType, precedence: u8) -> ParseOutput<Expr, InType> {
+	// parse the left operand
+	let mut partial_input = input.split(|lex| lex != Lexeme::Op)
+	//let (left, input) = try!(parse_expr_prec(input, precedence));
+	// parse the operator
+	let (op, input) = match try!(consume_token(input)) {
+		(Lexeme::Op(ref tk @ MathOp::Plus), input) |
+		(Lexeme::Op(ref tk @ MathOp::Minus), input)
+			if precedence <= 1 =>
+		{
+			(tk.clone(), input)
+		},
+
+		_ => return Err(54)
+	};
+	// parse the right operand
+	let (right, input) = try!(parse_expr_prec(input, precedence + 1));
+
+	Ok( (Expr::Math{op: op, left: Box::new(left), right: Box::new(right)}, input) )
+	Err(45)
+}*/
 
 fn parse_var(input: InType) -> ParseOutput<Expr, InType> {
 	map_output(expect_token!(input, Lexeme::Id(Ident)), &Expr::Var)

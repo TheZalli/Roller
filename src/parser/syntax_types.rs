@@ -50,29 +50,30 @@ pub enum Expr {
 	FunCall {
 		/// Name of the function.
 		name: Ident,
-		params: Vec<Expr >
+		params: Vec<Expr>
 	},
-	/// A dice throw.
-	DiceThrow(Box<(Expr, Expr)>),
 	/// A math expression.
 	Math {
 		op: MathOp,
-		sides: Box<(Expr, Expr)>
+		left: Box<Expr>,
+		right: Box<Expr>
 	},
 	/// A comparison predicate.
 	Cmp {
 		op: CmpOp,
-		sides: Box<(Expr, Expr)>
+		left: Box<Expr>,
+		right: Box<Expr>
 	},
 	/// A logical connective.
 	LogConn {
 		op: LogConnOp,
-		sides: Box<(Expr, Expr)>
+		left: Box<Expr>,
+		right: Box<Expr>
 	},
 	/// An unary operation.
 	Unary {
 		op: UnaryOp,
-		sides: Box<Expr>
+		right: Box<Expr>
 	},
 	/// A list filtering
 	Filter {
@@ -106,10 +107,11 @@ pub enum Pred {
 	List(Option<Box<Pred>>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MathOp {
-	Add,
-	Sub,
+	Dice,
+	Plus,
+	Minus,
 	Mul,
 	Div,
 	Pow,
