@@ -29,7 +29,7 @@ pub trait Complete {
 
 impl<'a, T, I> Complete for ParseOutput<T, &'a [I]> {
 	type Out = T;
-	pub fn complete(&self) -> ParseResult<Self::Out> {
+	fn complete(&self) -> ParseResult<Self::Out> {
 		match self {
 			&Ok( (x, i) ) => {
 				if i.is_empty() {

@@ -7,8 +7,8 @@ use parser::syntax_parser::expr_parse::*;
 use parser::syntax_parser::stmt_parse::*;
 
 /// Parses a single command.
-pub fn parse_cmd<'a>(tokens: InType<'a>) -> ParseOutput<Cmd, InType<'a>> {
+pub fn parse_cmd<'a>(tokens: InType<'a>) -> ParseResult<Cmd> {
 	Err(0)
-	.or(map_output(parse_stmt(tokens), &Cmd::Statement))
-	.or(map_output(parse_expr(tokens), &Cmd::Expression))
+	.or(parse_stmt(tokens).map(&Cmd::Statement))
+	.or(parse_expr(tokens).map(&Cmd::Expression))
 }
