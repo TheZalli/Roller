@@ -56,3 +56,42 @@ macro_rules! expect_token {
 // 		_ => Err(5)
 // 	}
 // }
+
+/// Finds the given enum variant and returns it in an Option or returns None.
+macro_rules! find_token {
+	($input:expr, $enum_name:ident :: $enum_var:ident ( $what:expr ))  =>
+	({
+		$input.into_iter().position(
+			|lex| {
+				match lex {
+					&$enum_name::$enum_var($what) => true,
+					_ => false,
+				}
+			}
+		)
+	});
+
+	($input:expr, $enum_name:ident :: $enum_var:ident () )  =>
+	({
+		$input.into_iter().position(
+			|lex| {
+				match lex {
+					&$enum_name::$enum_var( _ ) => true,
+					_ => false,
+				}
+			}
+		)
+	});
+
+	($input:expr, $enum_name:ident :: $enum_var:ident)  =>
+	({
+		$input.into_iter().position(
+			|lex| {
+				match lex {
+					&$enum_name::$enum_var => true,
+					_ => false,
+				}
+			}
+		)
+	});
+}

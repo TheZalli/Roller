@@ -20,18 +20,25 @@ pub fn map_output<T, I, U>(out: ParseOutput<T, I>, fun: &Fn(T) -> U) -> ParseOut
 	}
 }
 
+pub trait Complete {
+	type Out;
+	/// Converts a parse output into a result.
+	/// Returns an error if the output has an error, or if the input has not been consumed.
+	fn complete(&self) -> ParseResult<Self::Out>;
+}
 
-/* // Converts a parse output into a result.
-/ // Returns an error if the output has an error, or if the input has not been consumed.
-fn expect_results<T>(st: ParseOutput<T>) -> ParseResult<T> {
-	match st {
-		Ok( (x, i) ) => {
-			if i.is_empty() {
-				Ok(x)
-			} else {
-				Err(2)
-			}
-		},
-		Err(e) => Err(e)
+impl<'a, T, I> Complete for ParseOutput<T, &'a [I]> {
+	type Out = T;
+	pub fn complete(&self) -> ParseResult<Self::Out> {
+		match self {
+			&Ok( (x, i) ) => {
+				if i.is_empty() {
+					Ok(x)
+				} else {
+					Err(2)
+				}
+			},
+			&Err(e) => Err(e)
+		}
 	}
-}*/
+}

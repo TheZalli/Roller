@@ -3,80 +3,187 @@ use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::synpar_util::*;
 
-/// Parses expressions
-pub fn parse_expr(input: InType) -> ParseOutput<Expr, InType> {
-	Err(0)
-	 .or(parse_paren_expr(input))
-	 // .or(parse_kwexpr(input))
-	 .or(parse_negation(input))
-	 //.or(parse_infix_op(input))
-	 // .or(parse_funcall(input))
-	 .or(parse_var(input))
-	 .or(parse_literal(input))
-	 .or(parse_list(input))
-	 // .or(parse_filter(input))
+struct Precedence {
+	level: u32,
+	assoc: Assoc // associativity
+}
 
+#[derive(Eq)]
+enum Assoc {
+	Non, //non-associative, remove?
+	Left,
+	Right
+}
+
+fn get_op_precedence(op: AnyOp) -> Precedence {
+	let (lvl, assoc) =
+		match op {
+			AnyOp::Math(x) =>
+				match x {
+					Dice => (5, Assoc::Non),
+					Plus => (1, Assoc::Left),
+					Minus => (1, Assoc::Left),
+					Mul => (3, Assoc::Left),
+					Div => (3, Assoc::Left),
+					Pow => (4, Assoc::Right),
+				},
+			AnyOp::Cmp(_) => (2, Assoc::Non), // NOTE: these are allowed only in the predicates (for now)
+			AnyOp::LogConn(_) => (1, Assoc::Left),
+			AnyOp::Unary(x) =>
+				match x {
+					Neg => (2, Assoc::Right),
+					Not => (3, Assoc::Right),
+				}, // this might need to be tweaked
+			AnyOp::FunCall(_) => (0, Assoc::Non), // irrelevant
+		};
+	Precedence{ level: lvl, assoc: assoc}
+}
+
+/// Parses expressions using the Shunting-yard algorithm
+pub fn parse_expr(input: InType) -> ParseResult<Expr> {
+	let mut operator_stack	= Vec::new();
+	let mut operand_stack	= Vec::new();
+
+	let mut input_clone = input.clone();
+
+	// read while there is unread input
+	while !input_clone.is_empty() {
+		// read a token
+		let pair = input_clone.split_first_mut();
+		let tk = pair.0;
+		input_clone = pair.1;
+
+		// check the token
+		match tk {
+			Lexeme::IntLit(x) => {
+				let to_push = Expr::Val(Value::Num(NumType::Int(x)));
+				// TODO: ^^^^^ make this look not horrible
+				operand_stack.push(to_push);
+			},
+			Lexeme::RealLit(x) => {
+				let to_push = Expr::Val(Value::Num(NumType::Real(x)));
+				operand_stack.push(to_push);
+			},
+			Lexeme::StrLit(x) => {
+				let to_push = Expr::Val(Value::Str(x));
+				operand_stack.push(to_push);
+			},
+			Lexeme::Ident(x) => {
+				// check if we have a function call
+				if input_clone[0] == Lexeme::LeftParen {
+					unimplemented!();
+				}
+				else {
+					operand_stack.push(Expr::Var(x));
+				}
+			},
+			Lexeme::Op(x) => {
+				let op = AnyOp::Math(x);
+				let prec = get_op_precedence(op);
+
+				let f = |o| {
+					let prec2 = get_op_precedence(o);
+					!(
+						(prec.assoc == Assoc::Left && prec.level <= prec2.level) ||
+						(prec.assoc == Assoc::Right && prec.level < prec2.level)
+					)
+				};
+
+				// the index op has to be inserted
+				let insert_index = operator_stack.iter().rev().rposition(f);
+				let insert_index = insert_index.or(0); // if none was found use 0
+
+				operator_stack.insert(op, insert_index);
+			},
+		}
+	}
 }
 
 
 
 /// Parses a parenthesized expression
-fn parse_paren_expr(input: InType) -> ParseOutput<Expr, InType> {
+fn parse_paren_expr(input: InType) -> ParseResult<Expr> {
 	let ( (), input) = try!(expect_token!(input, Lexeme::LeftParen));
-	let (to_ret, input) = try!(parse_expr(input));
-	let ( (), input) = try!(expect_token!(input, Lexeme::RightParen));
-	Ok( (to_ret, input) )
+
+	let mut partial_i = Vec::new();
+
+	// finds the end of the parenthesis expression by counting left parentheses - right parentheses
+	let paren_count = 1;
+	for t in input {
+		if *t == Lexeme::LeftParen {
+			paren_count += 1;
+		}
+		else if *t == Lexeme::RightParen {
+			paren_count -= 1;
+			assert!(paren_count > 0);
+			if paren_count == 0 {
+				break;
+			}
+		}
+		// note: the ending right paren is not pushed
+		partial_i.push(*t);
+	}
+	if paren_count != 0 {
+		return Err(0); // TODO
+	}
+
+	parse_expr(partial_i.as_slice())
 }
 
 /// Parses value negation.
-fn parse_negation(input: InType) -> ParseOutput<Expr, InType> {
+fn parse_negation(input: InType) -> ParseResult<Expr> {
 	match consume_token(input) {
 		Ok( (Lexeme::Op(MathOp::Minus), input) ) => {
-			let (exp, input) = try!(parse_expr(input));
-			Ok( (
-				Expr::Unary{ op: UnaryOp::Neg, right: Box::new(exp)},
-				input
-			) )
+			let exp = try!(parse_expr(input));
+			Ok(Expr::Unary{ op: UnaryOp::Neg, right: Box::new(exp)})
 		},
 		Ok(_) => Err(1),
 		Err(e) => Err(e),
 	}
 }
 
-/*// Parses infix mathematical operations.
-fn parse_infix_op(input: InType, precedence: u8) -> ParseOutput<Expr, InType> {
+/// Parses infix mathematical operations.
+fn parse_infix_op(input: InType, precedence: u8) -> ParseResult<Expr> {
+	// find the operator
+	//let (partial_input, input) = input.split(find_token!(input, Lexeme::Op()) );
+	let left_input = Vec::new();
+	let op_lex: Lexeme;
+	let right_input = Vec::new();
+
+	// I think we can assume the
+
 	// parse the left operand
-	let mut partial_input = input.split(|lex| lex != Lexeme::Op)
-	//let (left, input) = try!(parse_expr_prec(input, precedence));
+	let left = try!(parse_expr_prec(left_input.as_slice(), precedence));
+
 	// parse the operator
-	let (op, input) = match try!(consume_token(input)) {
-		(Lexeme::Op(ref tk @ MathOp::Plus), input) |
-		(Lexeme::Op(ref tk @ MathOp::Minus), input)
+	let op = match op_lex {
+		Lexeme::Op(ref tk @ MathOp::Plus) |
+		Lexeme::Op(ref tk @ MathOp::Minus)
 			if precedence <= 1 =>
 		{
-			(tk.clone(), input)
+			tk.clone()
 		},
 
 		_ => return Err(54)
 	};
+
 	// parse the right operand
-	let (right, input) = try!(parse_expr_prec(input, precedence + 1));
+	let right = try!(parse_expr_prec(right_input.as_slice(), precedence));
 
-	Ok( (Expr::Math{op: op, left: Box::new(left), right: Box::new(right)}, input) )
-	Err(45)
-}*/
+	Ok( Expr::Math{op: op, left: Box::new(left), right: Box::new(right)} )
+}
 
-fn parse_var(input: InType) -> ParseOutput<Expr, InType> {
+fn parse_var(input: InType) -> ParseResult<Expr> {
 	map_output(expect_token!(input, Lexeme::Id(Ident)), &Expr::Var)
 }
 
 /// Parses a numerical literal or a string literal
-fn parse_literal(input: InType) -> ParseOutput<Expr, InType> {
+fn parse_literal(input: InType) -> ParseResult<Expr> {
 	map_output(
 		match consume_token(input) {
-			Ok( (Lexeme::IntLit(n), i) ) =>  Ok( (Value::Num(NumType::Int(n)), i) ),
-			Ok( (Lexeme::RealLit(f), i) ) => Ok( (Value::Num(NumType::Real(f)), i) ),
-			Ok( (Lexeme::StrLit(s), i) ) =>  Ok( (Value::Str(s), i) ),
+			Ok( (Lexeme::IntLit(n), i) ) =>  Ok( Value::Num(NumType::Int(n)) ),
+			Ok( (Lexeme::RealLit(f), i) ) => Ok( Value::Num(NumType::Real(f)) ),
+			Ok( (Lexeme::StrLit(s), i) ) =>  Ok( Value::Str(s) ),
 			_ => Err(6) // TODO: fix
 		},
 		&Expr::Val
@@ -85,7 +192,7 @@ fn parse_literal(input: InType) -> ParseOutput<Expr, InType> {
 
 /// Parses a list, which is a comma separated list or a Range
 /// Calls parse_expr several times.
-fn parse_list(input: InType) -> ParseOutput<Expr, InType> {
+fn parse_list(input: InType) -> ParseResult<Expr> {
 	// parse either a list or range
 	let (to_ret, input) =
 		match expect_token!(input, Lexeme::LeftBracket) {
@@ -107,7 +214,7 @@ fn parse_list(input: InType) -> ParseOutput<Expr, InType> {
 /// Parses a comma separated, bracket delimited list.
 /// Does NOT consume the delimiting bracket.
 /// The function assumes that the first square bracket has been consumed.
-fn parse_cs_list(input: InType) -> ParseOutput<ExprList, InType> {
+fn parse_cs_list(input: InType) -> ParseResult<ExprList> {
 	// if we have an empty list
 	if let Ok(Lexeme::RightBracket) = peek_token(input) {
 		return Ok( (ExprList::Vector(Vec::new()), input) );
@@ -155,7 +262,7 @@ fn parse_cs_list(input: InType) -> ParseOutput<ExprList, InType> {
 
 // / Parses a range of the form a..c, or a,b..c.
 // / Does NOT expect any delimiting characters.
-fn parse_range(input: InType) -> ParseOutput<ExprList, InType> {
+fn parse_range(input: InType) -> ParseResult<ExprList> {
 	// this function does a lot of moving/shadowing of the variable input
 
 	// parse the start

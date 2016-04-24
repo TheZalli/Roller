@@ -43,7 +43,7 @@ pub mod lexemes {
 		LeftSqBracket,
 		/// ]
 		RightSqBracket,
-		/// Newline, evaluates the command and prints the expression value
+		/// End of a command
 		End,
 	}
 

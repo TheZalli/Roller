@@ -10,7 +10,7 @@ use parser::lexer::lexer_util::*;
 use parser::syntax_types::*;
 
 pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
-	let mut input = input.clone();
+	let mut input = input.clone().trim_right(); // remove EOL
 	let mut tokens = Vec::new();
 
 	while !input.is_empty() {

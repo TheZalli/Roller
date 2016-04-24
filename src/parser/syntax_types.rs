@@ -139,6 +139,17 @@ pub enum UnaryOp {
 	Neg,
 	Not,
 }
+
+#[derive(Debug, PartialEq)]
+pub enum AnyOp {
+	Math(MathOp),
+	Cmp(CmpOp),
+	LogConn(LogConnOp),
+	Unary(UnaryOp),
+	FunCall(Ident),
+}
+
+
 /*
 #[derive(Debug, PartialEq)]
 pub enum TypePred {
