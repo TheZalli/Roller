@@ -1,7 +1,7 @@
 use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
-use parser::syntax_parser::expr_parse::*;
+//use parser::syntax_parser::expr_parse::*;
 use parser::syntax_parser::synpar_util::*;
 
 pub fn parse_stmt(input: InType) -> ParseResult<Stmt> {

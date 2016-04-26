@@ -3,7 +3,7 @@ use std::f64;
 
 ///! These are runtime value types, but the syntax parser uses some of these also.
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Value {
 	Num(NumType),
 	Str(String),
@@ -11,7 +11,7 @@ pub enum Value {
 }
 
 /// A numeral, either an integer or real
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum NumType {
 	Int(i64),
 	Real(f64),

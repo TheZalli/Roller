@@ -5,7 +5,7 @@ use std::path::PathBuf;
 pub use eval::types::*;
 use parser::parse_util::Ident;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExprList {
 	Vector(Vec<Expr>),
 	Range {
@@ -19,7 +19,7 @@ pub enum ExprList {
 //pub type KWIdent = String;
 
 /// A command given to the interpreter
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Cmd {
 	Statement(Stmt),
 	Expression(Expr),
@@ -27,7 +27,7 @@ pub enum Cmd {
 }
 
 /// A statement, a command that changes the environment and doesn't return.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
 	Assign(Ident, Expr),
 	FnDef(Ident, Vec<Ident>, Expr),
@@ -38,7 +38,7 @@ pub enum Stmt {
 }
 
 /// An expression, a command that returns a value and doesn't change the environment.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
 	/// A scalar value
 	Val(Value),
@@ -46,34 +46,10 @@ pub enum Expr {
 	List(ExprList),
 	/// Variable
 	Var(Ident),
-	/// A function call.
-	FunCall {
-		/// Name of the function.
-		name: Ident,
-		params: Vec<Expr>
-	},
-	/// A math expression.
-	Math {
-		op: MathOp,
-		left: Box<Expr>,
-		right: Box<Expr>
-	},
-	/// A comparison predicate.
-	Cmp {
-		op: CmpOp,
-		left: Box<Expr>,
-		right: Box<Expr>
-	},
-	/// A logical connective.
-	LogConn {
-		op: LogConnOp,
-		left: Box<Expr>,
-		right: Box<Expr>
-	},
-	/// An unary operation.
-	Unary {
-		op: UnaryOp,
-		right: Box<Expr>
+	/// An operation, like a mathematical operation or function call.
+	Op {
+		op: AnyOp,
+		args: Vec<Option<Expr>> // Option, because sometimes absence of an argument conveys info
 	},
 	/// A list filtering
 	Filter {
@@ -87,7 +63,7 @@ pub enum Expr {
 	},*/
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 /// A predicate pattern for the filtering expression.
 pub enum Pred {
 	/// Indexing predicate, like in C-like languages.
@@ -95,19 +71,20 @@ pub enum Pred {
 	/// A comparison predicate.
 	Cmp {
 		op: CmpOp,
-		sides: Box<(Expr, Expr)>
+		right: Box<Expr>,
 	},
-	/// A logical connective.
+	/// A logical connective with two arguments.
 	LogConn {
 		op: LogConnOp,
-		sides: Box<(Expr, Expr)>
+		left: Option<Box<Expr>>,
+		right: Box<Expr>,
 	},
 	//Type(TypePred),
 	/// A list pattern predicate {[Predicate]}. Matches lists
 	List(Option<Box<Pred>>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum MathOp {
 	Dice,
 	Plus,
@@ -117,7 +94,13 @@ pub enum MathOp {
 	Pow,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum PredOp {
+	Cmp(CmpOp),
+	LogConn(LogConnOp),
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum CmpOp {
 	Eq,
 	Ineq,
@@ -127,25 +110,19 @@ pub enum CmpOp {
 	Lteq,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum LogConnOp {
 	And,
 	Or,
 	Xor,
-}
 
-#[derive(Debug, PartialEq)]
-pub enum UnaryOp {
-	Neg,
 	Not,
 }
 
-#[derive(Debug, PartialEq)]
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum AnyOp {
 	Math(MathOp),
-	Cmp(CmpOp),
-	LogConn(LogConnOp),
-	Unary(UnaryOp),
 	FunCall(Ident),
 }
 
