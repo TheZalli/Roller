@@ -1,5 +1,6 @@
 pub use self::lexemes::*;
 pub use self::patterns::*;
+use eval::types::*;
 
 /// The type of the input.
 pub type InType<'a> = &'a str;
@@ -12,16 +13,14 @@ pub mod lexemes {
 	/// A lexical token.
 	#[derive(Debug, Clone, PartialEq)]
 	pub enum Lexeme {
-		/// Integer literals
-		IntLit(i64),
-		/// Floating point literals
-		RealLit(f64),
+		/// Integer and floating point literals
+		NumLit(NumType),
 		/// String literals
 		StrLit(String),
 		/// Function and variable identifiers
 		Id(Ident),
 		/// Mathematical and other operators
-		Op(MathOp),
+		Op(InfixOp),
 		/// Predicate operations
 		Pred(PredToken),
 		/// .. or ...

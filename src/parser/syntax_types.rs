@@ -46,10 +46,11 @@ pub enum Expr {
 	List(ExprList),
 	/// Variable
 	Var(Ident),
-	/// An operation, like a mathematical operation or function call.
+	/// An operation, like a mathematical operation.
 	Op {
-		op: AnyOp,
-		args: Vec<Option<Expr>> // Option, because sometimes absence of an argument conveys info
+		op: InfixOp,
+		left:  Option<Box<Expr>>, // Option, because sometimes absence of an argument conveys info
+		right: Option<Box<Expr>>,
 	},
 	/// A list filtering
 	Filter {
@@ -84,8 +85,8 @@ pub enum Pred {
 	List(Option<Box<Pred>>),
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum MathOp {
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+pub enum InfixOp {
 	Dice,
 	Plus,
 	Minus,
@@ -94,13 +95,13 @@ pub enum MathOp {
 	Pow,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PredOp {
 	Cmp(CmpOp),
 	LogConn(LogConnOp),
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum CmpOp {
 	Eq,
 	Ineq,
@@ -110,7 +111,7 @@ pub enum CmpOp {
 	Lteq,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum LogConnOp {
 	And,
 	Or,
@@ -119,12 +120,12 @@ pub enum LogConnOp {
 	Not,
 }
 
-
+/*
 #[derive(Debug, PartialEq, Clone)]
 pub enum AnyOp {
 	Math(MathOp),
 	FunCall(Ident),
-}
+}*/
 
 
 /*

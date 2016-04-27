@@ -23,6 +23,7 @@ pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 			Err(e) => return Err(e),
 		};
 	}
+	tokens.push(Lexeme::End);
 
 	Ok(tokens)
 }
@@ -38,7 +39,7 @@ fn get_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	.or(lex_identifier(input))
 	.or(lex_literal(input))
 	.or(lex_misc_tokens(input))
-	.or(lex_end(input))
+	//.or(lex_end(input))
 }
 
 /// Evaluates the input with the given regex and returns the captures and the right side of the input splitted from the right end of the whole capture (the rest is consumed).
@@ -116,24 +117,24 @@ fn ignore_whitespace(input: InType) -> InType {
 	input.trim_left()
 }
 
-/// Tokenizes an end of line.
+/*// Tokenizes an end of line.
 fn lex_end(input: InType) -> ParseOutput<Lexeme, InType> {
 	if input.trim().is_empty() {
 		Ok( (Lexeme::End, "") )
 	} else {
 		Err(4)
 	}
-}
+}*/
 
 /// Tokenizes an integer literal.
 /// Please parse floating point literals before parsing integers, because otherwise the start of a float can be mistaken as an integer.
 fn lex_int(input: InType) -> ParseOutput<Lexeme, InType> {
-	lex_first_capture!(input, &INT_REGEX, 1, Lexeme::IntLit(i64))
+	map_output( lex_first_capture!(input, &INT_REGEX, 1, NumType::Int(i64)), &Lexeme::NumLit )
 }
 
 /// Tokenizes a floating point/real literal.
 fn lex_float(input: InType) -> ParseOutput<Lexeme, InType> {
-	lex_first_capture!(input, &FLOAT_REGEX, 1, Lexeme::RealLit(f64))
+	map_output( lex_first_capture!(input, &FLOAT_REGEX, 1, NumType::Real(f64)), &Lexeme::NumLit )
 }
 
 /// Tokenizes a double-quotation mark limited string literal.
@@ -162,12 +163,12 @@ fn lex_identifier(input: InType) -> ParseOutput<Lexeme, InType> {
 /// Parses range ellipsis operator and the mathematical operations.
 fn lex_operator(input: InType) -> ParseOutput<Lexeme, InType> {
 	let op_result = Err(0)
-		.or(lex_first_char_capture!(input, DICE_THROW, MathOp::Dice))
-		.or(lex_first_char_capture!(input, POW, MathOp::Pow))
-		.or(lex_first_char_capture!(input, MUL, MathOp::Mul))
-		.or(lex_first_char_capture!(input, DIV, MathOp::Div))
-		.or(lex_first_char_capture!(input, PLUS, MathOp::Plus))
-		.or(lex_first_char_capture!(input, MINUS, MathOp::Minus))
+		.or(lex_first_char_capture!(input, DICE_THROW, InfixOp::Dice))
+		.or(lex_first_char_capture!(input, POW, InfixOp::Pow))
+		.or(lex_first_char_capture!(input, MUL, InfixOp::Mul))
+		.or(lex_first_char_capture!(input, DIV, InfixOp::Div))
+		.or(lex_first_char_capture!(input, PLUS, InfixOp::Plus))
+		.or(lex_first_char_capture!(input, MINUS, InfixOp::Minus))
 	;
 
 	match op_result {
