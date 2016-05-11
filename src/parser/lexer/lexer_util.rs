@@ -1,6 +1,6 @@
 pub use self::lexemes::*;
 pub use self::patterns::*;
-use eval::types::*;
+//use eval::types::*;
 
 /// The type of the input.
 pub type InType<'a> = &'a str;
@@ -76,9 +76,13 @@ pub mod lexemes {
 }
 
 /// Lexeme patterns
+// NOTE: revise if the std Patterns become stable
 pub mod patterns {
 	use regex::Regex;
 
+	// Our regex patterns for the more complicated lexemes.
+	// Note that they need to be anchored to the start of the string (with the '^' character)
+	// because of how the lexing algorithm works (characters are consumed from the beginning).
 	lazy_static! {
 		pub static ref ID_REGEX: Regex =
 			Regex::new(r#"^([\pL_][\pL\pN_]*)"#).unwrap();
@@ -89,9 +93,9 @@ pub mod patterns {
 
 		pub static ref RANGE_ELLIPSIS_REGEX: Regex = Regex::new(r#"^\.{2,3}"#).unwrap();
 
-		pub static ref AND_REGEX: Regex = Regex::new(r#"^And|&"#).unwrap();
-		pub static ref OR_REGEX: Regex = Regex::new(r#"^Or|\|"#).unwrap();
-		pub static ref XOR_REGEX: Regex = Regex::new(r#"^XOr"#).unwrap();
+		pub static ref AND_REGEX: Regex = Regex::new(r#"^and|&"#).unwrap();
+		pub static ref OR_REGEX: Regex = Regex::new(r#"^or|\|"#).unwrap();
+		pub static ref XOR_REGEX: Regex = Regex::new(r#"^xor"#).unwrap();
 	}
 
 	// operator token characters

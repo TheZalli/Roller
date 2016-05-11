@@ -49,7 +49,7 @@ pub enum Expr {
 	/// An operation, like a mathematical operation.
 	Op {
 		op: InfixOp,
-		left:  Option<Box<Expr>>, // Option, because sometimes absence of an argument conveys info
+		left:  Option<Box<Expr>>, // Option, because sometimes absence of an argument is allowed
 		right: Option<Box<Expr>>,
 	},
 	/// A list filtering

@@ -1,9 +1,10 @@
-#![allow(dead_code)]
+#![allow(dead_code)] // TODO remove
 use std::f64;
+use std::fmt;
 
 ///! These are runtime value types, but the syntax parser uses some of these also.
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq, Clone)]
 pub enum Value {
 	Num(NumType),
 	Str(String),
@@ -11,7 +12,7 @@ pub enum Value {
 }
 
 /// A numeral, either an integer or real
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq, Clone)]
 pub enum NumType {
 	Int(i64),
 	Real(f64),
@@ -44,3 +45,23 @@ impl NumType {
 }
 
 //impl Eq for NumType {}
+
+// to make reading debug prints easier
+impl fmt::Debug for Value {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			&Value::Num(ref nt) => write!(f, "{:?}", nt),
+			&Value::Str(ref st) => write!(f, "{:?}", st),
+			&Value::List(ref v) => write!(f, "{:?}", v)
+		}
+	}
+}
+
+impl fmt::Debug for NumType {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			&NumType::Int(i)  => write!(f, "{}", i),
+			&NumType::Real(r) => write!(f, "{}", r)
+		}
+	}
+}

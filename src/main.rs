@@ -31,11 +31,11 @@ fn main() {
 			}
 		}
 		let token_res = tokenize(&input as &str);
-		println!("{:?} ", token_res);
+		println!("Tokens: {:?} ", token_res); // DEBUG
 
 		if let Ok(tk_vec) = token_res {
 			let synparsed = parse_cmd(&tk_vec);
-			println!("{:?} ", synparsed);
+			println!("AST: {:?} ", synparsed); // DEBUG
 		}
 	}
 }
