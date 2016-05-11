@@ -70,31 +70,32 @@ pub const PREC_MIN: i32 = 1;
 pub const PREC_MAX: i32 = 5;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ParseTemp {
 	Op(InfixOp),
 	Exp(Expr)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct IncompAst {
 	op: Option<InfixOp>,
-	left: Vec<IncAstNode>,
-	right: Vec<IncAstNode>,
+	left: IncAstNode,
+	right: IncAstNode,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum IncAstNode {
-	ParTmp(ParseTemp),
+	ParTmp(Vec<ParseTemp>),
 	Node(Box<IncompAst>),
+	Empty
 }
 
 impl IncompAst {
 	pub fn new() -> IncompAst {
 		IncompAst {
 			op: None,
-			left: Vec::new(),
-			right: Vec::new(),
+			left:	IncAstNode::Empty,
+			right:	IncAstNode::Empty,
 		}
 	}
 
@@ -102,102 +103,133 @@ impl IncompAst {
 		self.op = Some(new_op);
 	}*/
 
-	pub fn add_child_left(&mut self, child: Vec<IncAstNode>) {
+	pub fn set_child_left(&mut self, child: IncAstNode) {
 		self.left = child;
 	}
+	/*
+	pub fn set_child_right(&mut self, child: IncAstNode) {
+		self.right = child;
+	}
 
-	/*fn add_child_right(&mut self, child: Vec<IncAstNode>) {
-		self.right = Some(IncAstChild(child));
+	pub fn get_right_children<'a>(&'a self) -> &'a IncAstNode {
+		&self.right
+	}
+
+	pub fn get_right_children_mut<'a>(&'a mut self) -> &'a mut IncAstNode {
+		&mut self.right
 	}*/
 
-	pub fn process_left_child(&mut self, prec_level: i32) {
-		// do nothing if left is empty
-		if self.left.is_empty() {
-			return;
+	pub fn process_everything(&mut self, prec_level: i32) -> ParseResult<()> {
+		match Self::process_ia_node(&self.left, prec_level) {
+			Ok(iast) => {
+				*self = iast;
+				Ok(())
+			},
+			Err(e) => Err(e)
 		}
-		// TODO: fix this
-		assert!(self.op.is_none());
-		assert!(self.right.is_empty());
+	}
 
-		// maybe there is a prettier solution than a flag variable?
-		let mut op_found_at = false;
+	/// Transforms an incomplete abstract syntax (AST) tree node into AST form.
+	/// Returns an error if the input is not the ParTmp variant, which contains a parse temp vector.
+	fn process_ia_node(input: &IncAstNode, prec_level: i32) -> ParseResult<IncompAst> {
+		let in_vec;
+
+		if let &IncAstNode::ParTmp(ref v) = input {
+			in_vec = v;
+		}
+		else {
+			return Err(9);
+		}
+		// if there was an error, nothing has been changed before this line
+		Ok(Self::process_pt_vec(in_vec, prec_level))
+	}
+
+	/// Transforms a ParseTemp vector into incomplete AST form.
+	/// prec_level is the precedence_level of the operator to be applied as the AST nodes op.
+	fn process_pt_vec(input: &Vec<ParseTemp>, prec_level: i32) -> IncompAst {
+		let mut op_found = None;
 
 		let mut temp_left = Vec::new();
 		let mut temp_right = Vec::new();
 
 		// go through everything and move it to approriate container
-		for n in self.left.iter() {
+		for n in input.iter() {
 			// check the mode whether we are in the left side or the right side of the operator
-			if !op_found_at {
+			if op_found == None {
 				// we are at the left side of the operator
 				match n {
-					&IncAstNode::ParTmp(ParseTemp::Op(ref o)) => {
+					&ParseTemp::Op(ref o) => {
 						// did we find our operator?
 						if OP_INFOS[o].level == prec_level {
-							self.op = Some(o.clone());
-							op_found_at = true;
+							op_found = Some(o.clone());
 						}
 						else {
-							temp_left.push(IncAstNode::from(ParseTemp::Op(o.clone() )) );
+							temp_left.push(ParseTemp::Op(o.clone()) );
 						}
 					},
-					_ => temp_left.push(IncAstNode::from(n.clone() ))
+					_ => temp_left.push(n.clone() )
 				}
 			}
 			else {
 				// we are the right side of the operator
-				temp_right.push(IncAstNode::from(n.clone() ));
+				temp_right.push(n.clone() );
 			}
 		}
 
-		self.left = temp_left;
-		self.right = temp_right;
+		// our exit condition from recursion
+		if temp_right.len() <= 1 {
+			let mut new_right = IncAstNode::ParTmp(temp_right.clone());
+
+			match temp_right.get(0) {
+				// if there is a last remaining token and it is an operator, make it a node
+				Some(&ParseTemp::Op(ref o)) => {
+					new_right = IncAstNode::Node(Box::new(
+						IncompAst{
+							op: Some(o.clone()),
+							left:	IncAstNode::Empty,
+							right:	IncAstNode::Empty,
+						}
+					));
+				},
+				// else if it's an expression we're okay
+				_ => {}
+			}
+
+			return IncompAst {
+				op:		op_found,
+				left:	IncAstNode::ParTmp(temp_left),
+				right:	new_right,
+			};
+		}
+
+		// recursively do the rest
+		IncompAst {
+			op:		op_found,
+			left:	IncAstNode::ParTmp(temp_left),
+			right:	IncAstNode::Node(Box::new(Self::process_pt_vec(&temp_right, prec_level)) )
+		}
 	}
+
 }
 
-/*
-impl fmt::Display for ParseTemp {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl IncAstNode {
+	pub fn unwrap_as_node(self) -> Box<IncompAst> {
 		match self {
-			&ParseTemp::Op(ref o) => write!(f, "{:?}", o),
-			&ParseTemp::Exp(ref e) => write!(f, "{}", e)
+			IncAstNode::Node(b) => b,
+			_ => panic!("unwrap_as_node failed for the value {:?}", self)
 		}
 	}
-}
 
-impl fmt::Display for IncompAst {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "({:?} {}, {})",
-			self.op,
-			self.left.clone().unwrap_or(IncAstChild::new()), // TODO remove clones
-			self.right.clone().unwrap_or(IncAstChild::new())
-		)
-	}
-}
-
-impl fmt::Display for IncAstChild {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		try!(write!(f, "["));
-
-		for i in self.0.iter() {
-			try!(write!(f, "{}, ", i));
-		}
-
-		write!(f, "]")
-	}
-}
-
-impl fmt::Display for IncAstNode {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	pub fn unwrap_as_ptvec(self) -> Vec<ParseTemp> {
 		match self {
-			&IncAstNode::ParTmp(ref pt) => write!(f, "{}", pt),
-			&IncAstNode::Node(ref b) => write!(f, "{}", **b)
+			IncAstNode::ParTmp(v) => v,
+			_ => panic!("unwrap_as_ptvec failed for the value {:?}", self)
 		}
 	}
-}*/
+}
 
-impl From<ParseTemp> for IncAstNode {
-	fn from(t: ParseTemp) -> Self {
+impl From<Vec<ParseTemp>> for IncAstNode {
+	fn from(t: Vec<ParseTemp>) -> Self {
 		IncAstNode::ParTmp(t)
 	}
 }

@@ -95,26 +95,27 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 		work_output.push(work_var);
 	}
 
+
+	// Phase 2 of the algorithm: Apply ops
+	// go through the precedence levels and create the abstract syntax tree
+
 	// the root of the unfinished abstract syntax tree
 	let mut root = IncompAst::new();
 
-	root.add_child_left(work_output.into_iter().map(&IncAstNode::from).collect());
+	root.set_child_left(IncAstNode::from(work_output));
 
-	// currently active node
-	//let mut act_node = &mut root;
+	//for level in PREC_MIN..(PREC_MAX + 1) {
 
-	/*/ Phase 2 of the algorithm: Apply ops
-	// go through the precedence levels and create the abstract syntax tree
-	for level in PREC_MIN..(PREC_MAX + 1) {
-		act_node.process_left_child(level);
-		// TODO
-	}*/
+	//}
 
 	// DEBUG
-	root.process_left_child(PREC_MIN);
-	println!("Incomplete tree: {:?}", &root); // DEBUG
+	let e_code = root.process_everything(PREC_MIN);
+	println!("Incomplete AST: {:?}", &root); // DEBUG
+	if let Err(_) = e_code {
+		println!("! Error in AST: {:?} !", e_code);
+	}
 
 	// Return the values
 	// TODO
-	Err(7)
+	Err(6)
 }
