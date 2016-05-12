@@ -10,6 +10,14 @@ use std::io;
 
 use parser::*;
 
+/// Works like the println macro, but prints to the stderr instead of stdout.
+macro_rules! println_to_stderr(
+	($($arg:tt)*) => { {
+		let r = writeln!(&mut ::std::io::stderr(), $($arg)*);
+		r.expect("failed printing to stderr");
+	} }
+);
+
 fn main() {
 	let mut input;
 
@@ -21,22 +29,37 @@ fn main() {
 		io::stdout().flush().ok().expect("Couldn't flush stdout");
 
 		let mut temp = String::new();
-		match io::stdin().read_line(&mut temp) { // read input
+
+		// read input
+		match io::stdin().read_line(&mut temp) {
 			Err(error) => {
 				println!("Input error: {}", error);
-				continue; // go to loop start, do not pass parse and eval
+				continue;
 			},
 			_ => {
-				if temp.trim().is_empty() { continue; } // ignore empty lines
-				input = temp;
+				if temp.trim().is_empty() {
+					// ignore empty lines
+					continue;
+				}
+				else {
+					input = temp;
+				}
 			}
 		}
-		let token_res = tokenize(&input as &str);
-		println!("Tokens: {:?} ", token_res); // DEBUG
 
-		if let Ok(tk_vec) = token_res {
-			let synparsed = parse_cmd(&tk_vec);
-			println!("AST: {:?} ", synparsed); // DEBUG
+		let token_res = tokenize(&input as &str);
+		//println!("Tokens: {:?} ", token_res); // DEBUG
+
+		match token_res {
+			Ok(tk_vec) => {
+				let ast_res = parse_cmd(&tk_vec);
+
+				match ast_res {
+					Ok(exp) => println!("AST: {:?} ", exp), // TODO
+					Err(e) => println_to_stderr!("{}", e)
+				}
+			},
+			Err(e) => println_to_stderr!("{}", e)
 		}
 	}
 }

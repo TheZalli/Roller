@@ -24,7 +24,7 @@ pub fn parse_expr(input: InType) -> ParseResult<Expr> {
 
 /// Parses expression until the given end_token is found
 /// Returns the unconsumed input
-pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr, InType)> {
+pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseOutput<Expr, InType> {
 	// our temporary vector that ideally gets worked into the abstract syntax tree (AST) form
 	let mut work_output: Vec<ParseTemp> = Vec::new();
 
@@ -99,14 +99,17 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 
 	// Phase 2 of the algorithm: Apply ops
 	// go through the precedence levels and create the abstract syntax tree
+	// this phase is moved into two functions
 
 	// the root of the unfinished abstract syntax tree
 	let root = expr_functions::pt_vec_to_incomp_ast(&work_output);
 
 	// DEBUG
-	println!("Incomplete AST: {:?}", &root);
+	//println!("Incomplete AST: {:?}", &root);
 
-	// Return the values
-	// TODO
-	Err(RollerErr::SyntaxError(SynErr::Unimplemented))
+	// Return the values and the unconsumed input
+	match expr_functions::complete_iast(root) {
+		Ok(exp) => Ok((exp, input_queue)),
+		Err(e) => Err(e)
+	}
 }

@@ -1,5 +1,7 @@
+use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::syntax_parser::synpar_util::*;
+use error::{RollerErr, SynErr};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct IncompAst {
@@ -12,6 +14,7 @@ pub struct IncompAst {
 pub enum IncAstNode {
 	ParTmp(Vec<ParseTemp>),
 	Node(Box<IncompAst>),
+	Singular(Expr),
 	Empty
 }
 
@@ -70,10 +73,10 @@ fn process_pt_vec(input: &Vec<ParseTemp>, prec_level: i32) -> IncompAst {
 					}
 				))
 			},
+			// if it's an expression we're okay
+			Some(&ParseTemp::Exp(ref e)) => IncAstNode::Singular(e.clone()),
 			// it was an empty vector so let's return an empty node
 			None => IncAstNode::Empty,
-			// else if it's an expression vec we're okay
-			_ => IncAstNode::ParTmp(pt_vec.clone())
 		}
 	};
 
@@ -113,5 +116,47 @@ fn process_pt_vec(input: &Vec<ParseTemp>, prec_level: i32) -> IncompAst {
 		op:		op_found,
 		left:	new_left,
 		right:	new_right
+	}
+}
+
+pub fn complete_iast<'a>(input: IncompAst) -> ParseResult<'a, Expr> {
+	match input.op {
+		None => {
+			// if the op is none then the right should be left empty by the algorithm of process_pt_vec
+			assert!(input.right == IncAstNode::Empty);
+
+			// check the left children which should be singular expression since op is none
+			match input.left {
+				IncAstNode::Singular(e) => Ok(e),
+				// these two shouldn't be reached unless the previous algorithm has bugs
+				IncAstNode::Empty => Err(RollerErr::SyntaxError(SynErr::EmptyCommand)),
+				_ => Err(RollerErr::SyntaxError(SynErr::MalformedAST)),
+			}
+		},
+		Some(o) => {
+			let lhs =
+				match input.left {
+					IncAstNode::Singular(e) => Some(Box::new(e)),
+					IncAstNode::Node(n) => Some(Box::new(try!(complete_iast(*n))) ),
+					IncAstNode::Empty => None,
+					IncAstNode::ParTmp(_) =>
+						return Err(RollerErr::SyntaxError(SynErr::TooManyParameters)),
+				};
+
+			let rhs =
+				match input.right {
+					IncAstNode::Singular(e) => Some(Box::new(e)),
+					IncAstNode::Node(n) => Some(Box::new(try!(complete_iast(*n))) ),
+					IncAstNode::Empty => None,
+					IncAstNode::ParTmp(_) =>
+						return Err(RollerErr::SyntaxError(SynErr::TooManyParameters)),
+				};
+
+			Ok(Expr::Op{
+				op: o,
+				left: lhs,
+				right: rhs
+			})
+		}
 	}
 }
