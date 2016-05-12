@@ -2,6 +2,7 @@ use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::synpar_util::*;
+use parser::syntax_parser::expr_functions;
 use error::{RollerErr, SynErr};
 
 /// Parses expressions
@@ -100,7 +101,7 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 	// go through the precedence levels and create the abstract syntax tree
 
 	// the root of the unfinished abstract syntax tree
-	let root = IncompAst::pt_vec_to_incomp_ast(&work_output);
+	let root = expr_functions::pt_vec_to_incomp_ast(&work_output);
 
 	// DEBUG
 	println!("Incomplete AST: {:?}", &root);
