@@ -2,17 +2,20 @@ use parser::parse_util::*;
 use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::synpar_util::*;
-
+use error::{RollerErr, SynErr};
 
 /// Parses expressions
 pub fn parse_expr(input: InType) -> ParseResult<Expr> {
 	match parse_expr_to_end(input, Lexeme::End) {
 		Ok((exp, i)) =>
+			// if the input is empty after parsing
 			if i.is_empty() {
 				Ok(exp)
 			}
 			else {
-				Err(1)
+				Err(RollerErr::SyntaxError(
+					SynErr::UnexpectedToken(i[0].clone())
+				))
 			},
 		Err(e) => Err(e),
 	}
@@ -35,7 +38,7 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 		{
 			Some(p) => p,
 			// the input ran out before encountering the end_token
-			None => return Err(2)
+			None => return Err(RollerErr::SyntaxError(SynErr::UnexpectedEnd))
 		};
 
 		let tk = pair.0.clone();
@@ -64,14 +67,12 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 				match input_queue.first() {
 					// if we're dealing with a function call
 					Some(&Lexeme::LeftParen) => {
-						return Err(3); // TODO: implement
+						return Err(RollerErr::SyntaxError(SynErr::Unimplemented));
 					},
 					// if we have a variable
-					Some(_) => {
+					_ => {
 						ParseTemp::Exp(Expr::Var(id))
 					},
-					// if the input ran out prematurely before the end_token
-					None => return Err(4)
 				}
 			},
 			// handle infix operations from binary to nullary (dice)
@@ -90,7 +91,7 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 				ParseTemp::Exp(exp)
 			},
 			// rest of the features are unimplemented, TODO
-			_ => return Err(5)
+			_ => return Err(RollerErr::SyntaxError(SynErr::Unimplemented))
 		};
 		work_output.push(work_var);
 	}
@@ -106,5 +107,5 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 
 	// Return the values
 	// TODO
-	Err(6)
+	Err(RollerErr::SyntaxError(SynErr::Unimplemented))
 }

@@ -3,6 +3,7 @@ extern crate regex;
 
 mod parser;
 mod eval;
+mod error;
 
 use std::io::prelude::*;
 use std::io;

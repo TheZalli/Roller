@@ -1,19 +1,21 @@
+use error::RollerErr;
 
 /// An variable and function identifier
 pub type Ident = String;
 
-pub type ErrType = u32; // TODO: make a better errortype
+pub type ErrType<'a> = RollerErr<'a>;
 
 /// The final result of a parser.
-pub type ParseResult<R> = Result<R, ErrType>;
+pub type ParseResult<'a, R> = Result<R, ErrType<'a>>;
 
 /// The output of a parser and the consumed input.
 pub type ParseState<T, I> = (T, I);
 
 /// State or error of a parser
-pub type ParseOutput<T, I> = Result<ParseState<T, I>, ErrType>;
+pub type ParseOutput<'a, T, I, E = ErrType<'a>> = Result<ParseState<T, I>, E>;
 
-pub fn map_output<T, I, U>(out: ParseOutput<T, I>, fun: &Fn(T) -> U) -> ParseOutput<U, I> {
+pub fn map_output<T, I, U, E>(out: ParseOutput<T, I, E>, fun: &Fn(T) -> U) -> ParseOutput<U, I, E>
+{
 	match out {
 		Ok( (t, i) ) => Ok( (fun(t), i) ),
 		Err(e) => Err(e)

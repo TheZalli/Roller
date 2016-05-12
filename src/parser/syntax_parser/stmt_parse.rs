@@ -1,11 +1,14 @@
 use parser::parse_util::*;
 use parser::syntax_types::*;
-use parser::lexer::lexer_util::lexemes::*;
+//use parser::lexer::lexer_util::lexemes::*;
 //use parser::syntax_parser::expr_parse::*;
 use parser::syntax_parser::synpar_util::*;
+use error::{RollerErr, SynErr};
 
+#[allow(unused_variables)]
 pub fn parse_stmt(input: InType) -> ParseResult<Stmt> {
-	Err(0)
+	Err(RollerErr::SyntaxError(SynErr::Unimplemented))
+	//Err(())
 	// .or(parse_assign(input))
 	// .or(parse_fundef(input))
 	// .or(parse_delete(input))

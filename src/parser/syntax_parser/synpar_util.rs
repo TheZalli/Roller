@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use parser::parse_util::*;
+//use parser::parse_util::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_types::*;
 
@@ -204,7 +204,7 @@ fn vec2map<K: PartialEq + Eq + Hash, T>(vec: Vec<(K, T)>) -> HashMap<K, T> {
 	return map;
 }
 
-/// Takes and returns the first token from the input.
+/*// Takes and returns the first token from the input.
 pub fn consume_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	match input.first() {
 		Some(tk) => Ok( (tk.clone(), &input[1..]) ),
@@ -212,7 +212,7 @@ pub fn consume_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	}
 }
 
-/// Peeks and doesn't remove the first token from the input.
+/ // Peeks and doesn't remove the first token from the input.
 pub fn peek_token(input: InType) -> ParseResult<Lexeme> {
 	match input.first() {
 		Some(tk) => Ok(tk.clone()),
@@ -220,14 +220,15 @@ pub fn peek_token(input: InType) -> ParseResult<Lexeme> {
 	}
 }
 
-/// Consumes and ignores one token
-/// Returns an error if the input is empty.
+/ // Consumes and ignores one token
+/ // Returns an error if the input is empty.
 pub fn ignore_token(input: InType) -> ParseResult<InType> {
 	if input.is_empty() {
 		return Err(3)
 	}
 	Ok(&input[1..])
 }
+*/
 
 /// Takes a token and places it into an enum.
 macro_rules! expect_token {
