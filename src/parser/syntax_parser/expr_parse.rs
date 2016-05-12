@@ -21,7 +21,7 @@ pub fn parse_expr(input: InType) -> ParseResult<Expr> {
 /// Parses expression until the given end_token is found
 /// Returns the unconsumed input
 pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr, InType)> {
-	// our temporary vector that ideally gets worked into a singular expression
+	// our temporary vector that ideally gets worked into the abstract syntax tree (AST) form
 	let mut work_output: Vec<ParseTemp> = Vec::new();
 
 	// a mutable clone of the input
@@ -42,7 +42,7 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 		input_queue = pair.1;
 
 		// if we encountered the end
-		// NOTE: the ending token is consumed away, this is important with parentheses
+		// NOTE: the ending token IS consumed away. this is important with parentheses
 		if tk == end_token {
 			break;
 		}
@@ -95,25 +95,14 @@ pub fn parse_expr_to_end(input: InType, end_token: Lexeme) -> ParseResult<(Expr,
 		work_output.push(work_var);
 	}
 
-
 	// Phase 2 of the algorithm: Apply ops
 	// go through the precedence levels and create the abstract syntax tree
 
 	// the root of the unfinished abstract syntax tree
-	let mut root = IncompAst::new();
-
-	root.set_child_left(IncAstNode::from(work_output));
-
-	//for level in PREC_MIN..(PREC_MAX + 1) {
-
-	//}
+	let root = IncompAst::pt_vec_to_incomp_ast(&work_output);
 
 	// DEBUG
-	let e_code = root.process_everything(PREC_MIN);
-	println!("Incomplete AST: {:?}", &root); // DEBUG
-	if let Err(_) = e_code {
-		println!("! Error in AST: {:?} !", e_code);
-	}
+	println!("Incomplete AST: {:?}", &root);
 
 	// Return the values
 	// TODO

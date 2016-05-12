@@ -91,68 +91,20 @@ pub enum IncAstNode {
 }
 
 impl IncompAst {
-	pub fn new() -> IncompAst {
-		IncompAst {
-			op: None,
-			left:	IncAstNode::Empty,
-			right:	IncAstNode::Empty,
-		}
-	}
-
-	/*fn set_op(&mut self, new_op: InfixOp) {
-		self.op = Some(new_op);
-	}*/
-
-	pub fn set_child_left(&mut self, child: IncAstNode) {
-		self.left = child;
-	}
-	/*
-	pub fn set_child_right(&mut self, child: IncAstNode) {
-		self.right = child;
-	}
-
-	pub fn get_right_children<'a>(&'a self) -> &'a IncAstNode {
-		&self.right
-	}
-
-	pub fn get_right_children_mut<'a>(&'a mut self) -> &'a mut IncAstNode {
-		&mut self.right
-	}*/
-
-	pub fn process_everything(&mut self, prec_level: i32) -> ParseResult<()> {
-		match Self::process_ia_node(&self.left, prec_level) {
-			Ok(iast) => {
-				*self = iast;
-				Ok(())
-			},
-			Err(e) => Err(e)
-		}
-	}
-
-	/// Transforms an incomplete abstract syntax (AST) tree node into AST form.
-	/// Returns an error if the input is not the ParTmp variant, which contains a parse temp vector.
-	fn process_ia_node(input: &IncAstNode, prec_level: i32) -> ParseResult<IncompAst> {
-		let in_vec;
-
-		if let &IncAstNode::ParTmp(ref v) = input {
-			in_vec = v;
-		}
-		else {
-			return Err(9);
-		}
-		// if there was an error, nothing has been changed before this line
-		Ok(Self::process_pt_vec(in_vec, prec_level))
-	}
-
 	/// Transforms a ParseTemp vector into incomplete AST form.
+	pub fn pt_vec_to_incomp_ast(input: &Vec<ParseTemp>) -> IncompAst {
+		Self::process_pt_vec(input, PREC_MIN)
+	}
+
 	/// prec_level is the precedence_level of the operator to be applied as the AST nodes op.
 	fn process_pt_vec(input: &Vec<ParseTemp>, prec_level: i32) -> IncompAst {
+		// the operator of our precedence_level level
 		let mut op_found = None;
 
 		let mut temp_left = Vec::new();
 		let mut temp_right = Vec::new();
 
-		// go through everything and move it to approriate container
+		// go through everything and move it to temp_left or temp_right
 		for n in input.iter() {
 			// check the mode whether we are in the left side or the right side of the operator
 			if op_found == None {
@@ -161,10 +113,10 @@ impl IncompAst {
 					&ParseTemp::Op(ref o) => {
 						// did we find our operator?
 						if OP_INFOS[o].level == prec_level {
-							op_found = Some(o.clone());
+							op_found = Some(*o);
 						}
 						else {
-							temp_left.push(ParseTemp::Op(o.clone()) );
+							temp_left.push(ParseTemp::Op(*o) );
 						}
 					},
 					_ => temp_left.push(n.clone() )
@@ -176,68 +128,70 @@ impl IncompAst {
 			}
 		}
 
-		// our exit condition from recursion
-		if temp_right.len() <= 1 {
-			let mut new_right = IncAstNode::ParTmp(temp_right.clone());
+		// if no operation of this level is found, try again with a larger precedence level
+		if op_found == None && prec_level < PREC_MAX {
+			return Self::process_pt_vec(input, prec_level + 1)
+		}
 
-			match temp_right.get(0) {
-				// if there is a last remaining token and it is an operator, make it a node
+		// if a parse temp has 0-1 arguments, this lambda function handles them
+		let handle_singular_arg = |pt_vec: Vec<ParseTemp>| -> IncAstNode {
+			match pt_vec.first() {
+				// if the last remaining token is an operator, make it a node
 				Some(&ParseTemp::Op(ref o)) => {
-					new_right = IncAstNode::Node(Box::new(
-						IncompAst{
-							op: Some(o.clone()),
+					IncAstNode::Node(Box::new(
+						IncompAst {
+							op: Some(*o),
 							left:	IncAstNode::Empty,
 							right:	IncAstNode::Empty,
 						}
-					));
+					))
 				},
-				// else if it's an expression we're okay
-				_ => {}
+				// it was an empty vector so let's return an empty node
+				None => IncAstNode::Empty,
+				// else if it's an expression vec we're okay
+				_ => IncAstNode::ParTmp(pt_vec.clone())
 			}
+		};
 
-			return IncompAst {
-				op:		op_found,
-				left:	IncAstNode::ParTmp(temp_left),
-				right:	new_right,
-			};
+		// ---
+		// check and process left
+		let new_left: IncAstNode;
+
+		// if the left is just a singular or nullary parameter we're okay
+		if temp_left.len() <= 1 {
+			// exit condition from recursion of the left children
+			new_left = handle_singular_arg(temp_left);
+		}
+		else if prec_level < PREC_MAX {
+			// recursively go through the higher precedence levels on temp_left
+			new_left = IncAstNode::Node(Box::new(
+				Self::process_pt_vec(&temp_left, prec_level + 1)
+			));
+		}
+		else {
+			new_left = IncAstNode::ParTmp(temp_left);
 		}
 
-		// recursively do the rest
+		// ---
+		// check and process right
+		let new_right: IncAstNode;
+
+		if temp_right.len() <= 1 {
+			// exit condition from recursion of the righ children
+			new_right = handle_singular_arg(temp_right);
+		}
+		else {
+			// recursively do the rest
+			new_right = IncAstNode::Node(Box::new(Self::process_pt_vec(&temp_right, prec_level)) )
+		}
+
 		IncompAst {
 			op:		op_found,
-			left:	IncAstNode::ParTmp(temp_left),
-			right:	IncAstNode::Node(Box::new(Self::process_pt_vec(&temp_right, prec_level)) )
+			left:	new_left,
+			right:	new_right
 		}
 	}
 
-}
-
-impl IncAstNode {
-	pub fn unwrap_as_node(self) -> Box<IncompAst> {
-		match self {
-			IncAstNode::Node(b) => b,
-			_ => panic!("unwrap_as_node failed for the value {:?}", self)
-		}
-	}
-
-	pub fn unwrap_as_ptvec(self) -> Vec<ParseTemp> {
-		match self {
-			IncAstNode::ParTmp(v) => v,
-			_ => panic!("unwrap_as_ptvec failed for the value {:?}", self)
-		}
-	}
-}
-
-impl From<Vec<ParseTemp>> for IncAstNode {
-	fn from(t: Vec<ParseTemp>) -> Self {
-		IncAstNode::ParTmp(t)
-	}
-}
-
-impl From<Box<IncompAst>> for IncAstNode {
-	fn from(n: Box<IncompAst>) -> Self {
-		IncAstNode::Node(n)
-	}
 }
 
 /// Takes a vector and transforms it into a map.

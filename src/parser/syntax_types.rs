@@ -85,7 +85,7 @@ pub enum Pred {
 	List(Option<Box<Pred>>),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum InfixOp {
 	Dice,
 	Plus,
@@ -95,13 +95,13 @@ pub enum InfixOp {
 	Pow,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PredOp {
 	Cmp(CmpOp),
 	LogConn(LogConnOp),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CmpOp {
 	Eq,
 	Ineq,
@@ -111,7 +111,7 @@ pub enum CmpOp {
 	Lteq,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum LogConnOp {
 	And,
 	Or,
