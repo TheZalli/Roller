@@ -6,6 +6,7 @@ use parser::lexer::lexer_util::lexemes::*;
 #[derive(Debug)]
 pub enum SynErr {
 	UnexpectedToken(Lexeme),
+	InvalidFunctionCall,
 	UnexpectedEnd,
 	MalformedAST,
 	EmptyCommand,
@@ -20,6 +21,8 @@ impl fmt::Display for SynErr {
 			&SynErr::UnexpectedToken(ref tk) =>
 				// TODO: implement fmt::Display for tokens
 				write!(f, "Unexpected token: {:?}", tk),
+			&SynErr::InvalidFunctionCall =>
+				write!(f, "Invalid function call"),
 			&SynErr::UnexpectedEnd =>
 				write!(f, "Unexpected end of input"),
 			&SynErr::MalformedAST =>
@@ -38,6 +41,7 @@ impl error::Error for SynErr {
 	fn description(&self) -> &str {
 		match self {
 			&SynErr::UnexpectedToken(_) => "unexpected token",
+			&SynErr::InvalidFunctionCall => "invalid function call",
 			&SynErr::UnexpectedEnd => "unexpected end of input",
 			&SynErr::MalformedAST => "tried to create a malformed command",
 			&SynErr::EmptyCommand => "tried to create an empty command",

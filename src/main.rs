@@ -34,9 +34,12 @@ fn main() {
 		match io::stdin().read_line(&mut temp) {
 			Err(error) => {
 				println!("Input error: {}", error);
-				continue;
+				break;
 			},
-			_ => {
+			// EOF encountered
+			Ok(0) => break,
+			// Read some bytes
+			Ok(_) => {
 				if temp.trim().is_empty() {
 					// ignore empty lines
 					continue;

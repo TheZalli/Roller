@@ -5,19 +5,6 @@ use std::path::PathBuf;
 pub use eval::types::*;
 use parser::parse_util::Ident;
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum ExprList {
-	Vector(Vec<Expr>),
-	Range {
-		start: Box<Expr>,
-		step: Option<Box<Expr>>,
-		end: Box<Expr>,
-	},
-}
-
-// / A keyword identifier
-//pub type KWIdent = String;
-
 /// A command given to the interpreter
 #[derive(Debug, PartialEq, Clone)]
 pub enum Cmd {
@@ -42,10 +29,18 @@ pub enum Stmt {
 pub enum Expr {
 	/// A scalar value
 	Val(Value),
-	/// A list or range of expressions
-	List(ExprList),
+	/// A list of expressions
+	List(Vec<Expr>),
+	/// A numerical range
+	Range {
+		start: Box<Expr>,
+		step: Option<Box<Expr>>,
+		end: Box<Expr>,
+	},
 	/// Variable
 	Var(Ident),
+	/// A function call
+	FunCall(Ident, Vec<Expr>),
 	/// An operation, like a mathematical operation.
 	Op {
 		op: InfixOp,
@@ -57,11 +52,6 @@ pub enum Expr {
 		list: Box<Expr>,
 		pred: Pred
 	},
-
-	/*KeyWord {
-		keyword: KWIdent,
-		params: Vec<Expr>
-	},*/
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -119,14 +109,6 @@ pub enum LogConnOp {
 
 	Not,
 }
-
-/*
-#[derive(Debug, PartialEq, Clone)]
-pub enum AnyOp {
-	Math(MathOp),
-	FunCall(Ident),
-}*/
-
 
 /*
 #[derive(Debug, PartialEq)]
