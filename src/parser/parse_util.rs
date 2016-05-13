@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::hash::Hash;
+
 use error::RollerErr;
 
 /// An variable and function identifier
@@ -6,7 +9,7 @@ pub type Ident = String;
 pub type ErrType<'a> = RollerErr<'a>;
 
 /// The final result of a parser.
-pub type ParseResult<'a, R> = Result<R, ErrType<'a>>;
+pub type ParseResult<'a, R, E = ErrType<'a>> = Result<R, E>;
 
 /// The output of a parser and the consumed input.
 pub type ParseState<T, I> = (T, I);
@@ -20,6 +23,16 @@ pub fn map_output<T, I, U, E>(out: ParseOutput<T, I, E>, fun: &Fn(T) -> U) -> Pa
 		Ok( (t, i) ) => Ok( (fun(t), i) ),
 		Err(e) => Err(e)
 	}
+}
+
+/// Takes a vector and transforms it into a map.
+/// Why is there nothing like this in std?
+pub fn vec2map<K: PartialEq + Eq + Hash, T>(vec: Vec<(K, T)>) -> HashMap<K, T> {
+	let mut map = HashMap::new();
+	for (k, t) in vec {
+		map.insert(k, t);
+	}
+	return map;
 }
 
 /*pub trait Complete {

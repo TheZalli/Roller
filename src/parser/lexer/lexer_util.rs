@@ -7,6 +7,8 @@ pub type InType<'a> = &'a str;
 
 /// Lexical token enums
 pub mod lexemes {
+	use std::collections::HashMap;
+
 	use parser::parse_util::*;
 	use parser::syntax_types::*;
 
@@ -23,6 +25,8 @@ pub mod lexemes {
 		Op(InfixOp),
 		/// Predicate operations
 		Pred(PredToken),
+		// Keyword statement
+		Kw(KwsToken),
 		/// .. or ...
 		RangeEllipsis,
 		/// =
@@ -62,7 +66,7 @@ pub mod lexemes {
 
 	/// Predicate operation tokens.
 	/// (From highest to lowest precedence)
-	#[derive(Debug, Clone, PartialEq)]
+	#[derive(Debug, Clone, Copy, PartialEq)]
 	pub enum PredToken {
 		Not,
 
@@ -72,6 +76,26 @@ pub mod lexemes {
 		And,
 		Or,
 		XOr,
+	}
+
+	// Keyword statement token
+	#[derive(Debug, Clone, Copy, PartialEq)]
+	pub enum KwsToken {
+		Delete,
+		Clear,
+		Run,
+		Save,
+	}
+
+	lazy_static! {
+		/// A map from all of the keys into their tokens.
+		pub static ref KWS_STRINGS: HashMap<&'static str, KwsToken> =
+			vec2map(vec![
+				("Delete",	KwsToken::Delete),
+				("Clear",	KwsToken::Clear),
+				("Run",		KwsToken::Run),
+				("Save",	KwsToken::Save),
+			]);
 	}
 }
 
@@ -86,6 +110,9 @@ pub mod patterns {
 	lazy_static! {
 		pub static ref ID_REGEX: Regex =
 			Regex::new(r#"^([\pL_][\pL\pN_]*)"#).unwrap();
+
+		/// Matches all regexes plus more.
+		pub static ref KWS_REGEX: Regex = Regex::new("^([A-Z][a-z]{2,5})").unwrap();
 
 		pub static ref INT_REGEX: Regex = Regex::new(r#"^(\d+)"#).unwrap();
 		pub static ref STR_REGEX: Regex = Regex::new("^\"(.*?)\"").unwrap();

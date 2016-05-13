@@ -1,5 +1,3 @@
-//#![allow(dead_code)]
-
 //use std::str::pattern::Pattern;
 use std::str::FromStr;
 
@@ -37,6 +35,7 @@ fn get_token(input: InType) -> ParseOutput<Lexeme, InType, ErrType> {
 	Err(())
 	.or(lex_operator(input))
 	.or(lex_pred(input))
+	.or(lex_keyword(input))
 	.or(lex_identifier(input))
 	.or(lex_literal(input))
 	.or(lex_misc_tokens(input))
@@ -152,6 +151,17 @@ fn lex_literal<'a>(input: InType<'a>) -> ParseOutput<Lexeme, InType<'a>, ()> {
 	lex_str_lit(input)
 	.or(lex_float(input))
 	.or(lex_int(input))
+}
+
+fn lex_keyword(input: InType) -> ParseOutput<Lexeme, InType, ()> {
+	match lex_pat_capture(input, &KWS_REGEX) {
+		Ok( (cap, i) ) =>
+			match KWS_STRINGS.get(&cap[1]) {
+				Some(&kw) => Ok( (Lexeme::Kw(kw), i) ),
+				None => Err(())
+			},
+		Err(()) => Err(())
+	}
 }
 
 /// Tokenizes an identifier.

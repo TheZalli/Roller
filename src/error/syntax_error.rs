@@ -23,7 +23,7 @@ impl fmt::Display for SynErr {
 			&SynErr::UnexpectedEnd =>
 				write!(f, "Unexpected end of input"),
 			&SynErr::MalformedAST =>
-				write!(f, "Tried to create a malformed expression"),
+				write!(f, "Tried to create a malformed command"),
 			&SynErr::EmptyCommand =>
 				write!(f, "Tried to create an empty command"),
 			&SynErr::TooManyParameters =>
@@ -39,7 +39,7 @@ impl error::Error for SynErr {
 		match self {
 			&SynErr::UnexpectedToken(_) => "unexpected token",
 			&SynErr::UnexpectedEnd => "unexpected end of input",
-			&SynErr::MalformedAST => "tried to create a malformed expression",
+			&SynErr::MalformedAST => "tried to create a malformed command",
 			&SynErr::EmptyCommand => "tried to create an empty command",
 			&SynErr::TooManyParameters => "too many parameters",
 			&SynErr::Unimplemented => "unimplemented feature",
