@@ -2,21 +2,21 @@ use std::fmt;
 use std::error;
 
 #[derive(Debug)]
-pub enum LexErr<'a> {
-	InvalidTokenAt(&'a str)
+pub enum LexErr {
+	InvalidTokenAt(String)
 }
 
-impl<'a> fmt::Display for LexErr<'a> {
+impl fmt::Display for LexErr {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			&LexErr::InvalidTokenAt(s) =>
-				write!(f, "Invalid token at: {:?}", s)
+			&LexErr::InvalidTokenAt(ref s) =>
+				write!(f, "Invalid token at: {}", s)
 		}
 	}
 
 }
 
-impl<'a> error::Error for LexErr<'a> {
+impl error::Error for LexErr {
 	fn description(&self) -> &str {
 		match self {
 			&LexErr::InvalidTokenAt(_) => "invalid token found"

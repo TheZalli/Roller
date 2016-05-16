@@ -1,7 +1,6 @@
-use parser::parse_util::*;
-use parser::syntax_types::*;
+use syntax_tree::*;
 use parser::syntax_parser::synpar_util::*;
-use error::{RollerErr, SynErr};
+use error::{RollerErr, SynErr, ParseResult};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct IncompAst {
@@ -119,7 +118,7 @@ fn process_pt_vec(input: &Vec<ParseTemp>, prec_level: i32) -> IncompAst {
 	}
 }
 
-pub fn complete_iast<'a>(input: IncompAst) -> ParseResult<'a, Expr> {
+pub fn complete_iast(input: IncompAst) -> ParseResult<Expr> {
 	match input.op {
 		None => {
 			// if the op is none then the right should be left empty by the algorithm of process_pt_vec

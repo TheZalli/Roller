@@ -11,7 +11,7 @@ pub enum SynErr {
 	MalformedAST,
 	EmptyCommand,
 	TooManyParameters,
-	// TODO: remove when everything is implementend
+	// TODO: remove when everything is implemented
 	Unimplemented
 }
 

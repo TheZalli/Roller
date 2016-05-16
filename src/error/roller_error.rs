@@ -3,15 +3,14 @@ use std::error;
 
 use error::*;
 
-#[allow(dead_code)] // TODO: remove when EvalErrors are used
 #[derive(Debug)]
-pub enum RollerErr<'a> {
-	LexingError(LexErr<'a>),
+pub enum RollerErr {
+	LexingError(LexErr),
 	SyntaxError(SynErr),
 	EvalError(EvalErr),
 }
 
-impl<'a> fmt::Display for RollerErr<'a> {
+impl fmt::Display for RollerErr {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			&RollerErr::LexingError(ref e) => write!(f, "Lexing error: {}", e),
@@ -21,7 +20,7 @@ impl<'a> fmt::Display for RollerErr<'a> {
 	}
 }
 
-impl<'a> error::Error for RollerErr<'a> {
+impl error::Error for RollerErr {
 	fn description(&self) -> &str {
 		match self {
 			&RollerErr::LexingError(ref e) => e.description(),
@@ -30,3 +29,8 @@ impl<'a> error::Error for RollerErr<'a> {
 		}
 	}
 }
+
+pub type ErrType = RollerErr;
+
+/// The final result of a parser.
+pub type ParseResult<R, E = ErrType> = Result<R, E>;

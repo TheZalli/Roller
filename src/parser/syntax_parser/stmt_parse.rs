@@ -1,11 +1,10 @@
 use std::path::PathBuf;
 
-use parser::parse_util::*;
-use parser::syntax_types::*;
+use syntax_tree::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::expr_parse::*;
 use parser::syntax_parser::synpar_util::*;
-use error::{RollerErr, SynErr};
+use error::{RollerErr, SynErr, ParseResult};
 
 #[allow(unused_variables)]
 pub fn parse_stmt(input: InType) -> ParseResult<Stmt> {
@@ -62,7 +61,7 @@ fn parse_fundef(input: InType) -> ParseResult<Stmt, ()> {
 			// check if we have an equal sign and an expression
 			if let Some((&Lexeme::Eq, input)) = mut_input.split_first() {
 				if let Ok(exp) = parse_expr(input) {
-					return Ok(Stmt::FnDef(id.clone(), param_ids, exp));
+					return Ok(Stmt::FnDef(id.clone(), RollerFun::new(param_ids, exp) ));
 				}
 			}
 

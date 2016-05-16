@@ -1,16 +1,10 @@
 use std::collections::HashMap;
 
-use parser::parse_util::*;
-use parser::lexer::lexer_util::lexemes::*;
-use parser::syntax_types::*;
+use syntax_tree::{InfixOp, Expr};
+use common_util::{Side, vec2map};
+use parser::lexer::lexer_util::lexemes::Lexeme;
 
 pub type InType<'a> = &'a [Lexeme];
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Side {
-	Left,
-	Right
-}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[allow(dead_code)] // TODO: remove when all the variants are used somewhere

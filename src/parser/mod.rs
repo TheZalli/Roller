@@ -1,6 +1,5 @@
 mod parse_util;
 
-pub mod syntax_types;
 pub mod lexer;
 pub mod syntax_parser;
 

@@ -4,11 +4,14 @@ extern crate regex;
 mod parser;
 mod eval;
 mod error;
+mod common_util;
+mod syntax_tree;
 
 use std::io::prelude::*;
 use std::io;
 
 use parser::*;
+use eval::*;
 
 /// Works like the println macro, but prints to the stderr instead of stdout.
 macro_rules! println_to_stderr(
@@ -20,6 +23,8 @@ macro_rules! println_to_stderr(
 
 fn main() {
 	let mut input;
+
+	let mut env = RollerEnv::new();
 
 	// The REP loop
 	// Currently there is no way to exit other than the interrupt signal (ctrl + c)
@@ -58,7 +63,16 @@ fn main() {
 				let ast_res = parse_cmd(&tk_vec);
 
 				match ast_res {
-					Ok(exp) => println!("AST: {:?} ", exp), // TODO
+					Ok(cmd) => {
+						//println!("AST: {:?} ", exp); // TODO
+						let val_res = eval_cmd(cmd, &mut env);
+
+						match val_res {
+							Some(Ok(val)) => println!("{}", val),
+							Some(Err(e)) => println_to_stderr!("{}", e),
+							None => {},
+						}
+					},
 					Err(e) => println_to_stderr!("{}", e)
 				}
 			},

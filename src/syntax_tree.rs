@@ -2,8 +2,8 @@
 use std::boxed::Box;
 use std::path::PathBuf;
 
-pub use eval::types::*;
-use parser::parse_util::Ident;
+use eval::types::*;
+use std::fmt;
 
 /// A command given to the interpreter
 #[derive(Debug, PartialEq, Clone)]
@@ -17,7 +17,7 @@ pub enum Cmd {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
 	Assign(Ident, Expr),
-	FnDef(Ident, Vec<Ident>, Expr),
+	FnDef(Ident, RollerFun),
 	Delete(Ident),
 	Clear,
 	Run(PathBuf),
@@ -85,6 +85,20 @@ pub enum InfixOp {
 	Pow,
 }
 
+impl fmt::Display for InfixOp {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			&InfixOp::Dice	=> write!(f, "d"),
+			&InfixOp::Plus	=> write!(f, "+"),
+			&InfixOp::Minus	=> write!(f, "-"),
+			&InfixOp::Mul	=> write!(f, "*"),
+			&InfixOp::Div	=> write!(f, "/"),
+			&InfixOp::Pow	=> write!(f, "^"),
+
+		}
+	}
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PredOp {
 	Cmp(CmpOp),
@@ -117,3 +131,15 @@ pub enum TypePred {
 	Real,
 	String,
 }*/
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct RollerFun {
+	pub params: Vec<Ident>,
+	pub body: Expr,
+}
+
+impl RollerFun {
+	pub fn new(params: Vec<Ident>, body: Expr) -> RollerFun {
+		RollerFun{params: params, body: body}
+	}
+}

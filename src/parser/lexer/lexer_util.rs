@@ -1,6 +1,5 @@
 pub use self::lexemes::*;
 pub use self::patterns::*;
-//use eval::types::*;
 
 /// The type of the input.
 pub type InType<'a> = &'a str;
@@ -9,8 +8,9 @@ pub type InType<'a> = &'a str;
 pub mod lexemes {
 	use std::collections::HashMap;
 
-	use parser::parse_util::*;
-	use parser::syntax_types::*;
+	use common_util::vec2map;
+	use syntax_tree::*;
+	use eval::types::*;
 
 	/// A lexical token.
 	#[derive(Debug, Clone, PartialEq)]

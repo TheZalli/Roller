@@ -3,10 +3,11 @@ use std::str::FromStr;
 
 use regex::{Regex, Captures};
 
+use syntax_tree::*;
 use parser::parse_util::*;
 use parser::lexer::lexer_util::*;
-use parser::syntax_types::*;
-use error::{RollerErr, LexErr};
+use eval::types::*;
+use error::{RollerErr, LexErr, ParseResult};
 
 pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 	let mut input = input.clone().trim_right(); // remove EOL
@@ -29,7 +30,7 @@ pub fn tokenize(input: InType) -> ParseResult<Vec<Lexeme>> {
 
 /// Tokenizes one token and consumes the input
 /// IMPORTANT: If no input was consumed, an error should be returned, so that tokenize won't go into infinite loop.
-fn get_token(input: InType) -> ParseOutput<Lexeme, InType, ErrType> {
+fn get_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	let input = ignore_whitespace(input);
 
 	Err(())
@@ -40,14 +41,14 @@ fn get_token(input: InType) -> ParseOutput<Lexeme, InType, ErrType> {
 	.or(lex_literal(input))
 	.or(lex_misc_tokens(input))
 	//.or(lex_end(input))
-	.or(Err(RollerErr::LexingError(LexErr::InvalidTokenAt(input)) ))
+	.or(Err(RollerErr::LexingError(LexErr::InvalidTokenAt(input.to_owned()) ) ))
 }
 
 /// Evaluates the input with the given regex and returns the captures and the right side of the input splitted from the right end of the whole capture (the rest is consumed).
 /// Returns an error if nothing was captured.
 //fn lex_pat_capture<'a, P: Sized + Pattern<'a>>(input: InType<'a>, pat: P) ->
 fn lex_pat_capture<'a>(input: InType<'a>, pat: &Regex) ->
-	ParseOutput<'a, Captures<'a>, InType<'a>, () > {
+	ParseOutput<Captures<'a>, InType<'a>, () > {
 	match pat.captures(input) {
 		Some(cap) => {
 			// a safe unwrap, since we know that we captured something,
@@ -61,7 +62,7 @@ fn lex_pat_capture<'a>(input: InType<'a>, pat: &Regex) ->
 
 /// Same as lex_pat_capture, expect doesn't capture.
 /// This function just consumes the pattern if found and returns an error not found
-fn expect_pattern<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<'a, (), InType<'a>, () > {
+fn expect_pattern<'a>(input: InType<'a>, pat: &Regex) -> ParseOutput<(), InType<'a>, () > {
 	match pat.find(input) {
 		Some( ( _ , right) ) => {
 			Ok( ( (), input.split_at(right).1) )

@@ -1,9 +1,10 @@
+use syntax_tree::*;
 use parser::parse_util::*;
-use parser::syntax_types::*;
 use parser::lexer::lexer_util::lexemes::*;
 use parser::syntax_parser::synpar_util::*;
 use parser::syntax_parser::expr_functions;
-use error::{RollerErr, SynErr};
+use eval::types::*;
+use error::{RollerErr, SynErr, ParseResult};
 
 /// Parses expressions
 pub fn parse_expr(input: InType) -> ParseResult<Expr> {

@@ -1,4 +1,6 @@
-pub mod eval_utils;
+pub mod eval_functions;
 pub mod types;
+mod env;
 
-pub use self::eval_utils::*;
+pub use self::eval_functions::*;
+pub use self::env::RollerEnv;
