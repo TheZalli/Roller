@@ -25,7 +25,9 @@ pub enum EvalErr {
 		left: RollerType,
 		right: RollerType,
 	},
+	NegNotSupported(RollerType),
 	ListsNotSameSize(Value, Value),
+	ReachedMaxCallDepth,
 	// TODO: remove when everything is implemented
 	Unimplemented
 }
@@ -58,8 +60,14 @@ impl fmt::Display for EvalErr {
 				write!(f, "Operator '{}' is not defined between the types {} and {}",
 					op, left, right),
 
+			&EvalErr::NegNotSupported(arg) =>
+				write!(f, "Negation is not defined for the type {}", arg),
+
 			&EvalErr::ListsNotSameSize(ref a, ref b) =>
 				write!(f, "Lists {} and {} were not of same size", a, b),
+
+			&EvalErr::ReachedMaxCallDepth =>
+				write!(f, "Reached maximum function call depth"),
 
 			&EvalErr::Unimplemented =>
 				write!(f, "Unimplemented feature"),
@@ -78,7 +86,9 @@ impl error::Error for EvalErr {
 			&EvalErr::MissingOpArg{..}			=> "missing operator argument",
 			&EvalErr::NoOpArgs(_)				=> "operator has no arguments",
 			&EvalErr::UnsupportedOpTypes{..}	=> "operator not defined between types",
+			&EvalErr::NegNotSupported(_)		=> "negation not defined for the type",
 			&EvalErr::ListsNotSameSize(..)		=> "lists were not of the same size",
+			&EvalErr::ReachedMaxCallDepth		=> "reached maximum function call depth",
 			&EvalErr::Unimplemented				=> "unimplemented feature",
 		}
 	}

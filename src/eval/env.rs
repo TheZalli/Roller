@@ -1,5 +1,7 @@
+use std::ops::{Deref, DerefMut};
 use std::collections::HashMap;
 use std::iter::FromIterator;
+use std::cell::RefCell;
 
 use syntax_tree::*;
 use eval::types::*;
@@ -7,18 +9,17 @@ use eval::eval_functions::eval_expr;
 use error::*;
 
 /// An runtime environment
-pub struct RollerEnv<'a> {
-	/// The global namespace for variables and functions.
-	ns: RollerNamespace<'a>,
-}
+pub struct RollerEnv {
+	/// The global namespace for functions
+	fun_ns: HashMap<Ident, RollerFun>,
+	/// The global namespace for variables
+	var_ns: HashMap<Ident, Value>,
 
-/// A namespace for variables and functions
-struct RollerNamespace<'a> {
-	/// The variable data
-	vars: HashMap<Ident, Value>,
-	funs: HashMap<Ident, RollerFun>,
-	/// A reference to the previous namespace
-	parent_ns: Option<&'a RollerNamespace<'a>>,
+	/// The callstack for the functions.
+	/// Stores the temporary variables of the functions.
+	call_stack: RefCell<Vec<HashMap<Ident, Value>>>,
+	/// How many function calls can be in the callstack
+	max_call_depth: usize
 }
 
 #[allow(dead_code)] // TODO: remove when used
@@ -28,51 +29,59 @@ pub enum NameInfo {
 	Empty,
 }
 
-impl<'a> RollerEnv<'a> {
-	/// Creates a new empty runtime environment.
-	pub fn new() -> RollerEnv<'a> {
-		RollerEnv{ns: RollerNamespace::new()}
-	}
-
-	/// Creates a new local environment to be used when calling functions.
-	pub fn local_from_args(&'a self, names: &Vec<Ident>, args: Vec<Value>)
-		-> ParseResult<RollerEnv<'a>>
-	{
-		Ok(RollerEnv{ns: try!( RollerNamespace::from_args(names, args, Some(&self.ns)) ) })
+impl RollerEnv {
+	/// Creates a new empty runtime environment
+	pub fn new(max_call_depth: usize) -> RollerEnv {
+		RollerEnv {
+			fun_ns: HashMap::new(),
+			var_ns: HashMap::new(),
+			call_stack: RefCell::new(Vec::new()),
+			max_call_depth: max_call_depth,
+		}
 	}
 
 	pub fn clear(&mut self) {
-		*self = RollerEnv::new()
+		*self = RollerEnv {
+			fun_ns: HashMap::new(),
+			var_ns: HashMap::new(),
+			call_stack: RefCell::new(Vec::new()),
+			max_call_depth: self.max_call_depth,
+		}
+	}
+
+	#[allow(dead_code)] // TODO: remove when used
+	pub fn set_max_call_depth(&mut self, new_depth: usize) {
+		self.max_call_depth = new_depth;
 	}
 
 	/// Sets a variable with name id to value.
 	/// If there were a variable or function with same name, it will be replaced.
-	pub fn assign_var(&mut self, id: Ident, value: Value) {
-		self.ns.remove_fun(&id);
-		self.ns.insert_var(id, value);
+	pub fn assign_var(&mut self, id: &Ident, value: Value) {
+		self.fun_ns.remove(id);
+		self.var_ns.insert(id.to_owned(), value);
 	}
 
 	/// Declares a function with the name id.
 	/// If there were a variable or function with same name, it will be replaced.
-	pub fn declare_function(&mut self, id: Ident, body: RollerFun) {
-		self.ns.remove_var(&id);
-		self.ns.insert_fun(id, body);
+	pub fn declare_function(&mut self, id: &Ident, body: &RollerFun) {
+		self.var_ns.remove(id);
+		self.fun_ns.insert(id.to_owned(), body.clone());
 	}
 
 	/// Deletes a function or variable with the given name.
 	pub fn delete_id(&mut self, id: &Ident) {
-		if let None = self.ns.remove_var(id) {
-			self.ns.remove_fun(id);
+		if let None = self.var_ns.remove(id) {
+			self.fun_ns.remove(id);
 		}
 	}
 
 	/// Tells if there is a variable, function or nothing with that name.
 	#[allow(dead_code)] // TODO: remove when used
 	pub fn get_name_info(&self, id: Ident) -> NameInfo {
-		if let Some(_) = self.ns.get_var(&id) {
+		if let Some(_) = self.var_ns.get(&id) {
 			NameInfo::Val
 		}
-		else if let Some(_) = self.ns.get_fun(&id) {
+		else if let Some(_) = self.fun_ns.get(&id) {
 			NameInfo::Fun
 		}
 		else {
@@ -80,31 +89,43 @@ impl<'a> RollerEnv<'a> {
 		}
 	}
 
-	pub fn get_var(&self, id: Ident) -> ParseResult<Value> {
-		match self.ns.get_var(&id) {
-			Some(ref v) => Ok((*v).clone()),
-			None => Err(RollerErr::EvalError(EvalErr::NoVarFound(id))),
+	pub fn get_var(&self, id: &Ident) -> ParseResult<Value> {
+		if self.call_stack.borrow().deref().is_empty() {
+			match self.var_ns.get(id) {
+				Some(ref x) => Ok((*x).clone()),
+				None => Err(RollerErr::EvalError(EvalErr::NoVarFound(id.to_owned() ))),
+			}
+		}
+		else {
+			for i in self.call_stack.borrow().deref().iter().rev() {
+				if let Some(ref x) = i.get(id) {
+					return Ok((*x).clone());
+				}
+			}
+			Err(RollerErr::EvalError(EvalErr::NoVarFound(id.clone() )))
 		}
 	}
 
-	pub fn call_fun(&self, id: Ident, args: Vec<Value>) -> ParseResult<Value> {
-		match self.ns.get_fun(&id) {
+	pub fn call_fun(&self, id: &Ident, args: Vec<Value>) -> ParseResult<Value> {
+		match self.fun_ns.get(id) {
 			Some(ref fun) => {
-				let local_env = try!(self.local_from_args(&fun.params, args));
-				eval_expr(fun.body.clone(), &local_env)
+				if self.call_stack.borrow().deref().len() > self.max_call_depth {
+					return Err(RollerErr::EvalError(EvalErr::ReachedMaxCallDepth));
+				}
+
+				let local_ns = try!(Self::ns_from_args(&fun.params, args));
+				self.call_stack.borrow_mut().deref_mut().push(local_ns);
+
+				let to_return = eval_expr(&fun.body, self);
+
+				self.call_stack.borrow_mut().deref_mut().pop();
+				to_return
 			},
-			None => Err(RollerErr::EvalError(EvalErr::NoFunFound(id))),
+			None => Err(RollerErr::EvalError(EvalErr::NoFunFound(id.to_owned() ))),
 		}
 	}
-}
 
-impl<'a> RollerNamespace<'a> {
-	pub fn new() -> RollerNamespace<'a> {
-		RollerNamespace{vars: HashMap::new(), funs: HashMap::new(), parent_ns: None}
-	}
-
-	pub fn from_args(names: &Vec<Ident>, args: Vec<Value>,
-		parent_namespace: Option<&'a RollerNamespace>) -> ParseResult<RollerNamespace<'a>>
+	fn ns_from_args(names: &Vec<Ident>, args: Vec<Value>) -> ParseResult<HashMap<Ident, Value>>
 	{
 		// chech whether the lengths match
 		if names.len() != args.len() {
@@ -114,57 +135,11 @@ impl<'a> RollerNamespace<'a> {
 		}
 		// ok they do, use iterator magic to add them
 		Ok(
-			RollerNamespace{
-				vars:
-					HashMap::from_iter(
-						names.iter()
-						.cloned()
-						.zip(args.into_iter())
-					),
-				funs: HashMap::new(),
-				parent_ns: parent_namespace,
-			}
+			HashMap::from_iter(
+				names.iter()
+				.cloned()
+				.zip(args.into_iter())
+			)
 		)
-	}
-
-	/// Tries to find a variable with given name from the namespace if possible.
-	/// If no variable was found, checks the parent namespace
-	pub fn get_var(&self, id: &Ident) -> Option<&Value> {
-		match self.vars.get(id) {
-			Some(val) => Some(val),
-			None =>
-				match self.parent_ns {
-					Some(ns) => ns.get_var(id),
-					None => None,
-				},
-		}
-	}
-
-	/// Tries to find the given function from the parent namespace or from itself.
-	pub fn get_fun(&self, id: &Ident) -> Option<&RollerFun> {
-		match self.parent_ns {
-			Some(ns) => ns.get_fun(id),
-			None => self.funs.get(id),
-		}
-	}
-
-	/// Adds or replaces a variable into namespace
-	pub fn insert_var(&mut self, id: Ident, val: Value) -> Option<Value> {
-		self.vars.insert(id, val)
-	}
-
-	/// Adds or replaces a function into namespace
-	pub fn insert_fun(&mut self, id: Ident, body: RollerFun) -> Option<RollerFun> {
-		self.funs.insert(id, body)
-	}
-
-	/// Removes a variable with given name.
-	pub fn remove_var(&mut self, id: &Ident) -> Option<Value> {
-		self.vars.remove(id)
-	}
-
-	/// Removes a function with given name.
-	pub fn remove_fun(&mut self, id: &Ident) -> Option<RollerFun> {
-		self.funs.remove(id)
 	}
 }

@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub, Neg, Mul, Div};
 
-use common_util::Side;
+use common_util::{Side, Pow};
 use syntax_tree::*;
 use eval::types::*;
 use eval::env::*;
@@ -29,14 +29,14 @@ macro_rules! expect_binary_op {
 
 
 /// Evaluates a command and returns the value, if it was an expression, or returns an error.
-pub fn eval_cmd(input: Cmd, env: &mut RollerEnv) -> Option<ParseResult<Value>> {
+pub fn eval_cmd(input: &Cmd, env: &mut RollerEnv) -> Option<ParseResult<Value>> {
 	match input {
-		Cmd::Statement(s) =>
+		&Cmd::Statement(ref s) =>
 			match eval_stmt(s, env) {
 				Ok(()) => None,
 				Err(e) => Some(Err(e))
 			},
-		Cmd::Expression(e) =>
+		&Cmd::Expression(ref e) =>
 			match eval_expr(e, env) {
 				Ok(val) => Some(Ok(val)),
 				Err(e) => Some(Err(e))
@@ -45,17 +45,17 @@ pub fn eval_cmd(input: Cmd, env: &mut RollerEnv) -> Option<ParseResult<Value>> {
 }
 
 /// Evaluates a statement and returns an error if one was encountered.
-pub fn eval_stmt(input: Stmt, env: &mut RollerEnv) -> ParseResult<()> {
+pub fn eval_stmt(input: &Stmt, env: &mut RollerEnv) -> ParseResult<()> {
 	match input {
-		Stmt::Assign(id, exp) => {
+		&Stmt::Assign(ref id, ref exp) => {
 			let val = try!(eval_expr(exp, env));
 			Ok(env.assign_var(id, val) )
 		},
-		Stmt::FnDef(id, fun) =>
+		&Stmt::FnDef(ref id, ref fun) =>
 			Ok(env.declare_function(id, fun)),
-		Stmt::Delete(id) =>
-			Ok(env.delete_id(&id)),
-		Stmt::Clear =>
+		&Stmt::Delete(ref id) =>
+			Ok(env.delete_id(id)),
+		&Stmt::Clear =>
 			Ok(env.clear()),
 		/*Stmt::Run(path) =>
 			,
@@ -66,37 +66,37 @@ pub fn eval_stmt(input: Stmt, env: &mut RollerEnv) -> ParseResult<()> {
 }
 
 /// Evaluates an expression and returns a value or error.
-pub fn eval_expr(input: Expr, env: &RollerEnv) -> ParseResult<Value> {
+pub fn eval_expr(input: &Expr, env: &RollerEnv) -> ParseResult<Value> {
 	match input {
-		Expr::Val(val) =>
-			Ok(val),
-		Expr::List(vec_exp) =>
-			Ok(Value::List(try!(eval_expr_vec(vec_exp, env))) ),
+		&Expr::Val(ref val) =>
+			Ok(val.clone()),
+		&Expr::List(ref vec_exp) =>
+			Ok(Value::List(try!(eval_expr_vec(&vec_exp, env))) ),
 		//Expr::Range{start, step, end} =>
 		//	,
-		Expr::Var(id) =>
+		&Expr::Var(ref id) =>
 			env.get_var(id),
-		Expr::FunCall(id, args) =>
+		&Expr::FunCall(ref id, ref args) =>
 			env.call_fun(id, try!(eval_expr_vec(args, env))),
-		Expr::Op{op, left, right} => {
+		&Expr::Op{op, ref left, ref right} => {
 			let eval_opt = |opt_exp: Option<Box<Expr>>|
-				match opt_exp.map(|e| eval_expr(*e, env)) {
+				match opt_exp.map(|e| eval_expr(&*e, env)) {
 					Some(Ok(v)) => Ok(Some(v)),
 					None => Ok(None),
 					Some(Err(e)) => Err(e)
 				};
-
-			eval_op(op, try!(eval_opt(left)), try!(eval_opt(right)) )
+			eval_op(op, try!(eval_opt(left.clone() )), try!(eval_opt(right.clone() )) )
 		},
+
 		_ => Err(RollerErr::EvalError(EvalErr::Unimplemented))
 	}
 }
 
 /// Evaluates a vector of expressions and stops at the first error.
-fn eval_expr_vec(expr_vec: Vec<Expr>, env: &RollerEnv) -> ParseResult<Vec<Value>> {
+fn eval_expr_vec(expr_vec: &Vec<Expr>, env: &RollerEnv) -> ParseResult<Vec<Value>> {
 	let mut to_return = Vec::new();
 	for i in expr_vec.into_iter() {
-		match eval_expr(i, env) {
+		match eval_expr(&i, env) {
 			Ok(v) => to_return.push(v),
 			Err(e) => return Err(e)
 		}

@@ -3,6 +3,7 @@ use std::f64;
 use std::fmt;
 use std::ops;
 
+use common_util::{IntType, FloatType, Pow};
 use syntax_tree::InfixOp;
 use error::{RollerErr, EvalErr, ParseResult};
 
@@ -33,15 +34,15 @@ pub enum RollerType {
 /// A numeral, either an integer or real
 #[derive(PartialEq, Clone, Copy)]
 pub enum NumType {
-	Int(i64),
-	Real(f64),
+	Int(IntType),
+	Real(FloatType),
 }
 
 /// The error allowed for floating point equality comparison.
-const EPSILON: f64 = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
+const EPSILON: FloatType = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
 
 /// Floating point equality comparison.
-fn float_eq(x: f64, y: f64) -> bool {
+fn float_eq(x: FloatType, y: FloatType) -> bool {
 	let abs_diff = (x - y).abs();
 	abs_diff <= EPSILON
 }
@@ -50,22 +51,25 @@ impl NumType {
 	/// Returns the numeral equality, which means that the integers can be compared with floats.
 	fn num_eq(&self, other: &Self) -> bool {
 		match ( self, other ) {
-			( &NumType::Int(x), &NumType::Int(y) ) =>
-				x == y,
-
-			  ( &NumType::Real(x), &NumType::Int(y)  )
-			| ( &NumType::Int(y),  &NumType::Real(x) ) =>
-				float_eq(x, y as f64),
-
-			( &NumType::Real(x), &NumType::Real(y) ) =>
-				float_eq(x, y),
+			( &NumType::Int(x), &NumType::Int(y) ) => x == y,
+			( &NumType::Real(x), &NumType::Real(y) ) => float_eq(x, y),
+			// if one of them is a real, convert both of them into reals and try again
+			(x, y) => x.to_real().num_eq(&y.to_real()),
 		}
 	}
 
+	/// Converts the numeral into a real value
 	fn to_real(self) -> Self {
 		match self {
 			NumType::Real(_) => self,
-			NumType::Int(i) => NumType::Real(i as f64)
+			NumType::Int(x) => NumType::Real(x as FloatType)
+		}
+	}
+
+	fn to_float(self) -> FloatType {
+		match self {
+			NumType::Real(x) => x,
+			NumType::Int(x) => x as FloatType,
 		}
 	}
 }
@@ -89,8 +93,21 @@ impl fmt::Display for Value {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			&Value::Num(ref nt) => write!(f, "{}", nt),
-			&Value::Str(ref st) => write!(f, "{}", st),
-			&Value::List(ref v) => write!(f, "{:?}", v) // TODO impl Display for Value::List
+			&Value::Str(ref st) => write!(f, "\"{}\"", st),
+			&Value::List(ref v) => {
+				try!(write!(f, "{{"));
+
+				let mut iter = v.iter();
+
+				if let Some(x) = iter.next() {
+					try!(write!(f, "{}", x));
+					for i in iter  {
+						try!(write!(f, ", {}", i))
+					}
+				}
+
+				write!(f, "}}")
+			},
 		}
 	}
 }
@@ -137,12 +154,20 @@ impl<'a> From<&'a Value> for RollerType {
 
 // ---
 
-impl ops::Add for Value {
-	type Output = ParseResult<Self>;
-	fn add(self, rhs: Self) -> Self::Output {
-		match (self, rhs) {
-			(Value::Num(a), Value::Num(b)) => Ok(Value::Num(a + b)),
-			(Value::Str(a), Value::Str(b)) => Ok(Value::Str(a + &b)),
+/// A macro that applies an operator function $func between operands $a and $b.
+/// $op_name is for the error message so that it can show the appropriate operator if the operation is not defined between these particular types.
+/// The last parameter tells if the $func is also defined between String and &str.
+macro_rules! apply_value_bin_op {
+	($a: expr, $b: expr, $func: expr, $op_name: path, true) => {
+		match ($a, $b) {
+			(Value::Str(a), Value::Str(b)) => Ok(Value::Str($func(a, &b))),
+			(a, b) => apply_value_bin_op!(a, b, $func, $op_name, false)
+		}
+	};
+
+	($a: expr, $b: expr, $func: expr, $op_name: path, false) => {
+		match ($a, $b) {
+			(Value::Num(a), Value::Num(b)) => Ok(Value::Num($func(a, b))),
 			(Value::List(a), Value::List(b)) => {
 				if a.len() != b.len() {
 					return Err(RollerErr::EvalError(
@@ -153,7 +178,7 @@ impl ops::Add for Value {
 					Value::List(try!(
 						a.into_iter() // [a,..]
 						.zip(b.into_iter()) // [(a,b),..]
-						.map(|(a,b)| a + b ) // [Ok(a+b),..]
+						.map(|(a,b)| $func(a, b) ) // [Ok(a+b),..]
 						.collect()// [a+b,..]
 					))
 				)
@@ -162,65 +187,156 @@ impl ops::Add for Value {
 			(a, b) =>
 				Err(RollerErr::EvalError(
 					EvalErr::UnsupportedOpTypes{
-						op: InfixOp::Plus,
+						op: $op_name,
 						left: RollerType::from(&a),
 						right: RollerType::from(&b)
 					}
 				)),
 		}
+	};
+}
+
+impl ops::Add for Value {
+	type Output = ParseResult<Self>;
+	fn add(self, rhs: Self) -> Self::Output {
+		apply_value_bin_op!(self, rhs, ops::Add::add, InfixOp::Plus, true)
 	}
 }
 
 impl ops::Sub for Value {
 	type Output = ParseResult<Self>;
 	fn sub(self, rhs: Self) -> Self::Output {
-		Err::<Self, RollerErr>(RollerErr::EvalError(EvalErr::Unimplemented))
+		apply_value_bin_op!(self, rhs, ops::Sub::sub, InfixOp::Minus, false)
 	}
 }
 
 impl ops::Mul for Value  {
 	type Output = ParseResult<Self>;
 	fn mul(self, rhs: Self) -> Self::Output {
-		Err::<Self, RollerErr>(RollerErr::EvalError(EvalErr::Unimplemented))
+		apply_value_bin_op!(self, rhs, ops::Mul::mul, InfixOp::Mul, false)
 	}
 }
 
 impl ops::Div for Value  {
 	type Output = ParseResult<Self>;
 	fn div(self, rhs: Self) -> Self::Output {
-		Err::<Self, RollerErr>(RollerErr::EvalError(EvalErr::Unimplemented))
+		apply_value_bin_op!(self, rhs, ops::Div::div, InfixOp::Div, false)
 	}
 }
 
 impl ops::Neg for Value  {
 	type Output = ParseResult<Self>;
 	fn neg(self) -> Self::Output {
-		Err::<Self, RollerErr>(RollerErr::EvalError(EvalErr::Unimplemented))
+		match self {
+			Value::Num(a) => Ok(Value::Num(-a)),
+			Value::List(a) => Ok(Value::List(try!(
+				a.into_iter()
+				.map(|x| -x)
+				.collect()
+			))),
+			_ => Err(RollerErr::EvalError(EvalErr::NegNotSupported(RollerType::from(&self)) ))
+		}
 	}
-}
-
-pub trait Pow<RHS = Self> {
-	type Output;
-	fn pow(self, rhs: RHS) -> Self::Output;
 }
 
 impl Pow for Value {
 	type Output = ParseResult<Self>;
 	fn pow(self, rhs: Self) -> Self::Output {
-		Err::<Self, RollerErr>(RollerErr::EvalError(EvalErr::Unimplemented))
+		apply_value_bin_op!(self, rhs, Pow::pow, InfixOp::Pow, false)
 	}
 }
 
 // ---
 
-impl ops::Add for NumType {
+macro_rules! apply_numtype_bin_op {
+	($a: expr, $b: expr, $func: expr) => {
+		match ($a, $b) {
+			(NumType::Int(a), NumType::Int(b)) => NumType::Int($func(a, b)),
+			(NumType::Real(a), NumType::Real(b)) => NumType::Real($func(a, b)),
+			// if one of the values is a real convert both into real values and call recursively
+			(a,b) => $func(a.to_real(), b.to_real()),
+		}
+	};
+}
+
+macro_rules! impl_numtype_op {
+	($trait_name: path, $func_name: ident, $applied_func: expr) => {
+		impl $trait_name for NumType {
+			type Output = Self;
+			fn $func_name(self, rhs: Self) -> Self::Output {
+				apply_numtype_bin_op!(self, rhs, $applied_func)
+			}
+		}
+	};
+}
+
+impl_numtype_op!(ops::Add, add, ops::Add::add);
+impl_numtype_op!(ops::Sub, sub, ops::Sub::sub);
+impl_numtype_op!(ops::Mul, mul, ops::Mul::mul);
+
+impl ops::Div for NumType {
 	type Output = Self;
-	fn add(self, rhs: Self) -> Self::Output {
+	fn div(self, rhs: Self) -> Self::Output {
 		match (self, rhs) {
-			(NumType::Int(a), NumType::Int(b)) => NumType::Int(a + b),
-			(NumType::Real(a), NumType::Real(b)) => NumType::Real(a + b),
-			// convert both into real values and call this function again
-			(a,b) => a.to_real() + b.to_real(),
+			(NumType::Real(a), NumType::Real(b)) => NumType::Real(a / b),
+			// if one of the values is not a real change both into real values and call recursively
+			(a,b) => a.to_real() / b.to_real(),
+		}
+	}
+}
+
+impl Pow for NumType {
+	type Output = Self;
+	fn pow(self, rhs: Self) -> Self::Output {
+		// if you're wondering about the weird guards, they're to avoid truncation when typecasting
+		match (self, rhs) {
+			(NumType::Real(a), NumType::Real(b)) =>
+				NumType::Real(
+					a.powf(b)
+				),
+
+			(NumType::Int(a), NumType::Real(b)) =>
+				NumType::Real(
+					(a as FloatType).powf(b)
+				),
+
+			(NumType::Real(a), NumType::Int(b))
+			if b >= i32::min_value() as i64 =>
+				NumType::Real(
+					a.powi(b as i32)
+				),
+
+			(NumType::Real(a), NumType::Int(b)) =>
+				NumType::Real(
+					a.powf(b as FloatType)
+				),
+
+			(NumType::Int(a), NumType::Int(b))
+			if b >= 0 && b <= u32::max_value() as i64 =>
+				NumType::Int(
+					a.pow(b as u32)
+				),
+
+			(NumType::Int(a), NumType::Int(b))
+			if b < 0 && b >= i32::min_value() as i64 =>
+				NumType::Real(
+					(a as FloatType).powi(b as i32)
+				),
+
+			(NumType::Int(a), NumType::Int(b)) =>
+				NumType::Real(
+					(a as FloatType).powf(b as FloatType)
+				),
+		}
+	}
+}
+
+impl ops::Neg for NumType {
+	type Output = Self;
+	fn neg(self) -> Self::Output {
+		match self {
+			NumType::Int(x) => NumType::Int(-x),
+			NumType::Real(x) => NumType::Real(-x),
 		}
 	}
 }

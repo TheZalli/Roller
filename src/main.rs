@@ -24,12 +24,13 @@ macro_rules! println_to_stderr(
 fn main() {
 	let mut input;
 
-	let mut env = RollerEnv::new();
+	let max_call_depth = 100;
+	let mut env = RollerEnv::new(max_call_depth);
 
 	// The REP loop
 	// Currently there is no way to exit other than the interrupt signal (ctrl + c)
 	loop {
-		print!(">> ");
+		print!("> ");
 		// flush so our prompt is visible
 		io::stdout().flush().ok().expect("Couldn't flush stdout");
 
@@ -65,7 +66,7 @@ fn main() {
 				match ast_res {
 					Ok(cmd) => {
 						//println!("AST: {:?} ", exp); // TODO
-						let val_res = eval_cmd(cmd, &mut env);
+						let val_res = eval_cmd(&cmd, &mut env);
 
 						match val_res {
 							Some(Ok(val)) => println!("{}", val),
