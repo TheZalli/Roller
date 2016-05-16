@@ -24,8 +24,8 @@ pub enum Value {
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum RollerType {
 	Num,
-	//NumInt,
-	//NumReal,
+	NumInt,
+	NumReal,
 	Str,
 	List,
 	//Func
@@ -59,17 +59,35 @@ impl NumType {
 	}
 
 	/// Converts the numeral into a real value
-	fn to_real(self) -> Self {
+	pub fn to_real(self) -> Self {
 		match self {
 			NumType::Real(_) => self,
 			NumType::Int(x) => NumType::Real(x as FloatType)
 		}
 	}
 
-	fn to_float(self) -> FloatType {
+	pub fn to_float(self) -> FloatType {
 		match self {
 			NumType::Real(x) => x,
 			NumType::Int(x) => x as FloatType,
+		}
+	}
+
+	/// Tells whether self is an integer or a real.
+	/// If self is a real with a fractional part, this will return false.
+	pub fn is_int(self) -> bool {
+		match self {
+			NumType::Int(_) => true,
+			NumType::Real(x) if float_eq(x.fract(), 0 as FloatType) => true,
+			_ => false,
+		}
+	}
+
+	/// Converts self into integer.
+	pub fn as_int(self) -> IntType {
+		match self {
+			NumType::Int(x) => x,
+			NumType::Real(x) => x as IntType,
 		}
 	}
 }
@@ -97,16 +115,28 @@ impl fmt::Display for Value {
 			&Value::List(ref v) => {
 				try!(write!(f, "{{"));
 
+				let mut sum: Option<ParseResult<Value>> = None;
 				let mut iter = v.iter();
 
 				if let Some(x) = iter.next() {
+					sum = Some(Ok(x.clone()) );
 					try!(write!(f, "{}", x));
+
 					for i in iter  {
-						try!(write!(f, ", {}", i))
+						if let Some(Ok(val)) = sum {
+							sum = Some(val + i.clone());
+						}
+						try!(write!(f, ", {}", i));
 					}
 				}
 
-				write!(f, "}}")
+				// try to write the sum, don't write if encountered error
+				if let Some(Ok(sum)) = sum {
+					write!(f, "}}, sum = {}", sum)
+				}
+				else {
+					write!(f, "}}")
+				}
 			},
 		}
 	}
@@ -125,6 +155,8 @@ impl fmt::Display for RollerType {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			&RollerType::Num => write!(f, "numeral"),
+			&RollerType::NumInt => write!(f, "integer numeral"),
+			&RollerType::NumReal => write!(f, "real numeral"),
 			&RollerType::Str => write!(f, "string"),
 			&RollerType::List => write!(f, "list"),
 			//&RollerType::Func => write!(f, "function"),
@@ -132,7 +164,7 @@ impl fmt::Display for RollerType {
 	}
 }
 
-/*impl From<Value> for RollerType {
+impl From<Value> for RollerType {
 	fn from(val: Value) -> Self {
 		match val {
 			Value::Num(_) => RollerType::Num,
@@ -140,7 +172,7 @@ impl fmt::Display for RollerType {
 			Value::List(_) => RollerType::List,
 		}
 	}
-}*/
+}
 
 impl<'a> From<&'a Value> for RollerType {
 	fn from(val: &'a Value) -> Self {
@@ -148,6 +180,15 @@ impl<'a> From<&'a Value> for RollerType {
 			&Value::Num(_) => RollerType::Num,
 			&Value::Str(_) => RollerType::Str,
 			&Value::List(_) => RollerType::List,
+		}
+	}
+}
+
+impl From<NumType> for RollerType {
+	fn from(num: NumType) -> Self {
+		match num {
+			NumType::Int(_) => RollerType::NumInt,
+			NumType::Real(_) => RollerType::NumReal
 		}
 	}
 }

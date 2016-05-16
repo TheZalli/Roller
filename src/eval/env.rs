@@ -3,6 +3,10 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::cell::RefCell;
 
+use rand::IsaacRng;
+use rand::distributions::{Range, Sample};
+
+use common_util::IntType;
 use syntax_tree::*;
 use eval::types::*;
 use eval::eval_functions::eval_expr;
@@ -19,7 +23,10 @@ pub struct RollerEnv {
 	/// Stores the temporary variables of the functions.
 	call_stack: RefCell<Vec<HashMap<Ident, Value>>>,
 	/// How many function calls can be in the callstack
-	max_call_depth: usize
+	max_call_depth: usize,
+
+	/// The random number generator
+	rng: RefCell<IsaacRng>,
 }
 
 #[allow(dead_code)] // TODO: remove when used
@@ -33,10 +40,11 @@ impl RollerEnv {
 	/// Creates a new empty runtime environment
 	pub fn new(max_call_depth: usize) -> RollerEnv {
 		RollerEnv {
-			fun_ns: HashMap::new(),
-			var_ns: HashMap::new(),
-			call_stack: RefCell::new(Vec::new()),
-			max_call_depth: max_call_depth,
+			fun_ns:			HashMap::new(),
+			var_ns:			HashMap::new(),
+			call_stack:		RefCell::new(Vec::new()),
+			rng:			RefCell::new(IsaacRng::new_unseeded()),
+			max_call_depth:	max_call_depth,
 		}
 	}
 
@@ -45,6 +53,7 @@ impl RollerEnv {
 			fun_ns: HashMap::new(),
 			var_ns: HashMap::new(),
 			call_stack: RefCell::new(Vec::new()),
+			rng: RefCell::new(IsaacRng::new_unseeded()),
 			max_call_depth: self.max_call_depth,
 		}
 	}
@@ -141,5 +150,20 @@ impl RollerEnv {
 				.zip(args.into_iter())
 			)
 		)
+	}
+
+	pub fn get_roll(&self, amount: usize, sides: IntType) -> Vec<Value> {
+		let mut distr = Range::new(1, sides as IntType);
+		let mut to_return = Vec::with_capacity(amount);
+
+		for _ in 1..amount+1 {
+			to_return.push(
+				Value::Num(NumType::Int(
+					distr.sample(&mut *self.rng.borrow_mut())
+				))
+			)
+		}
+
+		to_return
 	}
 }

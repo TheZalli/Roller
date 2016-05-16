@@ -78,6 +78,38 @@ pub fn eval_expr(input: &Expr, env: &RollerEnv) -> ParseResult<Value> {
 			env.get_var(id),
 		&Expr::FunCall(ref id, ref args) =>
 			env.call_fun(id, try!(eval_expr_vec(args, env))),
+
+		&Expr::Op{op, ref left, ref right} if op == InfixOp::Dice => {
+			let get_int_from_opt = |opt: &Option<Box<Expr>>|
+				match opt {
+					&None => Ok(1),
+					&Some(ref exp) => match eval_expr(&*exp, env) {
+						Ok(Value::Num(x)) if x.is_int() => Ok(x.as_int()),
+						Ok(x) =>
+							return Err(RollerErr::EvalError(
+									EvalErr::ExpectedType{
+										expected: RollerType::NumInt,
+										found: RollerType::from(x),
+									}
+							)),
+						Err(e) => Err(e)
+					}
+				};
+
+			let n = try!(get_int_from_opt(left));
+			let sides = try!(get_int_from_opt(right));
+
+			if n < 0 {
+				Err(RollerErr::EvalError(EvalErr::ExpectedPosNum(NumType::Int(n)) ))
+			}
+			else if sides < 0 {
+				Err(RollerErr::EvalError(EvalErr::ExpectedPosNum(NumType::Int(sides)) ))
+			}
+			else {
+				Ok(Value::List(env.get_roll(n as usize, sides) ))
+			}
+		},
+
 		&Expr::Op{op, ref left, ref right} => {
 			let eval_opt = |opt_exp: Option<Box<Expr>>|
 				match opt_exp.map(|e| eval_expr(&*e, env)) {
@@ -107,10 +139,7 @@ fn eval_expr_vec(expr_vec: &Vec<Expr>, env: &RollerEnv) -> ParseResult<Vec<Value
 /// Evaluates an infix operation
 fn eval_op(op: InfixOp, lhs: Option<Value>, rhs: Option<Value>) -> ParseResult<Value> {
 	match op {
-		InfixOp::Dice =>
-			Err(RollerErr::EvalError(
-				EvalErr::Unimplemented
-			)),
+		InfixOp::Dice => unreachable!(),
 		InfixOp::Plus =>
 			match rhs {
 				Some(r_val) =>
