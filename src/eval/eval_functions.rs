@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub, Neg, Mul, Div};
 
-use common_util::{Side, Pow};
+use common_util::{IntType, Side, Pow};
 use syntax_tree::*;
 use eval::types::*;
 use eval::env::*;
@@ -11,6 +11,7 @@ macro_rules! expect_binary_op {
 		match ($lhs, $rhs) {
 			(Some(l_val), Some(r_val)) => $fun(l_val, r_val),
 
+			// the rest of these patterns are just for the sake of informative error messages
 			(None, Some(_)) =>
 				Err(RollerErr::EvalError(
 					EvalErr::MissingOpArg{op: $op, side: Side::Left}
@@ -54,7 +55,7 @@ pub fn eval_stmt(input: &Stmt, env: &mut RollerEnv) -> ParseResult<()> {
 		&Stmt::FnDef(ref id, ref fun) =>
 			Ok(env.declare_function(id, fun)),
 		&Stmt::Delete(ref id) =>
-			Ok(env.delete_id(id)),
+			env.delete_id(id).map(|_| ()), // TODO print the result instead of ignoring
 		&Stmt::Clear =>
 			Ok(env.clear()),
 		/*Stmt::Run(path) =>
@@ -79,34 +80,71 @@ pub fn eval_expr(input: &Expr, env: &RollerEnv) -> ParseResult<Value> {
 		&Expr::FunCall(ref id, ref args) =>
 			env.call_fun(id, try!(eval_expr_vec(args, env))),
 
+		// evaluate a dice throw
 		&Expr::Op{op, ref left, ref right} if op == InfixOp::Dice => {
-			let get_int_from_opt = |opt: &Option<Box<Expr>>|
-				match opt {
-					&None => Ok(1),
-					&Some(ref exp) => match eval_expr(&*exp, env) {
-						Ok(Value::Num(x)) if x.is_int() => Ok(x.as_int()),
-						Ok(x) =>
-							return Err(RollerErr::EvalError(
-									EvalErr::ExpectedType{
-										expected: RollerType::NumInt,
-										found: RollerType::from(x),
-									}
-							)),
-						Err(e) => Err(e)
-					}
-				};
+			let n = match left.clone().map(|exp| eval_expr(&*exp, env)) {
+				None => 1,
+				Some(Ok(Value::Num(x))) if x.is_int() => x.as_int(),
+				Some(Ok(x)) =>
+					return Err(RollerErr::EvalError(
+							EvalErr::ExpectedType{
+								expected: RollerType::NumInt,
+								found: RollerType::from(x),
+							}
+					)),
+				Some(Err(e)) => return Err(e),
+			};
 
-			let n = try!(get_int_from_opt(left));
-			let sides = try!(get_int_from_opt(right));
+			let mut sides_list = None;
+
+			let sides = match right.clone().map(|exp| eval_expr(&*exp, env)) {
+				None => 6,
+				Some(Ok(Value::Num(x))) if x.is_int() => x.as_int(),
+				Some(Ok(Value::List(x))) => {
+					sides_list = Some(x.clone());
+					x.len() as IntType
+				},
+				Some(Ok(x)) =>
+					return Err(RollerErr::EvalError(
+							EvalErr::ExpectedType{
+								expected: RollerType::NumInt,
+								found: RollerType::from(x),
+							}
+					)),
+				Some(Err(e)) => return Err(e),
+			};
 
 			if n < 0 {
 				Err(RollerErr::EvalError(EvalErr::ExpectedPosNum(NumType::Int(n)) ))
 			}
-			else if sides < 0 {
+			else if sides <= 0 {
 				Err(RollerErr::EvalError(EvalErr::ExpectedPosNum(NumType::Int(sides)) ))
 			}
 			else {
-				Ok(Value::List(env.get_roll(n as usize, sides) ))
+				let throws = env.get_roll(n, sides);
+				if throws.len() != 1 {
+					match sides_list {
+						None => Ok(Value::List(
+							throws.into_iter()
+							.map(&NumType::Int) // package the integer into enums
+							.map(&Value::Num)
+							.collect()
+						)),
+						// if we had a list return it's values indexed by the rolls
+						Some(list) => Ok(Value::List(
+							throws.into_iter()
+							.map(|x: i32| list[x as u32 as usize - 1].clone())
+							.collect()
+						))
+					}
+				}
+				// in case we have a singular result, return it as a singular value
+				else {
+					match sides_list {
+						None => Ok(Value::Num(NumType::Int(throws[0]))),
+						Some(list) => Ok(list[throws[0] as u32 as usize - 1].clone())
+					}
+				}
 			}
 		},
 

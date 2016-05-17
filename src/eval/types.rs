@@ -1,5 +1,5 @@
 #![allow(dead_code)] // TODO remove
-use std::f64;
+use std::f32;
 use std::fmt;
 use std::ops;
 
@@ -39,7 +39,7 @@ pub enum NumType {
 }
 
 /// The error allowed for floating point equality comparison.
-const EPSILON: FloatType = f64::EPSILON * 2.0; // multiply just to be safe about floating point errors
+const EPSILON: FloatType = f32::EPSILON * 2.0; // multiply just to be safe about floating point errors
 
 /// Floating point equality comparison.
 fn float_eq(x: FloatType, y: FloatType) -> bool {
@@ -225,6 +225,26 @@ macro_rules! apply_value_bin_op {
 				)
 			},
 
+			(a, Value::List(b)) => {
+				Ok(
+					Value::List(try!(
+						b.into_iter()
+						.map(|b| $func(a.clone(), b) )
+						.collect()
+					))
+				)
+			},
+
+			(Value::List(a), b) => {
+				Ok(
+					Value::List(try!(
+						a.into_iter()
+						.map(|a| $func(a, b.clone()) )
+						.collect()
+					))
+				)
+			},
+
 			(a, b) =>
 				Err(RollerErr::EvalError(
 					EvalErr::UnsupportedOpTypes{
@@ -332,42 +352,23 @@ impl Pow for NumType {
 		// if you're wondering about the weird guards, they're to avoid truncation when typecasting
 		match (self, rhs) {
 			(NumType::Real(a), NumType::Real(b)) =>
-				NumType::Real(
-					a.powf(b)
-				),
+				NumType::Real(a.powf(b)),
 
 			(NumType::Int(a), NumType::Real(b)) =>
-				NumType::Real(
-					(a as FloatType).powf(b)
-				),
-
-			(NumType::Real(a), NumType::Int(b))
-			if b >= i32::min_value() as i64 =>
-				NumType::Real(
-					a.powi(b as i32)
-				),
+				NumType::Real((a as FloatType).powf(b)),
 
 			(NumType::Real(a), NumType::Int(b)) =>
-				NumType::Real(
-					a.powf(b as FloatType)
-				),
+				NumType::Real(a.powi(b)),
 
 			(NumType::Int(a), NumType::Int(b))
-			if b >= 0 && b <= u32::max_value() as i64 =>
-				NumType::Int(
-					a.pow(b as u32)
-				),
+			if b >= 0 && b <= u32::max_value() as IntType =>
+				NumType::Int(a.pow(b as u32)),
 
-			(NumType::Int(a), NumType::Int(b))
-			if b < 0 && b >= i32::min_value() as i64 =>
-				NumType::Real(
-					(a as FloatType).powi(b as i32)
-				),
+			(NumType::Int(a), NumType::Int(b)) if b < 0 =>
+				NumType::Real((a as FloatType).powi(b)),
 
 			(NumType::Int(a), NumType::Int(b)) =>
-				NumType::Real(
-					(a as FloatType).powf(b as FloatType)
-				),
+				NumType::Real((a as FloatType).powf(b as FloatType)),
 		}
 	}
 }

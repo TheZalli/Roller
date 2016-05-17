@@ -7,6 +7,7 @@ use eval::types::{Value, NumType, RollerType, Ident};
 
 #[derive(Debug)]
 pub enum EvalErr {
+	NoIdFound(Ident),
 	NoVarFound(Ident),
 	NoFunFound(Ident),
 	ExpectedVarFoundFun(Ident),
@@ -41,6 +42,9 @@ pub enum EvalErr {
 impl fmt::Display for EvalErr {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			&EvalErr::NoIdFound(ref id) =>
+				write!(f, "No variable or function named \"{}\" found", id),
+
 			&EvalErr::NoVarFound(ref id) =>
 				write!(f, "No variable named \"{}\" found", id),
 
@@ -93,6 +97,7 @@ impl fmt::Display for EvalErr {
 impl error::Error for EvalErr {
 	fn description(&self) -> &str {
 		match self {
+			&EvalErr::NoIdFound(_)				=> "no variable or function found",
 			&EvalErr::NoVarFound(_)				=> "no variable found",
 			&EvalErr::NoFunFound(_)				=> "no function found",
 			&EvalErr::ExpectedVarFoundFun(_)	=> "expected a variable, found a function",

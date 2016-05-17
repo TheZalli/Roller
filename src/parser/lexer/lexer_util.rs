@@ -91,10 +91,10 @@ pub mod lexemes {
 		/// A map from all of the keys into their tokens.
 		pub static ref KWS_STRINGS: HashMap<&'static str, KwsToken> =
 			vec2map(vec![
-				("Delete",	KwsToken::Delete),
-				("Clear",	KwsToken::Clear),
-				("Run",		KwsToken::Run),
-				("Save",	KwsToken::Save),
+				("delete",	KwsToken::Delete),
+				("clear",	KwsToken::Clear),
+				("run",		KwsToken::Run),
+				("save",	KwsToken::Save),
 			]);
 	}
 }
@@ -111,8 +111,8 @@ pub mod patterns {
 		pub static ref ID_REGEX: Regex =
 			Regex::new(r#"^([\pL_][\pL\pN_]*)"#).unwrap();
 
-		/// Matches all regexes plus more.
-		pub static ref KWS_REGEX: Regex = Regex::new("^([A-Z][a-z]{2,5})").unwrap();
+		/// Matches all statement keywords plus more.
+		pub static ref KWS_REGEX: Regex = Regex::new("^([a-z]{3,6})").unwrap();
 
 		pub static ref INT_REGEX: Regex = Regex::new(r#"^(\d+)"#).unwrap();
 		pub static ref STR_REGEX: Regex = Regex::new("^\"(.*?)\"").unwrap();

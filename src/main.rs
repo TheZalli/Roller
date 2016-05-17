@@ -70,7 +70,7 @@ fn main() {
 						let val_res = eval_cmd(&cmd, &mut env);
 
 						match val_res {
-							Some(Ok(val)) => println!("{}", val),
+							Some(Ok(val)) => println!("{}\n", val),
 							Some(Err(e)) => println_to_stderr!("{}", e),
 							None => {},
 						}

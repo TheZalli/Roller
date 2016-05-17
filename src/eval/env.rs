@@ -12,7 +12,7 @@ use eval::types::*;
 use eval::eval_functions::eval_expr;
 use error::*;
 
-/// An runtime environment
+/// The Roller runtime environment. Stores the variable and function namespaces, the function call_stack, and the random number generator.
 pub struct RollerEnv {
 	/// The global namespace for functions
 	fun_ns: HashMap<Ident, RollerFun>,
@@ -29,9 +29,8 @@ pub struct RollerEnv {
 	rng: RefCell<IsaacRng>,
 }
 
-#[allow(dead_code)] // TODO: remove when used
 pub enum NameInfo {
-	Val,
+	Var,
 	Fun,
 	Empty,
 }
@@ -48,6 +47,7 @@ impl RollerEnv {
 		}
 	}
 
+	/// Clears the function and variable namespaces.
 	pub fn clear(&mut self) {
 		*self = RollerEnv {
 			fun_ns: HashMap::new(),
@@ -78,9 +78,15 @@ impl RollerEnv {
 	}
 
 	/// Deletes a function or variable with the given name.
-	pub fn delete_id(&mut self, id: &Ident) {
-		if let None = self.var_ns.remove(id) {
-			self.fun_ns.remove(id);
+	/// Returns the type of the deleted identifier
+	pub fn delete_id(&mut self, id: &Ident) -> ParseResult<NameInfo> {
+		match self.var_ns.remove(id) {
+			Some(_) => Ok(NameInfo::Var),
+			// no variable found, try to delete a function
+			None => match self.fun_ns.remove(id) {
+				Some(_) => Ok(NameInfo::Fun),
+				None => Err(RollerErr::EvalError(EvalErr::NoIdFound(id.to_owned() ))),
+			},
 		}
 	}
 
@@ -88,7 +94,7 @@ impl RollerEnv {
 	#[allow(dead_code)] // TODO: remove when used
 	pub fn get_name_info(&self, id: Ident) -> NameInfo {
 		if let Some(_) = self.var_ns.get(&id) {
-			NameInfo::Val
+			NameInfo::Var
 		}
 		else if let Some(_) = self.fun_ns.get(&id) {
 			NameInfo::Fun
@@ -98,36 +104,43 @@ impl RollerEnv {
 		}
 	}
 
-	pub fn get_var(&self, id: &Ident) -> ParseResult<Value> {
-		if self.call_stack.borrow().deref().is_empty() {
-			match self.var_ns.get(id) {
-				Some(ref x) => Ok((*x).clone()),
-				None => Err(RollerErr::EvalError(EvalErr::NoVarFound(id.to_owned() ))),
+	/// Returns the value of the variable with the given identifier.
+	pub fn get_var<'a>(&'a self, id: &Ident) -> ParseResult<Value> {
+		// check the last element of the call stack
+		if let Some(ref hm) = self.call_stack.borrow().deref().last() {
+			if let Some(ref val) = hm.get(id) {
+				// check if we found the variable in the stack as a function argument
+				return Ok((*val).clone());
 			}
 		}
-		else {
-			for i in self.call_stack.borrow().deref().iter().rev() {
-				if let Some(ref x) = i.get(id) {
-					return Ok((*x).clone());
-				}
-			}
-			Err(RollerErr::EvalError(EvalErr::NoVarFound(id.clone() )))
+		// if we didn't find the variable from the stack, check the global space
+		if let Some(ref val) = self.var_ns.get(id) {
+			return Ok((*val).clone());
 		}
+		// didn't find the variable from either of the namespaces
+		Err(RollerErr::EvalError(EvalErr::NoVarFound(id.clone() )))
 	}
 
+	/// Calls the function with the given identifier with the given arguments.
+	/// Returns an error if no such function was found, if the number of parameters was wrong, if the maximum function call depth was reached or if the evaluation of the function's body failed.
+	/// Calls the eval_expr function to evaluate the function.
 	pub fn call_fun(&self, id: &Ident, args: Vec<Value>) -> ParseResult<Value> {
 		match self.fun_ns.get(id) {
 			Some(ref fun) => {
 				if self.call_stack.borrow().deref().len() > self.max_call_depth {
 					return Err(RollerErr::EvalError(EvalErr::ReachedMaxCallDepth));
 				}
-
+				// the fumction's local namespace
 				let local_ns = try!(Self::ns_from_args(&fun.params, args));
+
+				// add the function's local namespace
 				self.call_stack.borrow_mut().deref_mut().push(local_ns);
-
+				// evaluate the function body
 				let to_return = eval_expr(&fun.body, self);
-
+				// remove the call stack namespace. IMPORTANT
 				self.call_stack.borrow_mut().deref_mut().pop();
+
+				// return the output value
 				to_return
 			},
 			None => Err(RollerErr::EvalError(EvalErr::NoFunFound(id.to_owned() ))),
@@ -152,16 +165,12 @@ impl RollerEnv {
 		)
 	}
 
-	pub fn get_roll(&self, amount: usize, sides: IntType) -> Vec<Value> {
-		let mut distr = Range::new(1, sides as IntType);
-		let mut to_return = Vec::with_capacity(amount);
+	pub fn get_roll(&self, amount: IntType, sides: IntType) -> Vec<IntType> {
+		let mut distr = Range::new(1, sides+1);
+		let mut to_return = Vec::with_capacity(amount as usize);
 
 		for _ in 1..amount+1 {
-			to_return.push(
-				Value::Num(NumType::Int(
-					distr.sample(&mut *self.rng.borrow_mut())
-				))
-			)
+			to_return.push(distr.sample(&mut *self.rng.borrow_mut()) )
 		}
 
 		to_return

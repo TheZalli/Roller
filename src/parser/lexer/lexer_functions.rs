@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use regex::{Regex, Captures};
 
+use common_util::{IntType, FloatType};
 use syntax_tree::*;
 use parser::parse_util::*;
 use parser::lexer::lexer_util::*;
@@ -34,9 +35,9 @@ fn get_token(input: InType) -> ParseOutput<Lexeme, InType> {
 	let input = ignore_whitespace(input);
 
 	Err(())
+	.or(lex_keyword(input))
 	.or(lex_operator(input))
 	.or(lex_pred(input))
-	.or(lex_keyword(input))
 	.or(lex_identifier(input))
 	.or(lex_literal(input))
 	.or(lex_misc_tokens(input))
@@ -132,12 +133,12 @@ fn lex_end(input: InType) -> ParseOutput<Lexeme, InType> {
 /// Tokenizes an integer literal.
 /// Please parse floating point literals before parsing integers, because otherwise the start of a float can be mistaken as an integer.
 fn lex_int(input: InType) -> ParseOutput<Lexeme, InType, ()> {
-	map_output( lex_first_capture!(input, &INT_REGEX, 1, NumType::Int(i64)), &Lexeme::NumLit )
+	map_output( lex_first_capture!(input, &INT_REGEX, 1, NumType::Int(IntType)), &Lexeme::NumLit )
 }
 
 /// Tokenizes a floating point/real literal.
 fn lex_float(input: InType) -> ParseOutput<Lexeme, InType, ()> {
-	map_output( lex_first_capture!(input, &FLOAT_REGEX, 1, NumType::Real(f64)), &Lexeme::NumLit )
+	map_output( lex_first_capture!(input, &FLOAT_REGEX, 1, NumType::Real(FloatType)), &Lexeme::NumLit )
 }
 
 /// Tokenizes a double-quotation mark limited string literal.
