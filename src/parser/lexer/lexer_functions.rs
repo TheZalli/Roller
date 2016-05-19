@@ -156,9 +156,9 @@ fn lex_literal<'a>(input: InType<'a>) -> ParseOutput<Lexeme, InType<'a>, ()> {
 }
 
 fn lex_keyword(input: InType) -> ParseOutput<Lexeme, InType, ()> {
-	match lex_pat_capture(input, &KWS_REGEX) {
+	match lex_pat_capture(input, &KW_REGEX) {
 		Ok( (cap, i) ) =>
-			match KWS_STRINGS.get(&cap[1]) {
+			match KW_STRINGS.get(&cap[1]) {
 				Some(&kw) => Ok( (Lexeme::Kw(kw), i) ),
 				None => Err(())
 			},

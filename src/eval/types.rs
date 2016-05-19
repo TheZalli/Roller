@@ -47,6 +47,40 @@ fn float_eq(x: FloatType, y: FloatType) -> bool {
 	abs_diff <= EPSILON
 }
 
+impl Value {
+	/// Converts self into a singular value if able.
+	pub fn to_singular(&self) -> ParseResult<Value> {
+		match self {
+			&Value::Num(_) => Ok(self.clone()),
+			&Value::Str(_) => Ok(self.clone()),
+
+			&Value::List(ref x) => {
+				let mut iter = x.into_iter();
+				if let Some(x) = iter.next() {
+					let mut sum = x.clone();
+
+					for i in iter {
+						if let Ok(val) = sum + i.clone() {
+							sum = val;
+						}
+						else {
+							return Err(RollerErr::EvalError(
+								EvalErr::CantConvertToSingular(self.clone())
+							));
+						}
+					}
+					return Ok(sum);
+				}
+				Err(RollerErr::EvalError(
+					EvalErr::CantConvertToSingular(self.clone())
+				))
+			},
+		}
+
+	}
+
+}
+
 impl NumType {
 	/// Returns the numeral equality, which means that the integers can be compared with floats.
 	fn num_eq(&self, other: &Self) -> bool {
@@ -209,6 +243,7 @@ macro_rules! apply_value_bin_op {
 	($a: expr, $b: expr, $func: expr, $op_name: path, false) => {
 		match ($a, $b) {
 			(Value::Num(a), Value::Num(b)) => Ok(Value::Num($func(a, b))),
+
 			(Value::List(a), Value::List(b)) => {
 				if a.len() != b.len() {
 					return Err(RollerErr::EvalError(
@@ -225,25 +260,9 @@ macro_rules! apply_value_bin_op {
 				)
 			},
 
-			(a, Value::List(b)) => {
-				Ok(
-					Value::List(try!(
-						b.into_iter()
-						.map(|b| $func(a.clone(), b) )
-						.collect()
-					))
-				)
-			},
+			(a, Value::List(b)) => $func(a, try!(Value::List(b).to_singular())),
 
-			(Value::List(a), b) => {
-				Ok(
-					Value::List(try!(
-						a.into_iter()
-						.map(|a| $func(a, b.clone()) )
-						.collect()
-					))
-				)
-			},
+			(Value::List(a), b) => $func(try!(Value::List(a).to_singular()), b),
 
 			(a, b) =>
 				Err(RollerErr::EvalError(

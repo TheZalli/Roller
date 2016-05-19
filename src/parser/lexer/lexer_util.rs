@@ -25,8 +25,8 @@ pub mod lexemes {
 		Op(InfixOp),
 		/// Predicate operations
 		Pred(PredToken),
-		// Keyword statement
-		Kw(KwsToken),
+		// A keyword
+		Kw(KwToken),
 		/// .. or ...
 		RangeEllipsis,
 		/// =
@@ -50,20 +50,6 @@ pub mod lexemes {
 		End,
 	}
 
-	/// Operator tokens.
-	/// (From highest to lowest precedence)
-	/*#[derive(Debug, Clone, PartialEq)]
-	pub enum OpToken {
-		Pow,
-
-		Mul,
-		Div,
-		DiceThrow,
-
-		Plus,
-		Minus,
-	}*/
-
 	/// Predicate operation tokens.
 	/// (From highest to lowest precedence)
 	#[derive(Debug, Clone, Copy, PartialEq)]
@@ -80,21 +66,56 @@ pub mod lexemes {
 
 	// Keyword statement token
 	#[derive(Debug, Clone, Copy, PartialEq)]
-	pub enum KwsToken {
+	pub enum KwToken {
+		// statement only keywords
 		Delete,
 		Clear,
 		Run,
 		Save,
+		// expression only keywords
+		Length,
+		Sum,
+		Mean,
+		Sqrt,
+		Root,
+		Repeat,
+		Acc,
+		Flatten,
+		ToFlat,
+		ToStr,
+		ToNum,
+		ToList,
+		Raise,
+		// both expression and statement keywords
+		Try,
+		Catch,
 	}
 
 	lazy_static! {
 		/// A map from all of the keys into their tokens.
-		pub static ref KWS_STRINGS: HashMap<&'static str, KwsToken> =
+		pub static ref KW_STRINGS: HashMap<&'static str, KwToken> =
 			vec2map(vec![
-				("delete",	KwsToken::Delete),
-				("clear",	KwsToken::Clear),
-				("run",		KwsToken::Run),
-				("save",	KwsToken::Save),
+				("delete",	KwToken::Delete),
+				("clear",	KwToken::Clear),
+				("run",		KwToken::Run),
+				("save",	KwToken::Save),
+
+				("length", KwToken::Length),
+				("sum", KwToken::Sum),
+				("mean", KwToken::Mean),
+				("sqrt", KwToken::Sqrt),
+				("root", KwToken::Root),
+				("repeat", KwToken::Repeat),
+				("acc", KwToken::Acc),
+				("flatten", KwToken::Flatten),
+				("to_flat", KwToken::ToFlat),
+				("to_string", KwToken::ToStr),
+				("to_numeral", KwToken::ToNum),
+				("to_list", KwToken::ToList),
+				("raise", KwToken::Raise),
+
+				("try", KwToken::Try),
+				("catch", KwToken::Catch),
 			]);
 	}
 }
@@ -111,8 +132,8 @@ pub mod patterns {
 		pub static ref ID_REGEX: Regex =
 			Regex::new(r#"^([\pL_][\pL\pN_]*)"#).unwrap();
 
-		/// Matches all statement keywords plus more.
-		pub static ref KWS_REGEX: Regex = Regex::new("^([a-z]{3,6})").unwrap();
+		/// Matches all keywords plus more.
+		pub static ref KW_REGEX: Regex = Regex::new("^([_a-z]{3,10})").unwrap();
 
 		pub static ref INT_REGEX: Regex = Regex::new(r#"^(\d+)"#).unwrap();
 		pub static ref STR_REGEX: Regex = Regex::new("^\"(.*?)\"").unwrap();

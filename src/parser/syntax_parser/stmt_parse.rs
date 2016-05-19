@@ -71,7 +71,7 @@ fn parse_fundef(input: InType) -> ParseResult<Stmt, ()> {
 }
 
 fn parse_delete(input: InType) -> ParseResult<Stmt, ()> {
-	if let Some((&Lexeme::Kw(KwsToken::Delete), input)) = input.split_first() {
+	if let Some((&Lexeme::Kw(KwToken::Delete), input)) = input.split_first() {
 		if let Some((&Lexeme::Id(ref id), input)) = input.split_first() {
 			if input.get(0) == Some(&Lexeme::End) {
 				return Ok(Stmt::Delete(id.clone()) );
@@ -83,7 +83,7 @@ fn parse_delete(input: InType) -> ParseResult<Stmt, ()> {
 
 fn parse_clear(input: InType) -> ParseResult<Stmt, ()> {
 	if input.len() == 2 { // clear, end
-		if let Lexeme::Kw(KwsToken::Clear) = input[0] {
+		if let Lexeme::Kw(KwToken::Clear) = input[0] {
 			return Ok(Stmt::Clear);
 		}
 	}
@@ -91,7 +91,7 @@ fn parse_clear(input: InType) -> ParseResult<Stmt, ()> {
 }
 
 fn parse_run(input: InType) -> ParseResult<Stmt, ()> {
-	if let Some((&Lexeme::Kw(KwsToken::Run), input)) = input.split_first() {
+	if let Some((&Lexeme::Kw(KwToken::Run), input)) = input.split_first() {
 		if let Some((&Lexeme::Id(ref s), input)) = input.split_first() {
 			if input.get(0) == Some(&Lexeme::End) {
 				return Ok(Stmt::Run(PathBuf::from(s) ));
@@ -102,7 +102,7 @@ fn parse_run(input: InType) -> ParseResult<Stmt, ()> {
 }
 
 fn parse_save(input: InType) -> ParseResult<Stmt, ()> {
-	if let Some((&Lexeme::Kw(KwsToken::Save), input)) = input.split_first() {
+	if let Some((&Lexeme::Kw(KwToken::Save), input)) = input.split_first() {
 		if let Some((&Lexeme::Id(ref s), input)) = input.split_first() {
 			if input.get(0) == Some(&Lexeme::End) {
 				return Ok(Stmt::Save(PathBuf::from(s) ));

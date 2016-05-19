@@ -35,6 +35,7 @@ pub enum EvalErr {
 	ReachedMaxCallDepth,
 	ExpectedPosNum(NumType),
 	ExpectedNegNum(NumType),
+	CantConvertToSingular(Value),
 	// TODO: remove when everything is implemented
 	Unimplemented
 }
@@ -88,6 +89,9 @@ impl fmt::Display for EvalErr {
 			&EvalErr::ExpectedNegNum(x) =>
 				write!(f, "Expected a negative numeral, found {}", x),
 
+			&EvalErr::CantConvertToSingular(ref x) =>
+				write!(f, "Value {} can't be converted into a list", x),
+
 			&EvalErr::Unimplemented =>
 				write!(f, "Unimplemented feature"),
 		}
@@ -112,6 +116,7 @@ impl error::Error for EvalErr {
 			&EvalErr::ReachedMaxCallDepth		=> "reached maximum function call depth",
 			&EvalErr::ExpectedPosNum(_)			=> "expected a positive numeral",
 			&EvalErr::ExpectedNegNum(_)			=> "expected a negative numeral",
+			&EvalErr::CantConvertToSingular(_)	=> "can't convert a value into a list",
 			&EvalErr::Unimplemented				=> "unimplemented feature",
 		}
 	}
