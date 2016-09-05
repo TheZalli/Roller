@@ -1,7 +1,7 @@
 # Types
 
 Roller script's accepted data types for variables are divided into two categories: singular values and collections.
-These are all 'primitive' types as Roller script has no way of creating your own types.
+These are all 'primitive' types and Roller script has no way of creating your own types.
 
 Roller also has errors, but these are not a separate script data type, since the interpreter takes care of their manipulation.
 
@@ -21,12 +21,12 @@ Singular types are:
 	* The strings are UTF-8 encoded and surrounded by double-quotation marks (`"`) or single-quotation marks (`'`).
 	* Escape characters are not allowed for now, but it is a TODO feature.
 
-The syntax of all singular value literals written in regular expressions:
+The syntax of all singular value literals written as [regular expressions](https://en.wikipedia.org/wiki/Regular_expression):
 
 ```
 integer: [0-9]+
 real: [0-9]*\.[0-9]+
-string: \"(.*?)\"
+string: TODO
 ```
 
 ## Collections
@@ -61,10 +61,9 @@ Collection types are:
 	* It is functionally similar to the vector and map (distribution map, result to amount occurred) and can be implicitly converted into both.
 
 The syntax of the collection type literals written in EBNF:
-
 ```
-vector ::= "[" , [ item , { "," , item } ] , "]" ;
-set    ::= "{" , [ item , { "," , item } ] , predicate , "}" ;
-map    ::= "{" , [ map pair , { "," , map pair } ] , "}" ;
-map pair ::= key , ":" , item ;
+vector = "[" , [ item , { "," , item } ] , "]" ;
+set    = "{" , [ item , { "," , item } ] , predicate , "}" ;
+map    = "{" , [ map pair , { "," , map pair } ] , "}" ;
+map pair = key , ":" , item ;
 ```
