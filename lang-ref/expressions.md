@@ -10,7 +10,9 @@ The expressions of Roller script:
 * Mathematical operators
 * Comparison operators
 * Logical connectives
-* Keyword expressions
+* if/then/else expression
+* try/catch expression
+* Keyword functions
 
 ## Value literal
 A literal of any of the Roller script's data types. Check the Types for more info.

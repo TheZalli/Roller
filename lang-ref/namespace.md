@@ -7,6 +7,8 @@ Having a variable and function with a same name is not possible because they are
 All variables belong to the global namespace except the function arguments that exist only during the function execution and shadow the global name space.
 Functions are always in the global namespace.
 
+Allowed identifier names are UTF-8 strings that start with a Unicode letter character or an underscore, continued by any amount of Unicode letter characters, Unicode numeral characters and underscores.
+
 Examples:
 
 Reassigning a function as a variable:
@@ -25,9 +27,7 @@ Function argument shadowing a global name:
 > foo() = a * 2
 > foo()
 4
-> foo(a) = a * 2
-> foo(3)
+> bar(a) = a * 2
+> bar(3)
 6
-> a
-2
 ```
