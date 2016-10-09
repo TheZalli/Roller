@@ -10,8 +10,8 @@ The expressions of Roller script:
 * Mathematical operators
 * Comparison operators
 * Logical connectives
-* if/then/else expression
-* try/catch expression
+* If expression
+* Try/Catch expression
 * Keyword functions
 
 ## Value literal
@@ -36,6 +36,7 @@ call = ( identifier | expression ) , "(" , [ expression , { "," , expression } ]
 ```
 
 ## Dice expression
+
 An expression representing a dice throw in dice notation (`NdM`).
 
 The first parameter tells the amount of dice thrown, and it's default value is 1.
@@ -50,6 +51,7 @@ If the second parameter is a collection, it uses that as the "sides" of the dice
 If instead the first argument is a collection, the dice throw is done for each item (for map the keys are left untouched) and the resulting collection is returned.
 
 ## Mathematical operators
+
 The mathematical operators are defined only for numerals and collections of numerals, except addition which also works as string concatenation.
 
 The piecewise operators allow only collections of same size as their arguments and they are presented similarly to the "normal" singular ones but with a dot before them.
@@ -78,3 +80,7 @@ The piecewise mathematical operators:
 * Division, `a ./ b`
 * Modulo, `a .% b`
 * Exponentiation, `a .^ b`
+
+## Comparison operators
+
+The comparison operators take values as operands and return boolean values.
