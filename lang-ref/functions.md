@@ -7,7 +7,7 @@ The function body is a single expression where the parameter variables are repla
 
 Because of this functions behave like ordinary expressions, they can't change their environment but they are not 'pure' deterministic functions because they can reference to their environment and they can generate random numbers.
 
-References to variables are stored by names, so that if `foo() = a`, then `foo()` is equivalent to `a`.
+References to variables are stored by name, so that if we define a function `foo() = a`, then calling the function `foo()` is equivalent to calling a variable `a`.
 
 Examples:
 
@@ -23,5 +23,5 @@ The recursive factorial function:
 
 Function definition syntax in EBNF:
 ```
-function = identifier , "(" , [ identifier , { "," , identifier } ] , ")" , "=" , expression ;
+function = identifier , "(" , [ { identifier "," } , identifier ] , ")" , "=" , expression ;
 ```
