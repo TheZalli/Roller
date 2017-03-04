@@ -6,16 +6,13 @@ The expressions of Roller script:
 * Value literal
 * Variable assignment
 * Variable reference
-* Function definition
 * Call expressions
 * Dice expression
 * Mathematical operators
 * Comparison operators
 * Logical connectives
 * Delete expression
-* If expression
-* Try/Catch expression
-* Keyword functions
+* Built-in functions
 
 ## Value literal
 A literal of any of the Roller script's [data types](types).
@@ -34,15 +31,11 @@ assignment = identifier , "=" , expression ;
 ## Variable reference
 
 Variables are referenced by writing their identifier, which returns their value.
-When referencing an unassigned variable or trying to reference a function as a variable, an error is thrown.
-
-## Function definition
-
-Named functions are defined by writing their name, followed by a comma separated arguments, if any, in parentheses, followed by an equality sign and the body as an expression.
+When referencing an unassigned variable, an error is thrown.
 
 Syntax in EBNF:
 ```
-function definition = identifier , "(" , [ identifier , { "," , identifier } ] , ")" , "=" , expression ;
+reference = identifier ;
 ```
 
 ## Call expressions
@@ -104,35 +97,6 @@ The piecewise mathematical operators:
 * Modulo, `a .% b`
 * Exponentiation, `a .^ b`
 
-## Comparison operators
-
-The comparison operators take values as operands and return boolean values.
-
-Comparison operators:
-* Equality, `a == b`
-* Inequality, `a != b`
-* Greater than, `a > b`
-* Less than, `a < b`
-* Greater or equal, `a >= b`
-* Less or equal, `a <= b`
-
-Equality and inequality are defined for almost all types.
-Two operands are equal if and only if they are of the same type and same value, or one of the operands can be implicitly converted into to the same type as the other and they are of same value (like integers and reals).
-
-If the left operand is left empty, then the expression is treated as an anonymous function, for example `(< b)(a)` is equivalent to `a < b`.
-
-## Logical connectives
-
-Logical connectives take boolean values as operands and return boolean values.
-
-Logical connectives:
-* And, `a and b`, `a && b`
-	* Returns logical and
-* Or, `a or b`, `a || b`
-	* Returns logical or
-* Xor, `a xor b`
-	* Returns logical xor
-
 ## Delete expression
 
 Delete expressions remove a variable from the namespace, freeing their memory.
@@ -145,36 +109,20 @@ Syntax in EBNF:
 delete = "delete" , identifier ;
 ```
 
-## If expression
-
-If expressions perform conditional execution based on a condition expression.
-
-Syntax in EBNF:
-```
-if = "if" , expr , "then" , expr , { "elsif" , expr }, [ "else" , expr ] ;
-```
-
-## Try/Catch expression
-
-Try/Catch expressions will catch errors created in the try-part and then move to executing the catch-part.
-
-Syntax in EBNF:
-```
-try-catch = "try" , expr , "catch" , expr ;
-```
-
-## Special functions
+## Built-in functions
 
 Special functions are more complex functions defined by the interpreter.
-They can do things that normal functions can't but they could be defined compile-time.
+They might be able to do things that normal functions can't but they are defined in compile-time.
 
-Some keyword functions:
+Some built-in functions:
 * `len(a)`, returns the length of `a`.
 * `sum(a)`, returns the sum of `a`.
 * `sqrt(a)`, returns the square root of `a`.
 * `root(n, a)`, returns `n`:th root of `a`.
 * `flatten(a)`, flattens all of the sub-collections of `a`.
+* `map(f, a)`, maps the function `f` over the collection `a`.
 * `acc(f, s, a)`, accumulates function `f` over the collection `a` using `s` as the starting value.
 * `to_string(a)`, returns the string representation of `a`.
 * `parse(a)`, parses the given string `a` into a Roller type.
 * `to_list(a)`, changes the string `a` into a vector of characters.
+* `eval(a)`, evaluates the `a` string as a Roller command and returns the value.
