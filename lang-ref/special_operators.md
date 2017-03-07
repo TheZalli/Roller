@@ -58,7 +58,6 @@ Examples:
 // is equivalent to all of:
 bar(foo(a))
 foo(a) | bar
-((x) -> x | foo | bar)(a)
 
 // note that (foo | bar)(a) would be equivalent to bar(foo)(a)
 ```

@@ -17,25 +17,35 @@ The expressions of Roller script:
 ## Value literal
 A literal of any of the Roller script's [data types](types).
 
-## Variable assignment
+## Assignment
 
-Values are assigned to variables by writing their identifier followed by an equality sign and then the value as an expression.
+Values are assigned to mapping fields by writing their [name](field_names) followed by an equality sign and then the value as an expression.
 
-Assigning a variable overrides any other function or variable with the same name.
-
-Syntax in EBNF:
-```
-assignment = identifier , "=" , expression ;
-```
-
-## Variable reference
-
-Variables are referenced by writing their identifier, which returns their value.
-When referencing an unassigned variable, an error is thrown.
+Assigning `none` to a field means deleting it.
 
 Syntax in EBNF:
 ```
-reference = identifier ;
+assignment = field-name , "=" , expression ;
+```
+
+## Field access
+
+Mapping fields are accessed by writing their name, which returns their value.
+
+When referencing an unassigned variable, a `none` value is returned.
+
+Examples:
+```
+> foo
+none
+> foo = 3
+> foo
+3
+```
+
+Syntax in EBNF:
+```
+reference = field-name ;
 ```
 
 ## Call expressions
@@ -44,11 +54,11 @@ Call expressions produce a value from a mapping, which can be functions, vectors
 
 To call a mapping, write the parenthesized (`()`) arguments/keys after it.
 
-Using a call expression on vectors and maps means indexing them.
+Using a call expression on vectors and maps is the same as indexing them with a period.
 
-Call expression syntax in EBNF:
+Syntax in EBNF:
 ```
-call = ( identifier | expression ) , "(" , [ expression , { "," , expression } ] , ")" ;
+call = field-name , "(" , [ expression , { "," , expression } ] , ")" ;
 ```
 
 ## Dice expression
@@ -96,18 +106,6 @@ The piecewise mathematical operators:
 * Division, `a ./ b`
 * Modulo, `a .% b`
 * Exponentiation, `a .^ b`
-
-## Delete expression
-
-Delete expressions remove a variable from the namespace, freeing their memory.
-Delete expressions are written by writing `delete` followed by the identifier you want to delete.
-
-The delete expression returns the removed value.
-
-Syntax in EBNF:
-```
-delete = "delete" , identifier ;
-```
 
 ## Built-in functions
 
